@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "./Header.astro";
+import Footer from "./Footer.astro";
+
+const { title, description, children } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <Header />
+  <main class="wrap">
+    <header class="pagehead">
+      <h1>{title}</h1>
+      {description && <p class="desc">{description}</p>}
+    </header>
+
+    <section class="content">
+      <slot />
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 18px; }
+  .pagehead { padding: 10px 0 18px; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 18px; }
+  h1 { margin: 0 0 8px; font-size: clamp(28px, 3vw, 38px); letter-spacing: -0.03em; }
+  .desc { margin: 0; opacity: 0.8; max-width: 70ch; }
+  .content { padding: 8px 0 0; }
+</style>

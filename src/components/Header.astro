@@ -1,0 +1,42 @@
+---
+const nav = [
+  { href: "/projects", label: "Projects" },
+  { href: "/toolkit", label: "PM Toolkit" },
+  { href: "/articles", label: "Articles" },
+  { href: "/resume", label: "Resume" },
+  { href: "/about", label: "About" },
+  { href: "/socials", label: "Socials" },
+  { href: "/contact", label: "Contact" },
+];
+const path = Astro.url.pathname;
+const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href));
+---
+
+<header class="wrap">
+  <div class="bar">
+    <a class="brand" href="/">Al Tareen</a>
+
+    <nav class="nav" aria-label="Primary">
+      {nav.map((i) => (
+        <a class:list={["link", isActive(i.href) && "active"]} href={i.href}>
+          {i.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</header>
+
+<style>
+  .wrap { position: sticky; top: 0; backdrop-filter: blur(10px); background: rgba(255,255,255,0.85); border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .bar { max-width: 1040px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { font-weight: 700; text-decoration: none; letter-spacing: -0.02em; }
+  .nav { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+  .link { text-decoration: none; font-size: 14px; padding: 6px 8px; border-radius: 10px; opacity: 0.85; }
+  .link:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+  .active { opacity: 1; background: rgba(0,0,0,0.08); }
+
+  @media (max-width: 720px) {
+    .bar { align-items: flex-start; flex-direction: column; }
+    .nav { justify-content: flex-start; }
+  }
+</style>

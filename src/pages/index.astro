@@ -1,11 +1,82 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout
+  title="Al Tareen — Product Manager"
+  description="Personal site: projects, PM toolkit, articles, resume, and ways to connect."
+>
+  <Header />
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Product Manager. Builder. Systems thinker.</h1>
+      <p class="lead">
+        I build practical products and workflows—especially around AI, automation, and operations.
+        This is my portfolio, toolkit, and writing hub.
+      </p>
+
+      <div class="cta">
+        <a class="btn primary" href="/projects">View Projects</a>
+        <a class="btn" href="/resume">Resume</a>
+        <a class="btn" href="/contact">Contact</a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <a class="card" href="/projects">
+        <h2>Projects</h2>
+        <p>Selected work, outcomes, and demos.</p>
+      </a>
+      <a class="card" href="/toolkit">
+        <h2>PM Toolkit</h2>
+        <p>Templates, checklists, and frameworks I actually use.</p>
+      </a>
+      <a class="card" href="/articles">
+        <h2>Articles</h2>
+        <p>Notes on product, execution, AI, and career growth.</p>
+      </a>
+      <a class="card" href="/socials">
+        <h2>Socials</h2>
+        <p>Where to find me online.</p>
+      </a>
+      <a class="card" href="/about">
+        <h2>About</h2>
+        <p>My background and what I’m optimizing for.</p>
+      </a>
+      <a class="card" href="/contact">
+        <h2>Contact</h2>
+        <p>Reach me fast without spam.</p>
+      </a>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 18px; }
+  .hero { padding: 28px 0 8px; }
+  h1 { font-size: clamp(32px, 4vw, 46px); line-height: 1.05; letter-spacing: -0.03em; margin: 0 0 12px; }
+  .lead { font-size: 18px; max-width: 70ch; opacity: 0.85; margin: 0 0 18px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 8px; }
+  .btn { display: inline-block; padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.14); text-decoration: none; font-weight: 600; }
+  .btn:hover { background: rgba(0,0,0,0.04); }
+  .primary { background: rgba(0,0,0,0.9); color: white; border-color: rgba(0,0,0,0.9); }
+  .primary:hover { background: rgba(0,0,0,0.82); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 18px 0 10px; }
+  .card { border: 1px solid rgba(0,0,0,0.12); border-radius: 16px; padding: 16px; text-decoration: none; }
+  .card:hover { background: rgba(0,0,0,0.03); }
+  .card h2 { margin: 0 0 6px; font-size: 18px; }
+  .card p { margin: 0; opacity: 0.8; }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
