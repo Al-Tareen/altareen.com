@@ -1,6 +1,131 @@
-﻿---
-import PageShell from "../../components/PageShell.astro";
 ---
+import PageShell from "../../components/PageShell.astro";
+
+const projects = [
+  {
+    title: "Enterprise AI Platform",
+    description: "Led product strategy for an AI-powered automation platform that reduced manual ops by 60% across 12 enterprise accounts.",
+    tags: ["AI", "Automation", "Enterprise"],
+    href: "#",
+  },
+  {
+    title: "Service Desk Cost Reduction",
+    description: "Designed automation workflows that cut tier-1 ticket volume by 40% and lowered per-ticket cost by 35%.",
+    tags: ["Automation", "Cost Reduction", "Product"],
+    href: "#",
+  },
+  {
+    title: "Multi-Agent AI Workflows",
+    description: "Product-led R&D for agent orchestration that improved task completion rates by 2x with human-in-the-loop guardrails.",
+    tags: ["AI", "Agents", "Product"],
+    href: "#",
+  },
+  {
+    title: "altareen.com",
+    description: "Portfolio site built with Astro—fast, accessible, and easy to maintain for showcasing product work.",
+    tags: ["Web", "Astro", "Product"],
+    href: "#",
+  },
+];
+---
+
 <PageShell title="Projects" description="Selected work with outcomes, demos, and context.">
-  <p>Coming next: a projects list powered by content files.</p>
+  <div class="projects-grid">
+    {
+      projects.map((project) => (
+        <article class="project-card">
+          <h2 class="project-title">{project.title}</h2>
+          <p class="project-desc">{project.description}</p>
+          <div class="project-tags">
+            {project.tags.map((tag) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+          <a class="btn" href={project.href}>View Details</a>
+        </article>
+      ))
+    }
+  </div>
 </PageShell>
+
+<style>
+  .projects-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 4px 0;
+  }
+
+  @media (min-width: 620px) {
+    .projects-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+    }
+  }
+
+  .project-card {
+    padding: 24px 22px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    background: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .project-card:hover {
+    border-color: rgba(0, 0, 0, 0.18);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .project-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  .project-desc {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, 0.75);
+    flex-grow: 1;
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.6);
+    padding: 4px 10px;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 4px;
+  }
+
+  .btn {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: inherit;
+    padding: 8px 14px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    align-self: flex-start;
+  }
+
+  .btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.3);
+  }
+</style>
