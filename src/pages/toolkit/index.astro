@@ -1,6 +1,77 @@
-﻿---
-import PageShell from "../../components/PageShell.astro";
 ---
-<PageShell title="PM Toolkit" description="Templates and frameworks I use to ship." >
-  <p>Coming next: toolkit categories + downloadable templates.</p>
+import PageShell from "../../components/PageShell.astro";
+import { getCollection } from "astro:content";
+
+const items = await getCollection("toolkit");
+
+// build grouped structure in frontmatter ONLY
+const groupsMap = new Map();
+
+for (const item of items) {
+  const c = item.data.category || item.data.dbTitle || "Other";
+  if (!groupsMap.has(c)) groupsMap.set(c, []);
+  groupsMap.get(c).push(item);
+}
+
+const categories = Array.from(groupsMap.keys()).sort((a, b) => a.localeCompare(b));
+
+for (const c of categories) {
+  groupsMap.get(c).sort((a, b) => a.data.title.localeCompare(b.data.title));
+}
+
+const groups = categories.map((c) => ({ category: c, items: groupsMap.get(c) }));
+---
+
+<PageShell title="Product Manager Toolkit">
+  <p class="lead">
+    A living library synced from my Notion Framework Repository. Browse by category.
+  </p>
+
+  {groups.map((g) => (
+    <section class="group">
+      <h2>{g.category}</h2>
+      <div class="grid">
+        {g.items.map((item) => (
+          <a class="card" href={`/toolkit/${item.slug}/`}>
+            <div class="cardTitle">{item.data.title}</div>
+            <div class="meta">
+              <span class={`pill ${item.data.link ? "" : "subtle"}`}>
+                {item.data.link ? "Has link" : "Notes"}
+              </span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  ))}
+
+  <style>
+    .lead{max-width:70ch;opacity:.85}
+    .group{margin-top:2rem}
+    .grid{
+      margin-top:1rem;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:12px;
+    }
+    .card{
+      display:block;
+      padding:14px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      text-decoration:none;
+      transition:transform .15s ease,border-color .15s ease;
+    }
+    .card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.22)}
+    .cardTitle{font-weight:650;line-height:1.2}
+    .meta{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+    .pill{
+      font-size:.8rem;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      opacity:.85;
+    }
+    .pill.subtle{opacity:.65}
+  </style>
 </PageShell>

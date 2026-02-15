@@ -1,0 +1,30 @@
+---
+import PageShell from "../../components/PageShell.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const items = await getCollection("toolkit");
+  return items.map((item) => ({
+    params: { slug: item.slug },
+    props: { item },
+  }));
+}
+
+const { item } = Astro.props;
+---
+
+<PageShell title={item.data.title}>
+  {item.data.link && (
+    <p>
+      <a href={item.data.link} target="_blank" rel="noopener">Open related link</a>
+    </p>
+  )}
+  <article class="content">
+    {item.body}
+  </article>
+
+  <style>
+    .content :global(h2){margin-top:1.6rem}
+    .content{max-width:75ch}
+  </style>
+</PageShell>

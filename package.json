@@ -6,9 +6,12 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "sync:toolkit": "node scripts/notion-sync-toolkit.mjs"
   },
   "dependencies": {
-    "astro": "^5.17.1"
+    "@notionhq/client": "^5.9.0",
+    "astro": "^5.17.1",
+    "dotenv": "^17.3.1"
   }
 }
