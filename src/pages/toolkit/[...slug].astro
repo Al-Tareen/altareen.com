@@ -11,20 +11,243 @@ export async function getStaticPaths() {
 }
 
 const { item } = Astro.props;
+
+const files = Array.isArray(item.data.files) ? item.data.files : [];
+const hasFiles = files.length > 0;
+
+const fallbackDownload = item.data.cover
+  ? { name: `${item.data.title || "Download"}`, url: item.data.cover }
+  : null;
+
+const downloadLabel = hasFiles ? "Downloads" : "Download";
 ---
 
-<PageShell title={item.data.title}>
-  {item.data.link && (
-    <p>
-      <a href={item.data.link} target="_blank" rel="noopener">Open related link</a>
-    </p>
-  )}
-  <article class="content">
-    {item.body}
-  </article>
+<PageShell title={item.data.title} subtitle={item.data.primaryCategory}>
+  <div class="wrap">
+    <a class="back" href="/toolkit/">
+      <span class="arrow" aria-hidden="true">←</span>
+      <span>PM Toolkit</span>
+    </a>
+
+    <header class="hero">
+      {item.data.cover && (
+        <div class="coverWrap">
+          <img
+            class="cover"
+            src={item.data.cover}
+            alt={`Cover for ${item.data.title}`}
+            loading="lazy"
+          />
+        </div>
+      )}
+    </header>
+
+    <article class="content">
+      {item.data.whenToUse && (
+        <section class="block">
+          <h2>When to use this</h2>
+          <p>{item.data.whenToUse}</p>
+        </section>
+      )}
+
+      {item.data.inputsRequired && (
+        <section class="block">
+          <h2>Inputs Required</h2>
+          <p>{item.data.inputsRequired}</p>
+        </section>
+      )}
+
+      {item.data.outputArtifact && (
+        <section class="block">
+          <h2>Output Artifact</h2>
+          <p>{item.data.outputArtifact}</p>
+        </section>
+      )}
+
+      {item.data.commonMistakes && (
+        <section class="block">
+          <h2>Common Mistakes</h2>
+          <p>{item.data.commonMistakes}</p>
+        </section>
+      )}
+
+      {item.data.link && (
+        <section class="block">
+          <h2>Related Link</h2>
+          <p>
+            <a class="link" href={item.data.link} target="_blank" rel="noopener">
+              Open related link →
+            </a>
+          </p>
+        </section>
+      )}
+    </article>
+
+    {/* DOWNLOADS MOVED TO BOTTOM */}
+    {(hasFiles || fallbackDownload) && (
+      <section class="downloads" aria-label={downloadLabel}>
+        <div class="downloadsHead">
+          <h2>{downloadLabel}</h2>
+        </div>
+
+        <div class="downloadGrid">
+          {hasFiles ? (
+            files.map((f, i) => (
+              <a
+                class="btn primary"
+                href={f.path || f.url}
+                download
+                target="_blank"
+                rel="noopener"
+              >
+                <span class="btnIcon" aria-hidden="true">⬇</span>
+                <span class="btnText">{f.name || `Attachment ${i + 1}`}</span>
+              </a>
+            ))
+          ) : (
+            fallbackDownload && (
+              <a
+                class="btn primary"
+                href={fallbackDownload.url}
+                download
+                target="_blank"
+                rel="noopener"
+              >
+                <span class="btnIcon" aria-hidden="true">⬇</span>
+                <span class="btnText">Download</span>
+              </a>
+            )
+          )}
+        </div>
+      </section>
+    )}
+  </div>
 
   <style>
-    .content :global(h2){margin-top:1.6rem}
-    .content{max-width:75ch}
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .back{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      text-decoration:none;
+      opacity:.85;
+      margin: 8px 0 14px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      width: fit-content;
+      transition: transform .12s ease, border-color .12s ease, opacity .12s ease;
+    }
+    .back:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,.18);
+      opacity: 1;
+    }
+    .arrow{font-size: 1.05rem; opacity:.9}
+
+    .hero{
+      margin-bottom: 18px;
+    }
+
+    .coverWrap{
+      width: 100%;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .cover{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    .content{
+      max-width: 75ch;
+    }
+    .block{
+      margin-top: 18px;
+    }
+    .block h2{
+      margin: 0 0 8px;
+    }
+    .block p{
+      margin: 0;
+      opacity: .9;
+      line-height: 1.6;
+    }
+
+    .link{
+      text-decoration:none;
+      border-bottom: 1px solid rgba(255,255,255,.25);
+      padding-bottom: 2px;
+    }
+    .link:hover{
+      border-bottom-color: rgba(255,255,255,.45);
+    }
+
+    /* DOWNLOADS (distinct + bottom) */
+    .downloads{
+      margin: 26px 0 6px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(75, 75, 75, 0.04);
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+
+    .downloadsHead{
+      display:flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .downloads h2{
+      margin: 0;
+      font-size: 1.05rem;
+      letter-spacing: .2px;
+    }
+
+    .downloadGrid{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      color: inherit;
+      text-decoration:none;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,.22);
+      background: rgba(255,255,255,.06);
+    }
+
+    .btn.primary{
+      border-color: rgba(255,255,255,.22);
+      background: rgba(255,255,255,.09);
+    }
+
+    .btnIcon{opacity:.9}
+    .btnText{font-weight: 650}
   </style>
 </PageShell>

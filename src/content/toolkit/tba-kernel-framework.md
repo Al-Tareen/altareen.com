@@ -2,9 +2,16 @@
 title: "KERNEL Framework"
 primaryCategory: "TBA"
 categories: ["TBA"]
+whenToUse: ""
+inputsRequired: ""
+outputArtifact: ""
+commonMistakes: ""
 dbTitle: "Frameworks"
 notionId: "2d739950-eddd-80b5-8d8d-e169abf32bb7"
 link: ""
+cover: "/toolkit-covers/tba-kernel-framework.png"
+files:
+  - name: "KERNEL.png"
+    url: "/toolkit-files/tba-kernel-framework--1--kernel-png.png"
 ---
-## Files
-- KERNEL.png: https://prod-files-secure.s3.us-west-2.amazonaws.com/57d762dd-31bb-4431-98e8-0cf29ae0ce6e/a1973b40-9e53-4afb-b2eb-af855d72c382/KERNEL.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466T6VDAURW%2F20260215%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260215T102001Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEFEaCXVzLXdlc3QtMiJHMEUCIQC1rN%2B%2BYCj3CDB4M1quNekWLvoxvUVbRxlnqCkMdWIrRQIgaKGyDYIvBo9LUlspCPL65dxdKzF9HA%2BbPHHgLWi909gq%2FwMIGhAAGgw2Mzc0MjMxODM4MDUiDOybsX26THw2UKgY6ircA8AA9Gemp79jkliNVj2GRTdpM%2BHUFMex9z5iY5Ln5XeFQIBIRfQdiT291G6pRCkt2LMOMRpR1iWcR24zfYp5hs6x0Iw54Rrmq%2B8y9%2FNlMYktctrD7LjcGoXs1yNpzkipzoqfU8hVnl5Cvjgzv1F4sQjNW20Vct8akS7FGegIQXnV489tt2n7dLSZW%2Bf0qR%2Boyfx4eh40MY9vqUBObJG%2FPqDJc8XSQiCbuudOBSw7vS3Im%2BQkai1832JCrssBlIDmMw9qqIE4fA2KXVBiloC4BWknybbzjnvLkQpUifshruKEAF9MAZ3NueXFwVN2Pr6%2B1T8uOkXuJK%2FmXfwsW43COPnRYKA4BS3K%2FzS38KnnfzRf%2F5kIF8spRJU4KkIBKo1BxUCP4vaCuZ%2BYwZrkPxU6%2B6VJMnjvwgJzLWU%2FMLBqUBJ84oeHpd%2B8YNqDXTKxFHLMNj3F39KESP5gSBNoET%2BaHGeQZmmuNjw0t2A8m1J9aWqpE%2FCbkDEIuHmd4PEKvFhUuTjxMh7R2IlWxYHpwPgm3xuPRrk2R%2FzL1uk7jCSEnUAIsahJmy8W6sUDIklRsTXjWbFOXtdq0fvsvSe%2BGXWi0U7e%2FNHHwMZHxohwBcXA%2BVIPwZS78UnklLcBAEQjMPSaxswGOqUBlpUY%2Btn2fwrKxXlpU1M4zRTsbb5wQsFOgEjHIyRhlkjDpd0YHalyqMP1f1DVPdQBE6rtJWY%2BAfxzRgkHbRdZgXm717PHhkIfTsXvkj%2F8%2FecmhBJZh%2F5uszdaBp3yoKSvkEE15ocC%2FaNo%2BKrBLJrg7GKzxBg50DCZ%2BwyvLppGhSafiPT%2BgkJYpX5efNTgVFbXO5KMB%2Bo%2BIPAJEgqrlkkTQTd2ISZE&X-Amz-Signature=e8d36e272b7630acd7a69115c5e7be79c2bb2f26d21fa87f82bf6ab78aeaee26&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject
+Coming soon.

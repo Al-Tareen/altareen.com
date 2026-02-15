@@ -2,9 +2,15 @@
 title: "Competitive Landscape Analysis"
 primaryCategory: "Strategy & Positioning"
 categories: ["Strategy & Positioning"]
+whenToUse: "When you need a defensible differentiation and people keep saying “Competitor X already does this.”"
+inputsRequired: "Competitor + substitutes list; pricing/packaging; positioning; distribution channels; win/loss or user feedback."
+outputArtifact: "Competitive map; differentiation thesis; wedge strategy; risks + counters."
+commonMistakes: "Feature checklist only; ignoring substitutes; outdated intel; no action implications."
 dbTitle: "Frameworks"
 notionId: "2da39950-eddd-8084-a81e-c39b20842fd6"
 link: ""
+cover: "/toolkit-covers/strategy-positioning-competitive-landscape-analysis.png"
+files: []
 ---
 ## When to use
 When you need a defensible differentiation and people keep saying “Competitor X already does this.”

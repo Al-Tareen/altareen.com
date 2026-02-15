@@ -2,13 +2,28 @@
 import PageShell from "../../components/PageShell.astro";
 import { getCollection } from "astro:content";
 
-const items = await getCollection("toolkit");
+const HIDDEN_CATEGORIES = new Set(["Business Plans", "TBA"]);
+
+// Pull everything first so we can debug what's being excluded
+const all = await getCollection("toolkit");
+
+// DEBUG: see what dbTitle values exist
+const dbTitles = Array.from(new Set(all.map((i) => i.data.dbTitle || ""))).sort();
+console.log("toolkit total:", all.length);
+console.log("dbTitles:", dbTitles);
+
+// If you ONLY want Frameworks, keep this — but debug will show mismatches
+const items = all
+  .filter((item) => (item.data.dbTitle || "").trim() === "Frameworks")
+  .filter((item) => !HIDDEN_CATEGORIES.has((item.data.primaryCategory || "Uncategorized").trim()));
+
+console.log("frameworks visible:", items.length);
 
 // build grouped structure in frontmatter ONLY
 const groupsMap = new Map();
 
 for (const item of items) {
-  const c = item.data.category || item.data.dbTitle || "Other";
+  const c = (item.data.primaryCategory || "Uncategorized").trim();
   if (!groupsMap.has(c)) groupsMap.set(c, []);
   groupsMap.get(c).push(item);
 }
@@ -22,22 +37,49 @@ for (const c of categories) {
 const groups = categories.map((c) => ({ category: c, items: groupsMap.get(c) }));
 ---
 
-<PageShell title="Product Manager Toolkit">
-  <p class="lead">
-    A living library synced from my Notion Framework Repository. Browse by category.
-  </p>
+
+
+<PageShell
+  title="Product Manager Toolkit"
+  description="Frameworks that help product managers make better decisions."
+>
+
+
+  <div class="controls">
+    <input id="q" class="input" type="search" placeholder="Search frameworks…" />
+    <select id="cat" class="select">
+      <option value="">All categories</option>
+      {categories.map((c) => <option value={c}>{c}</option>)}
+    </select>
+  </div>
 
   {groups.map((g) => (
-    <section class="group">
+    <section class="group" data-group={g.category}>
       <h2>{g.category}</h2>
       <div class="grid">
         {g.items.map((item) => (
-          <a class="card" href={`/toolkit/${item.slug}/`}>
+          <a
+            class="card"
+            href={`/toolkit/${item.slug}/`}
+            data-title={item.data.title}
+            data-category={item.data.primaryCategory || "Uncategorized"}
+            data-when={item.data.whenToUse || ""}
+          >
+            {item.data.cover && (
+              <div class="thumb">
+                <img
+                  class="cover"
+                  src={item.data.cover}
+                  alt={`Cover for ${item.data.title}`}
+                  loading="lazy"
+                />
+              </div>
+            )}
+
             <div class="cardTitle">{item.data.title}</div>
-            <div class="meta">
-              <span class={`pill ${item.data.link ? "" : "subtle"}`}>
-                {item.data.link ? "Has link" : "Notes"}
-              </span>
+
+            <div class="whenToUse">
+              {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
             </div>
           </a>
         ))}
@@ -45,17 +87,86 @@ const groups = categories.map((c) => ({ category: c, items: groupsMap.get(c) }))
     </section>
   ))}
 
+  <script is:inline>
+    const q = document.getElementById("q");
+    const cat = document.getElementById("cat");
+
+    function normalize(s) {
+      return (s || "").toLowerCase().trim();
+    }
+
+    function applyFilter() {
+      const query = normalize(q?.value);
+      const selected = cat?.value || "";
+
+      const groups = document.querySelectorAll("section.group");
+
+      groups.forEach((group) => {
+        const cards = group.querySelectorAll("a.card");
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+          const title = normalize(card.dataset.title);
+          const c = card.dataset.category || "";
+          const when = normalize(card.dataset.when || "");
+
+          const catText = normalize(c);
+          const matchText =
+            !query ||
+            title.includes(query) ||
+            catText.includes(query) ||
+            when.includes(query);
+
+          const matchCat = !selected || c === selected;
+
+          const show = matchText && matchCat;
+          card.hidden = !show;
+          if (show) visibleCount++;
+        });
+
+        group.hidden = visibleCount === 0;
+      });
+    }
+
+    q?.addEventListener("input", applyFilter);
+    cat?.addEventListener("change", applyFilter);
+    applyFilter();
+  </script>
+
   <style>
     .lead{max-width:70ch;opacity:.85}
+
+    .controls{
+      margin-top:14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .input, .select{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      color: inherit;
+    }
+    .input{ flex:1; min-width:220px; }
+    .select{ min-width:200px; }
+
     .group{margin-top:2rem}
+
     .grid{
       margin-top:1rem;
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
       gap:12px;
+      align-items:stretch;
     }
+
     .card{
-      display:block;
+      display:flex;
+      flex-direction:column;
+      height:100%;
       padding:14px;
       border:1px solid rgba(255,255,255,.12);
       border-radius:14px;
@@ -63,15 +174,43 @@ const groups = categories.map((c) => ({ category: c, items: groupsMap.get(c) }))
       transition:transform .15s ease,border-color .15s ease;
     }
     .card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.22)}
-    .cardTitle{font-weight:650;line-height:1.2}
-    .meta{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
-    .pill{
-      font-size:.8rem;
-      padding:4px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      opacity:.85;
+
+    .thumb{
+      width:100%;
+      aspect-ratio:16/9;
+      overflow:hidden;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      margin-bottom:10px;
+      background: rgba(255,255,255,.04);
     }
-    .pill.subtle{opacity:.65}
+
+    .cover{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:center;
+      display:block;
+    }
+
+    .cardTitle{
+      font-weight:650;
+      line-height:1.2;
+      margin-bottom:8px;
+    }
+
+    .whenToUse{
+      opacity:.82;
+      font-size:.9rem;
+      line-height:1.35;
+      margin-top:0;
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      min-height: calc(1.35em * 3);
+    }
+
+    .muted{opacity:.45}
   </style>
 </PageShell>

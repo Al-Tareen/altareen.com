@@ -2,9 +2,15 @@
 title: "PESTLE Analysis"
 primaryCategory: "Market & Business Sizing"
 categories: ["Market & Business Sizing"]
+whenToUse: "When regulation, privacy, policy, or macro trends could block/enable your product."
+inputsRequired: "Regulatory/policy landscape; security/privacy constraints; macro trends; industry standards."
+outputArtifact: "External risk/opportunity map; mitigation plan; watchlist (what to monitor)."
+commonMistakes: "Long list of irrelevant bullets; no prioritization; no link to decisions."
 dbTitle: "Frameworks"
 notionId: "2da39950-eddd-80da-80aa-d3b75bbd1b6a"
 link: ""
+cover: "/toolkit-covers/market-business-sizing-pestle-analysis.png"
+files: []
 ---
 ## When to use
 When regulation, privacy, policy, or macro trends could block/enable your product.

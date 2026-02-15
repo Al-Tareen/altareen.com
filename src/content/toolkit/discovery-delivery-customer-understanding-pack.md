@@ -2,9 +2,15 @@
 title: "Customer Understanding Pack"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
+whenToUse: "When the user journey is complex or multi-role and misunderstandings are causing bad requirements."
+inputsRequired: "Research findings; workflow/journey notes; role definitions; pain points; key moments."
+outputArtifact: "Lightweight persona + workflow/journey map + top pains + opportunities."
+commonMistakes: "Fictional personas; stale artifacts; not used to drive decisions."
 dbTitle: "Frameworks"
 notionId: "2da39950-eddd-8054-b143-c2879ed64493"
 link: ""
+cover: "/toolkit-covers/discovery-delivery-customer-understanding-pack.png"
+files: []
 ---
 ## When to use
 When the user journey is complex or multi-role and misunderstandings are causing bad requirements.
