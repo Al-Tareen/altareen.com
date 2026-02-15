@@ -1,0 +1,19 @@
+---
+title: "Retention playbook (churn reasons, win-back)"
+primaryCategory: "GTM & Growth"
+categories: ["GTM & Growth"]
+dbTitle: "Frameworks"
+notionId: "2db39950-eddd-80aa-84b1-fa01634322ad"
+link: ""
+---
+## When to use
+When churn is rising or repeat usage is low and you need systematic retention levers.
+
+## Inputs required
+Cohort retention; churn reasons; usage patterns; segment differences.
+
+## Output artifact
+Retention levers; interventions; experiments; win-back sequences.
+
+## Common mistakes
+One-size-fits-all; focuses only on messaging; ignores product quality issues.
