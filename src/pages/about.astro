@@ -1,7 +1,528 @@
 ﻿---
 import PageShell from "../components/PageShell.astro";
+
+/**
+ * Replace these with your real links/assets
+ */
+const profile = {
+  name: "Al-Ebraheem Tareen",
+  title: "AI Transformation • Product Management • Product Strategy",
+  photo: "/images/about/al-tareen.jpeg",
+  resumeUrl: "/files/Al-Tareen-Resume.pdf",
+  linkedin: "https://www.linkedin.com/in/California",
+  github: "https://github.com/Al-Tareen",
+};
 ---
-<PageShell title="About" description="Who I am and what I’m building toward.">
-  <p>Short version: I’m a Product Manager focused on building practical systems and products, with a bias for execution.</p>
-  <p>Longer version coming soon.</p>
+
+<PageShell title="About" hidePageHead={true}
+description="Who I am and where you can find me.">
+
+  <section class="aboutPage" aria-label="About Al-Ebraheem Tareen">
+    <div class="heroCard">
+      <div class="heroGrid">
+        <!-- Left column -->
+        <div class="heroContent">
+          <div class="nameBlock">
+            <h1 class="heroTitle">{profile.name}</h1>
+            <p class="heroSubtitle">{profile.title}</p>
+            <div class="heroDivider" aria-hidden="true"></div>
+          </div>
+
+          <div class="copyStack">
+            <p class="heroSummary">
+              Visionary professional and strategic leader with a multi-year track record of driving
+              revenue growth through AI, IT, and corporate strategy. Experienced in project and
+              product management, I break down complex challenges and lead global teams that
+              accelerate digital transformation with scalable, efficient solutions and measurable ROI.
+            </p>
+
+            <p class="heroSummary heroSummarySecondary">
+              I use critical thinking and mental models to build durable competitive advantage.
+              Execution is the differentiator: I preempt risk, remove roadblocks, and design
+              strategy that creates real value for teams and stakeholders while delivering products
+              that move the business forward.
+            </p>
+          </div>
+
+          <div class="signatureLine" aria-hidden="true"></div>
+
+          <p class="microNote">Carpe diem.</p>
+        </div>
+
+        <!-- Right column -->
+        <aside class="heroRail" aria-label="Profile and actions">
+          <div class="profileCard">
+            <div class="portraitShell">
+              <div class="profileFrame">
+                <img
+                  class="profileImg"
+                  src={profile.photo}
+                  alt={`Portrait of ${profile.name}`}
+                  loading="lazy"
+                />
+              </div>
+            </div>
+
+            <div class="profileInfo">
+              <div class="profileName">{profile.name}</div>
+              <div class="profileRole">Houston, TX</div>
+            </div>
+
+            <div class="railActions" role="group" aria-label="Primary actions">
+              <a class="railBtn primary" href={profile.resumeUrl} download target="_blank" rel="noopener">
+                <span class="railIcon" aria-hidden="true">↓</span>
+                <span class="railText">Download Resume</span>
+              </a>
+
+              <a class="railBtn" href={profile.linkedin} target="_blank" rel="noopener">
+                <span class="railIcon railIconText" aria-hidden="true">in</span>
+                <span class="railText">LinkedIn</span>
+              </a>
+
+              <a class="railBtn" href={profile.github} target="_blank" rel="noopener">
+                <span class="railIcon" aria-hidden="true">⌘</span>
+                <span class="railText">GitHub</span>
+              </a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .aboutPage {
+      max-width: var(--content-width);
+      margin: 0 auto;
+      padding: 2px 0px 60px;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: transparent;
+    }
+
+.aboutPage::before,
+.aboutPage::after {
+  display: none !important;
+  content: none !important;
+}
+
+    .heroCard,
+    .profileCard {
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: none;
+    }
+
+    .heroCard {
+      padding: 12px;
+      margin-top: 14px;
+      position: relative;
+      overflow: hidden;
+
+    }
+
+    .heroCard::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.64) 0%,
+          rgba(255, 255, 255, 0.2) 38%,
+          transparent 100%
+        );
+        
+    }
+
+    .heroCard::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(620px 220px at 12% 0%, rgba(0, 0, 0, 0.03), transparent 60%),
+        radial-gradient(340px 180px at 90% 10%, rgba(0, 0, 0, 0.018), transparent 72%),
+        radial-gradient(120% 100% at 85% 90%, rgba(0,0,0,0.02), transparent 55%);
+    }
+
+.heroCard::before,
+.heroCard::after {
+  display: none;
+  content: none;
+}
+
+    .heroGrid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .heroContent {
+      border-radius: 18px;
+      padding: 24px 24px 22px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
+      min-width: 0;
+    }
+
+    .nameBlock {
+      margin-bottom: 14px;
+    }
+
+    .heroTitle {
+      margin: 0;
+      letter-spacing: -0.038em;
+      line-height: 0.98;
+      font-size: clamp(2rem, 4vw, 3.15rem);
+      color: var(--ink);
+      font-weight: 700;
+      text-wrap: balance;
+    }
+
+    .heroSubtitle {
+      margin: 10px 0 0;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      color: var(--ink-secondary);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      text-wrap: balance;
+    }
+
+    .heroDivider {
+      width: 100%;
+      height: 1px;
+      margin: 14px 0 0;
+      background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.12),
+        rgba(0, 0, 0, 0.05),
+        transparent
+      );
+    }
+
+    .copyStack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .heroSummary {
+      margin: 0;
+      color: var(--ink-secondary);
+      font-size: 0.90rem;
+      line-height: 1.72;
+      max-width: 62ch;
+      letter-spacing: -0.005em;
+    }
+
+    .heroSummarySecondary {
+      color: rgba(0, 0, 0, 0.68);
+    }
+
+    .signatureLine {
+      margin-top: 16px;
+      width: 86px;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.45),
+        rgba(0, 0, 0, 0.12)
+      );
+    }
+
+    .microNote {
+      margin: 12px 0 0;
+      color: var(--ink-muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+      letter-spacing: -0.01em;
+    }
+
+    .heroRail,
+    .profileCard,
+    .railActions {
+      min-width: 0;
+    }
+
+    .heroRail {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .profileCard {
+      padding: 18px 16px 16px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.035),
+        inset 0 1px 0 rgba(255,255,255,0.74);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .portraitShell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 4px 2px 2px;
+    }
+
+    .profileFrame {
+      width: min(236px, 100%);
+      aspect-ratio: 1 / 1;
+      border-radius: 999px;
+      padding: 4px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.78));
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.085),
+        inset 0 1px 0 rgba(255,255,255,0.95);
+      position: relative;
+      margin: 0 auto;
+      flex: 0 0 auto;
+    }
+
+    .profileFrame::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: 999px;
+      pointer-events: none;
+      background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.14) 0%,
+        rgba(255,255,255,0) 42%
+      );
+    }
+
+    .profileImg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      object-fit: cover;
+      object-position: center 22%;
+      transform: scale(1.02);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.26);
+    }
+
+    .profileInfo {
+      margin-top: 14px;
+      text-align: center;
+      padding: 0 4px 0;
+    }
+
+    .profileName {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      line-height: 1.2;
+      text-wrap: balance;
+    }
+
+    .profileRole {
+      margin-top: 5px;
+      font-size: 0.84rem;
+      color: var(--ink-muted);
+      line-height: 1.35;
+    }
+
+    .railActions {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      width: 100%;
+      display: grid;
+      gap: 10px;
+    }
+
+    /* Premium black buttons */
+    .railBtn {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--surface);
+      padding: 12px 14px;
+      min-height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: var(--ink);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+      transition:
+        transform 0.22s var(--ease),
+        box-shadow 0.22s var(--ease),
+        background 0.22s var(--ease),
+        border-color 0.22s var(--ease);
+    }
+
+    .railBtn:hover {
+      transform: translateY(-1px);
+      background: #202024;
+      border-color: rgba(0, 0, 0, 0.12);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.16);
+    }
+
+    .railBtn.primary {
+      background: var(--ink);
+      color: var(--surface);
+    }
+
+    .railBtn.primary:hover {
+      background: #202024;
+    }
+
+    /* Consistent icon typography */
+    .railIcon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: 0;
+      opacity: 0.95;
+      transform: translateY(-0.5px);
+    }
+
+    /* "in" needs a touch more visual consistency */
+    .railIconText {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      text-transform: none;
+    }
+
+    /* Consistent button label typography */
+    .railText {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--surface);
+      text-align: left;
+    }
+
+    :where(.railBtn):focus-visible {
+      outline: none;
+      border-color: rgba(0, 0, 0, 0.12);
+      box-shadow:
+        0 0 0 3px rgba(0, 0, 0, 0.08),
+        0 10px 20px rgba(0, 0, 0, 0.14);
+    }
+
+    @media (max-width: 1080px) {
+      .heroGrid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .heroRail {
+        order: 2;
+      }
+
+      .heroContent {
+        order: 1;
+      }
+
+      .profileCard {
+        height: auto;
+      }
+
+      .profileFrame {
+        width: min(220px, 100%);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .aboutPage {
+        padding: 0 20px 40px;
+      }
+
+      .aboutPage::before,
+      .aboutPage::after {
+        left: -20px;
+        right: -20px;
+      }
+
+      .heroCard {
+        padding: 14px;
+        border-radius: 18px;
+      }
+
+      .heroContent {
+        padding: 16px;
+        border-radius: 14px;
+      }
+
+      .heroTitle {
+        font-size: clamp(1.7rem, 8vw, 2.2rem);
+      }
+
+      .heroSubtitle {
+        font-size: 0.92rem;
+      }
+
+      .heroSummary {
+        font-size: 0.94rem;
+        line-height: 1.65;
+      }
+
+      .profileCard {
+        padding: 14px;
+      }
+
+      .profileFrame {
+        width: min(198px, 100%);
+      }
+
+      .railActions {
+        margin-top: 14px;
+        padding-top: 12px;
+      }
+
+      .railBtn {
+        padding: 11px 12px;
+      }
+
+      .railText {
+        font-size: 13.5px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .railBtn {
+        transition: none !important;
+      }
+
+      .railBtn:hover {
+        transform: none !important;
+      }
+    }
+  </style>
 </PageShell>

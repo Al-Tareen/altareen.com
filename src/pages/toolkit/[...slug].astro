@@ -10,244 +10,1526 @@ export async function getStaticPaths() {
   }));
 }
 
-const { item } = Astro.props;
+const routeSlug = Array.isArray(Astro.params.slug)
+  ? Astro.params.slug.join("/")
+  : Astro.params.slug || "";
+
+let item = Astro.props?.item;
+
+if (!item) {
+  const items = await getCollection("toolkit");
+  item = items.find((entry) => entry.slug === routeSlug);
+}
+
+if (!item) {
+  throw new Error(`Toolkit item not found for slug: ${routeSlug}`);
+}
 
 const files = Array.isArray(item.data.files) ? item.data.files : [];
 const hasFiles = files.length > 0;
 
+// If no files are attached, allow downloading the cover as a fallback
 const fallbackDownload = item.data.cover
   ? { name: `${item.data.title || "Download"}`, url: item.data.cover }
   : null;
 
-const downloadLabel = hasFiles ? "Downloads" : "Download";
+const downloads = hasFiles ? files : fallbackDownload ? [fallbackDownload] : [];
+const hasDownloads = downloads.length > 0;
+
+// IDs for section nav + scrollspy (kept for ids / jump targets)
+const sectionIds = {
+  when: "when",
+  inputs: "inputs",
+  output: "output",
+  mistakes: "mistakes",
+  link: "related",
+  downloads: "downloads",
+};
+
+const sections = [
+  (item.data.whenToUseFull || item.data.whenToUse)
+    ? { id: sectionIds.when, label: "When to use" }
+    : null,
+  item.data.inputsRequired ? { id: sectionIds.inputs, label: "Inputs" } : null,
+  item.data.outputArtifact ? { id: sectionIds.output, label: "Output" } : null,
+  item.data.commonMistakes ? { id: sectionIds.mistakes, label: "Mistakes" } : null,
+  item.data.link ? { id: sectionIds.link, label: "Related" } : null,
+  hasDownloads ? { id: sectionIds.downloads, label: "Downloads" } : null,
+].filter(Boolean);
+
+// Primary CTA (first item)
+const primaryDownload = hasDownloads ? downloads[0] : null;
+const primaryDownloadUrl = primaryDownload ? (primaryDownload.path || primaryDownload.url || "") : "";
+
+// Detect “primary” asset for preview (prefer PDF)
+const normalizeUrl = (f) => f?.path || f?.url || "";
+const isPdf = (f) => String(f?.name || "").toLowerCase().endsWith(".pdf");
+
+const primaryAsset =
+  (hasDownloads ? downloads.find(isPdf) : null) ||
+  (hasDownloads ? downloads[0] : null);
+
+const primaryAssetUrl = primaryAsset ? normalizeUrl(primaryAsset) : "";
+const hasPrimaryAsset = Boolean(primaryAssetUrl);
+const canPreview = hasPrimaryAsset && isPdf(primaryAsset);
+
+// Quick actions (only show what’s relevant)
+const quickActions = [
+  primaryDownloadUrl ? { kind: "download", label: "Download", icon: "⬇", href: primaryDownloadUrl } : null,
+  canPreview ? { kind: "preview", label: "Preview", icon: "👁" } : null,
+  { kind: "share", label: "Share", icon: "⤴" },
+  item.data.link ? { kind: "related", label: "Related", icon: "↗", href: item.data.link } : null,
+].filter(Boolean);
+
+// Auto-hide Summary rail when it’s not adding value
+const summaryRows = (hasDownloads ? 1 : 0) + (item.data.link ? 1 : 0);
+const showSummary = summaryRows >= 2;
+
+// Show Quick Actions rail when there is at least 1 action
+const showQuickActions = quickActions.length > 0;
+
+const category = item.data.primaryCategory || "";
+const title = item.data.title || "";
 ---
 
-<PageShell title={item.data.title} subtitle={item.data.primaryCategory}>
-  <div class="wrap">
-    <a class="back" href="/toolkit/">
-      <span class="arrow" aria-hidden="true">←</span>
-      <span>PM Toolkit</span>
-    </a>
+<PageShell title={title} subtitle={category} hidePageHead={true}>
+  <div class="toolkitDetail" data-framework-slug={item.slug}>
+    <!-- Top row: back only (moved actions to right rail) -->
+    <div class="topRow">
+      <a class="back" href="/toolkit/" aria-label="Back to PM Toolkit">
+        <span class="arrow" aria-hidden="true">←</span>
+        <span>PM Toolkit</span>
+      </a>
+    </div>
 
-    <header class="hero">
-      {item.data.cover && (
+    <!-- Hero -->
+    <header class="hero" aria-label="Framework header">
+  <div class="heroGrid">
+    {item.data.cover && (
+      <div class="coverFrame">
         <div class="coverWrap">
-          <img
-            class="cover"
-            src={item.data.cover}
-            alt={`Cover for ${item.data.title}`}
-            loading="lazy"
-          />
-        </div>
-      )}
-    </header>
+          <img class="cover coverZoom" src={item.data.cover} alt={`Cover for ${title}`} loading="lazy" />
 
-    <article class="content">
-      {item.data.whenToUse && (
-        <section class="block">
-          <h2>When to use this</h2>
-          <p>{item.data.whenToUse}</p>
-        </section>
-      )}
+          <!-- Feedback overlay (bottom-left) -->
+          <div class="coverFeedback" role="group" aria-label="Framework feedback">
+            <button
+              class="fbBtn"
+              type="button"
+              data-feedback="like"
+              aria-pressed="false"
+              aria-label="Like this framework"
+              title="Like"
+            >
+              <span class="fbIcon" aria-hidden="true">👍</span>
+              <span class="fbLabel">Like</span>
+            </button>
 
-      {item.data.inputsRequired && (
-        <section class="block">
-          <h2>Inputs Required</h2>
-          <p>{item.data.inputsRequired}</p>
-        </section>
-      )}
-
-      {item.data.outputArtifact && (
-        <section class="block">
-          <h2>Output Artifact</h2>
-          <p>{item.data.outputArtifact}</p>
-        </section>
-      )}
-
-      {item.data.commonMistakes && (
-        <section class="block">
-          <h2>Common Mistakes</h2>
-          <p>{item.data.commonMistakes}</p>
-        </section>
-      )}
-
-      {item.data.link && (
-        <section class="block">
-          <h2>Related Link</h2>
-          <p>
-            <a class="link" href={item.data.link} target="_blank" rel="noopener">
-              Open related link →
-            </a>
-          </p>
-        </section>
-      )}
-    </article>
-
-    {/* DOWNLOADS MOVED TO BOTTOM */}
-    {(hasFiles || fallbackDownload) && (
-      <section class="downloads" aria-label={downloadLabel}>
-        <div class="downloadsHead">
-          <h2>{downloadLabel}</h2>
+            <button
+              class="fbBtn"
+              type="button"
+              data-feedback="dislike"
+              aria-pressed="false"
+              aria-label="Dislike this framework"
+              title="Dislike"
+            >
+              <span class="fbIcon" aria-hidden="true">👎</span>
+              <span class="fbLabel">Dislike</span>
+            </button>
+          </div>
         </div>
 
-        <div class="downloadGrid">
-          {hasFiles ? (
-            files.map((f, i) => (
-              <a
-                class="btn primary"
-                href={f.path || f.url}
-                download
-                target="_blank"
-                rel="noopener"
-              >
-                <span class="btnIcon" aria-hidden="true">⬇</span>
-                <span class="btnText">{f.name || `Attachment ${i + 1}`}</span>
-              </a>
-            ))
-          ) : (
-            fallbackDownload && (
-              <a
-                class="btn primary"
-                href={fallbackDownload.url}
-                download
-                target="_blank"
-                rel="noopener"
-              >
-                <span class="btnIcon" aria-hidden="true">⬇</span>
-                <span class="btnText">Download</span>
-              </a>
-            )
-          )}
+        <!-- Sentiment bar + stats -->
+        <div class="feedbackStats" aria-label="Community feedback">
+          <div
+            class="feedbackBar isEmpty"
+            data-feedback-bar
+            role="img"
+            aria-label="Likes and dislikes ratio"
+            aria-describedby="feedbackMeta"
+          >
+            <div class="feedbackBarLikes" data-bar-likes style="width: 0%;"></div>
+            <div class="feedbackBarDislikes" data-bar-dislikes style="width: 0%;"></div>
+          </div>
+
+          <div class="feedbackMeta" id="feedbackMeta">
+            <span class="feedbackPercent" data-feedback-summary>
+              <span data-like-percent>0%</span> helpful
+            </span>
+
+            <span class="feedbackDot" data-feedback-summary-dot aria-hidden="true">•</span>
+
+            <div class="feedbackCountsRow" data-feedback-counts>
+              <span class="feedbackCount"><span data-like-count>0</span> likes</span>
+              <span class="feedbackDot" aria-hidden="true">•</span>
+              <span class="feedbackCount"><span data-dislike-count>0</span> dislikes</span>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
+    )}
+
+    {(showQuickActions || showSummary) && (
+      <aside class="heroRail" aria-label="Quick actions and summary">
+        {showQuickActions && (
+          <div class="sideCard" aria-label="Quick Actions">
+            <div class="sideTop">
+              <div class="sideTitle">Quick Actions</div>
+            </div>
+
+            <div class="sideMeta">
+              {quickActions.map((a) => {
+                if (a.kind === "download") {
+                  return (
+                    <a class="qaRow primary" href={a.href} download target="_blank" rel="noopener">
+                      <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+                      <span class="qaText">{a.label}</span>
+                    </a>
+                  );
+                }
+
+                if (a.kind === "preview") {
+                  return (
+                    <button class="qaRow" type="button" data-preview>
+                      <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+                      <span class="qaText">{a.label}</span>
+                    </button>
+                  );
+                }
+
+                if (a.kind === "share") {
+                  return (
+                    <button class="qaRow" type="button" data-share>
+                      <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+                      <span class="qaText">{a.label}</span>
+                    </button>
+                  );
+                }
+
+                return (
+                  <a class="qaRow" href={a.href} target="_blank" rel="noopener">
+                    <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+                    <span class="qaText">{a.label}</span>
+                    <span class="qaEnd" aria-hidden="true">↗</span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+{hasDownloads && (
+  <div class="sideCard downloadsSideCard" id={sectionIds.downloads} data-section aria-label="Downloads">
+    <div class="sideTop">
+      <div class="sideTitle">Downloads</div>
+      <span class="downloadsCount">{downloads.length}</span>
+    </div>
+
+    <div class="downloadList">
+      {downloads.map((f, i) => (
+        <a
+          class="fileRow"
+          href={f.path || f.url}
+          download
+          target="_blank"
+          rel="noopener"
+          aria-label={`Download ${f.name || `Attachment ${i + 1}`}`}
+        >
+          <span class="fileType" aria-hidden="true">
+            {(f.name || "").toLowerCase().endsWith(".pdf") ? "PDF" : "FILE"}
+          </span>
+          <span class="fileName">{f.name || `Attachment ${i + 1}`}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+)}
+      </aside>
     )}
   </div>
+</header>
+
+    <!-- Layout -->
+    <div class="layout">
+      <!-- Main content -->
+      <article class="content" aria-label="Framework details">
+        {(item.data.whenToUseFull || item.data.whenToUse) && (
+          <section class="cardBlock lead" id={sectionIds.when} data-section>
+            <h2>When to use this</h2>
+            <p style="white-space: pre-wrap;">
+              {item.data.whenToUseFull || item.data.whenToUse}
+            </p>
+          </section>
+        )}
+
+        <div class="grid2">
+          {item.data.inputsRequired && (
+            <section class="cardBlock" id={sectionIds.inputs} data-section>
+              <h2>Inputs Required</h2>
+              <p>{item.data.inputsRequired}</p>
+            </section>
+          )}
+
+          {item.data.outputArtifact && (
+            <section class="cardBlock" id={sectionIds.output} data-section>
+              <h2>Output Artifact</h2>
+              <p>{item.data.outputArtifact}</p>
+            </section>
+          )}
+        </div>
+
+{item.data.commonMistakes && ( <section class="cardBlock collapsibleBlock" id={sectionIds.mistakes} data-section> <details class="collapse" name="framework-sections"> <summary class="collapseSummary"> <span class="collapseTitle"> Common Mistakes <span class="collapseChevron" aria-hidden="true">▾</span> </span> </summary> <div class="collapseBody"> <p style="white-space: pre-wrap;">{item.data.commonMistakes}</p> </div> </details> </section> )}
+
+        {item.data.link && (
+          <section class="cardBlock" id={sectionIds.link} data-section>
+            <h2>Related Link</h2>
+            <p>
+              <a class="link" href={item.data.link} target="_blank" rel="noopener">
+                Open related link →
+              </a>
+            </p>
+          </section>
+        )}
+
+       
+      </article>
+
+    </div>
+
+    <!-- PDF Preview Modal -->
+    {canPreview && (
+      <div class="modal" id="previewModal" aria-hidden="true">
+        <div class="modalOverlay" data-close></div>
+
+        <div class="modalPanel" role="dialog" aria-modal="true" aria-label="PDF preview">
+          <div class="modalTop">
+            <div class="modalTitle">
+              <span class="modalName">{primaryAsset?.name || "Preview"}</span>
+              <span class="modalHint">Esc to close</span>
+            </div>
+
+            <div class="modalActions">
+              <a class="pillBtn" href={primaryAssetUrl} download target="_blank" rel="noopener">
+                <span class="btnIcon" aria-hidden="true">⬇</span>
+                <span>Download</span>
+              </a>
+              <button class="pillBtn" type="button" data-close>
+                <span class="btnIcon" aria-hidden="true">✕</span>
+                <span>Close</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="modalBody">
+            <iframe class="pdfFrame" src={`${primaryAssetUrl}#view=fitH`} title="PDF preview" loading="lazy"></iframe>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <!-- Toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite">Link copied</div>
+
+  <script is:inline>
+  window.addEventListener("DOMContentLoaded", () => {
+    try {
+      const toast = document.getElementById("toast");
+      const shareBtn = document.querySelector("[data-share]");
+
+      function showToast(msg) {
+        if (!toast) return;
+        toast.textContent = msg || "Done";
+        toast.classList.add("isOn");
+        window.clearTimeout(window.__toastT);
+        window.__toastT = window.setTimeout(() => toast.classList.remove("isOn"), 1200);
+      }
+
+      const pageRoot = document.querySelector(".toolkitDetail");
+      const frameworkSlug = pageRoot?.dataset?.frameworkSlug || "";
+
+      // ---- Cover feedback (like / dislike) ----
+      const likeBtn = document.querySelector('[data-feedback="like"]');
+      const dislikeBtn = document.querySelector('[data-feedback="dislike"]');
+
+      const feedbackBarEl = document.querySelector("[data-feedback-bar]");
+      const feedbackCountsEl = document.querySelector("[data-feedback-counts]");
+      const feedbackSummaryEl = document.querySelector("[data-feedback-summary]");
+      const feedbackSummaryDotEl = document.querySelector("[data-feedback-summary-dot]");
+
+      const likeCountEl = document.querySelector("[data-like-count]");
+      const dislikeCountEl = document.querySelector("[data-dislike-count]");
+      const likeBarEl = document.querySelector("[data-bar-likes]");
+      const dislikeBarEl = document.querySelector("[data-bar-dislikes]");
+
+      let currentVote = null; // "like" | "dislike" | null
+      let feedbackBusy = false;
+
+      function applyFeedbackState(value) {
+        currentVote = value === "like" || value === "dislike" ? value : null;
+
+        [likeBtn, dislikeBtn].forEach((btn) => {
+          if (!btn) return;
+          const isActive = btn.dataset.feedback === currentVote;
+          btn.classList.toggle("isActive", isActive);
+          btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+      }
+
+      function setFeedbackBusy(isBusy) {
+        feedbackBusy = isBusy;
+
+        [likeBtn, dislikeBtn].forEach((btn) => {
+          if (!btn) return;
+          btn.disabled = isBusy;
+          btn.classList.toggle("isBusy", isBusy);
+        });
+      }
+
+      function renderFeedbackStats(data) {
+        const likes = Number(data?.likes || 0);
+        const dislikes = Number(data?.dislikes || 0);
+        const total = Number(data?.total || 0);
+
+        if (likeCountEl) likeCountEl.textContent = String(likes);
+        if (dislikeCountEl) dislikeCountEl.textContent = String(dislikes);
+
+        if (total === 0) {
+          // Neutral empty state
+          if (likeBarEl) likeBarEl.style.width = "0%";
+          if (dislikeBarEl) dislikeBarEl.style.width = "0%";
+
+          feedbackBarEl?.classList.add("isEmpty");
+          feedbackBarEl?.classList.remove("isPulse");
+
+          if (feedbackSummaryEl) {
+            feedbackSummaryEl.textContent = "No ratings yet";
+            feedbackSummaryEl.classList.add("isEmpty");
+          }
+
+          if (feedbackSummaryDotEl) feedbackSummaryDotEl.style.display = "none";
+          if (feedbackCountsEl) feedbackCountsEl.style.display = "none";
+          return;
+        }
+
+        const likePct = (likes / total) * 100;
+        const dislikePct = (dislikes / total) * 100;
+        const likePctRounded = Math.round(likePct);
+
+        if (likeBarEl) likeBarEl.style.width = `${likePct}%`;
+        if (dislikeBarEl) dislikeBarEl.style.width = `${dislikePct}%`;
+
+        feedbackBarEl?.classList.remove("isEmpty");
+        feedbackBarEl?.classList.remove("isPulse");
+        // restart pulse animation
+        if (feedbackBarEl) {
+          void feedbackBarEl.offsetWidth;
+          feedbackBarEl.classList.add("isPulse");
+        }
+
+        if (feedbackSummaryEl) {
+          feedbackSummaryEl.innerHTML = `<span data-like-percent>${likePctRounded}%</span> found this helpful`;
+          feedbackSummaryEl.classList.remove("isEmpty");
+        }
+
+        if (feedbackSummaryDotEl) feedbackSummaryDotEl.style.display = "";
+        if (feedbackCountsEl) feedbackCountsEl.style.display = "inline-flex";
+      }
+
+      async function loadFeedbackStats() {
+        if (!frameworkSlug) return;
+
+        try {
+          const res = await fetch(`/api/framework-feedback?slug=${encodeURIComponent(frameworkSlug)}`, {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          });
+
+          if (!res.ok) throw new Error("Failed to load feedback stats");
+
+          const data = await res.json();
+          renderFeedbackStats(data);
+          applyFeedbackState(data?.userVote || null);
+        } catch (err) {
+          console.error(err);
+          renderFeedbackStats({ likes: 0, dislikes: 0, total: 0 });
+          applyFeedbackState(null);
+        }
+      }
+
+      // IMPORTANT: expects your v2 endpoint to support:
+      // body: { slug, value: "like" | "dislike" | null }
+      // and return: { likes, dislikes, total, userVote }
+      async function submitFeedback(value) {
+        if (!frameworkSlug) throw new Error("Missing framework slug");
+        if (feedbackBusy) throw new Error("Feedback request already in progress");
+
+        try {
+          setFeedbackBusy(true);
+
+          const res = await fetch("/api/framework-feedback", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              slug: frameworkSlug,
+              value: value ?? null,
+            }),
+          });
+
+          if (!res.ok) throw new Error(`Failed to save feedback (${res.status})`);
+
+          const data = await res.json();
+          return data;
+        } finally {
+          setFeedbackBusy(false);
+        }
+      }
+
+      async function handleFeedbackClick(type) {
+        if (feedbackBusy) return;
+
+        // Toggle behavior:
+        // click active => clear vote
+        // click other => switch vote
+        const prevVote = currentVote;
+        const next = currentVote === type ? null : type;
+
+        // optimistic UI
+        applyFeedbackState(next);
+
+        try {
+          const data = await submitFeedback(next);
+          renderFeedbackStats(data);
+          applyFeedbackState(data?.userVote ?? next);
+
+          if ((data?.userVote ?? next) === "like") showToast("Marked as helpful");
+          else if ((data?.userVote ?? next) === "dislike") showToast("Feedback saved");
+          else showToast("Feedback cleared");
+        } catch (err) {
+          console.error(err);
+          applyFeedbackState(prevVote); // revert visual state
+          await loadFeedbackStats(); // refresh from server truth
+          showToast("Could not save feedback");
+        }
+      }
+
+      likeBtn?.addEventListener("click", () => handleFeedbackClick("like"));
+      dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
+
+      // initial load
+      loadFeedbackStats();
+
+      function setButtonCopied(btn) {
+        if (!btn) return;
+
+        const label = btn.querySelector(".qaLabel");
+        const icon = btn.querySelector(".btnIcon");
+        const rowText = btn.querySelector(".qaText");
+        const rowIcon = btn.querySelector(".qaIcon");
+
+        const prevText = label ? label.textContent : rowText ? rowText.textContent : "";
+        const prevIcon = icon ? icon.textContent : rowIcon ? rowIcon.textContent : "";
+
+        btn.classList.add("isCopied");
+
+        if (label) label.textContent = "Copied";
+        if (icon) icon.textContent = "✓";
+        if (rowText) rowText.textContent = "Copied";
+        if (rowIcon) rowIcon.textContent = "✓";
+
+        window.clearTimeout(window.__copiedT);
+        window.__copiedT = window.setTimeout(() => {
+          btn.classList.remove("isCopied");
+          if (label) label.textContent = prevText;
+          if (icon) icon.textContent = prevIcon;
+          if (rowText) rowText.textContent = prevText;
+          if (rowIcon) rowIcon.textContent = prevIcon;
+        }, 900);
+      }
+
+      async function shareLink() {
+        const url = window.location.href;
+        const title = document.title || "Link";
+
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, url });
+            showToast("Share opened");
+            return;
+          } catch {
+            // user canceled or unsupported; fallback to copy
+          }
+        }
+
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast("Link copied");
+          setButtonCopied(shareBtn);
+        } catch {
+          const ta = document.createElement("textarea");
+          ta.value = url;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+          showToast("Link copied");
+          setButtonCopied(shareBtn);
+        }
+      }
+
+      shareBtn?.addEventListener("click", shareLink);
+
+      // ---- Preview modal ----
+      const modal = document.getElementById("previewModal");
+      const openPreviewBtn = document.querySelector("[data-preview]");
+      const closeEls = modal ? modal.querySelectorAll("[data-close]") : [];
+
+      function openModal() {
+        if (!modal) return;
+        modal.setAttribute("aria-hidden", "false");
+        document.documentElement.classList.add("modalOpen");
+      }
+
+      function closeModal() {
+        if (!modal) return;
+        modal.setAttribute("aria-hidden", "true");
+        document.documentElement.classList.remove("modalOpen");
+      }
+
+      openPreviewBtn?.addEventListener("click", openModal);
+      closeEls?.forEach((el) => el.addEventListener("click", closeModal));
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+
+      // Keyboard shortcuts
+      window.addEventListener("keydown", (e) => {
+        if (e.target && ["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+        if (e.key.toLowerCase() === "s") shareLink();
+
+        if (e.key.toLowerCase() === "d") {
+          const dl = document.querySelector(".qaRow.primary, .qa.primary");
+          if (dl) dl.click();
+        }
+
+        if (e.key.toLowerCase() === "p") {
+          const pv = document.querySelector("[data-preview]");
+          if (pv) pv.click();
+        }
+      });
+    } catch {}
+  });
+</script>
 
   <style>
-    .wrap{
-      max-width: 980px;
-      margin: 0 auto;
+  .toolkitDetail {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 0 28px 48px;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: transparent;
+  }
+
+  .toolkitDetail::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    right: -12px;
+    top: -29px;
+    height: 480px;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+        ellipse 100% 80% at 50% 0%,
+        rgba(0, 0, 0, 0.025) 0%,
+        transparent 55%
+      ),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.012) 0%, transparent 50%);
+    border-radius: 24px;
+  }
+
+  .toolkitDetail::after {
+    content: "";
+    position: absolute;
+    left: -12px;
+    right: -12px;
+    top: -29px;
+    height: 480px;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.04;
+    background-image: radial-gradient(circle, var(--ink-muted) 1px, transparent 1px);
+    background-size: 24px 24px;
+    transform: translateZ(0);
+  }
+
+  .topRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin: 12px 0 20px;
+    padding: 0;
+    position: relative;
+  }
+
+  /* Updated to match Contact/About button style */
+  .back,
+  .pillBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--ink);
+    padding: 11px 12px;
+    min-height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.92);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition:
+      transform 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      background 0.2s var(--ease);
+  }
+
+  .back {
+  padding: 8px 18px;
+  min-height: 34px;
+
+}
+
+  .back:hover,
+  .pillBtn:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-strong);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
+    background: #fff;
+  }
+
+  .back:active,
+  .pillBtn:active {
+    transform: translateY(0);
+  }
+
+  .arrow {
+    font-size: 12px;
+    opacity: 0.9;
+    line-height: 1;
+  }
+
+  .pillBtn.primary {
+    background: var(--ink);
+    color: var(--surface);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    font-weight: 600;
+  }
+
+  .pillBtn.primary:hover {
+    background: #202024;
+  }
+
+  .pillBtn.primary .btnIcon {
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  .pillBtn.isCopied {
+    border-color: var(--ink-muted);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .back .arrow,
+  .pillBtn .btnIcon {
+    transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+
+  .back:hover .arrow,
+  .pillBtn:hover .btnIcon {
+    opacity: 1;
+  }
+
+  .hero {
+    position: relative;
+    margin-bottom: 28px;
+  }
+
+  .hero:hover .coverFrame {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .hero:hover .cover {
+    transform: scale(1.015);
+  }
+
+  .hero::after {
+    display: none !important;
+  }
+
+  .heroGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 18px;
+    align-items: start;
+  }
+
+  .heroRail {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .heroRail .sideCard {
+    position: static; /* no sticky inside hero */
+    padding: 16px;
+  }
+
+  .heroRail .fileRow {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .heroRail .fileName {
+    max-width: none;
+    font-size: 13px;
+    padding: 0 4px;
+  }
+
+  .heroRail .fileType {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .downloadsSideCard .downloadsCount {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    background: rgba(0, 0, 0, 0.03);
+    color: var(--ink-secondary);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .coverFrame {
+    position: relative;
+    border-radius: var(--radius-xl);
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease),
+      border-color 0.28s var(--ease);
+  }
+
+  .coverFrame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      transparent 40%
+    );
+  }
+
+  .coverFrame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: radial-gradient(
+      120% 100% at 50% 10%,
+      transparent,
+      rgba(0, 0, 0, 0.04)
+    );
+  }
+
+  :where(.pillBtn, .back, .fileRow, .qaRow):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+    border-color: var(--border-strong);
+  }
+
+  .coverWrap {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+
+  .cover {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    transition: transform 0.35s var(--ease);
+    transform-origin: 50% 45%;
+  }
+
+  .coverFeedback {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    z-index: 3;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(12, 14, 18, 0.42);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  }
+
+  .fbBtn {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 8px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+
+    transition: background 0.2s var(--ease), border-color 0.2s var(--ease),
+      transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+
+  .fbBtn:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+  }
+
+  .fbBtn:active {
+    transform: translateY(0);
+  }
+
+  .fbBtn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.22);
+  }
+
+  .fbIcon {
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .fbLabel {
+    color: rgba(255, 255, 255, 0.96);
+  }
+
+  .fbBtn.isActive[data-feedback="like"] {
+    background: rgba(16, 185, 129, 0.22);
+    border-color: rgba(16, 185, 129, 0.6);
+  }
+
+  .fbBtn.isActive[data-feedback="dislike"] {
+    background: rgba(239, 68, 68, 0.22);
+    border-color: rgba(239, 68, 68, 0.6);
+  }
+
+  .feedbackStats {
+    margin-top: 12px;
+    padding: 4px 2px 0;
+  }
+
+  .feedbackBar {
+    height: 8px;
+    width: 100%;
+    border-radius: 999px;
+    overflow: hidden;
+    display: flex;
+    background: rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  .feedbackBarLikes,
+  .feedbackBarDislikes {
+    height: 100%;
+    transition: width 280ms var(--ease);
+  }
+
+  .feedbackBarLikes {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.95), rgba(52, 211, 153, 0.92));
+  }
+
+  .feedbackBarDislikes {
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.9), rgba(248, 113, 113, 0.9));
+  }
+
+  .feedbackMeta {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+
+  .feedbackCount {
+    white-space: nowrap;
+  }
+
+  .feedbackPercent {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .feedbackPercent.isEmpty {
+    color: var(--ink-muted);
+    font-weight: 500;
+  }
+
+  .feedbackCountsRow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .feedbackDot {
+    opacity: 0.5;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .content {
+    max-width: none;
+    width: 100%;
+  }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .cardBlock,
+  .downloadsCard,
+  .sideCard {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.22s var(--ease);
+  }
+
+  .cardBlock {
+    padding: 22px 24px;
+    margin: 0 0 18px;
+  }
+
+  .cardBlock h2 {
+    margin: 0 0 10px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.28;
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+
+  .cardBlock p {
+    margin: 0;
+    color: var(--ink-secondary);
+    font-size: 0.90rem;
+    line-height: 1.58;
+  }
+
+  .link {
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 2px;
+    color: var(--ink);
+    transition: border-color 0.2s var(--ease);
+  }
+
+  .link:hover {
+    border-bottom-color: var(--ink-muted);
+  }
+
+  .downloadsCard {
+    padding: 18px;
+    margin-top: 4px;
+  }
+
+  .downloadsHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .downloadsHead h2 {
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+
+  .downloadsCount {
+    font-weight: 500;
+    color: var(--ink-muted);
+    font-size: 0.9em;
+  }
+
+  .downloadList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .fileRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.95);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.22s var(--ease), box-shadow 0.22s var(--ease),
+      border-color 0.22s var(--ease);
+  }
+
+  .fileRow:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  .fileType {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.03);
+    padding: 6px 10px;
+    border-radius: 999px;
+    color: var(--ink-muted);
+    flex: 0 0 auto;
+    font-weight: 500;
+  }
+
+  .fileName {
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+    max-width: 520px;
+    padding: 0 8px;
+    color: var(--ink);
+  }
+
+  .fileArrow {
+    color: var(--ink-muted);
+    flex: 0 0 auto;
+  }
+
+  .sideCard {
+    position: sticky;
+    top: calc(var(--siteHeaderH) + 14px);
+    padding: 18px;
+  }
+
+  .sideTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .sideTitle {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+
+  .badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    background: rgba(0, 0, 0, 0.03);
+    color: var(--ink-secondary);
+    white-space: nowrap;
+  }
+
+  .sideMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .metaRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+
+  .metaLabel {
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+
+  .metaValue {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* Updated quick action buttons to match Contact/About */
+  .qaRow {
+    width: 100%;
+    max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    overflow: hidden;
+    gap: 10px;
+    padding: 11px 12px;
+    min-height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.92);
+    text-decoration: none;
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      transform 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      background 0.2s var(--ease);
+  }
+
+  .qaRow:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-strong);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
+    background: #fff;
+  }
+
+  .qaRow.primary {
+    background: var(--ink);
+    color: var(--surface);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    font-weight: 600;
+  }
+
+  .qaRow.primary:hover {
+    background: #202024;
+  }
+
+  .qaIcon {
+    width: 16px;
+    flex: 0 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--ink-secondary);
+    opacity: 0.9;
+    line-height: 1;
+    font-weight: 500;
+  }
+
+  .qaRow.primary .qaIcon {
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  .qaText {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .qaRow.primary .qaText {
+    color: var(--surface);
+    font-weight: 600;
+  }
+
+  .qaEnd {
+    color: var(--ink-muted);
+    flex: 0 0 auto;
+  }
+
+  button.qaRow {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.92);
+    font: inherit;
+    text-align: left;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%) translateY(10px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    padding: 12px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    box-shadow: var(--shadow-lg);
+    transition: opacity 0.22s var(--ease), transform 0.22s var(--ease);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .toast.isOn {
+    opacity: 0.98;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 1000;
+  }
+
+  .modal[aria-hidden="false"] {
+    display: block;
+  }
+
+  .modalOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(8px);
+  }
+
+  .modalPanel {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(1080px, calc(100vw - 32px));
+    height: min(80vh, 840px);
+    transform: translate(-50%, -50%);
+    border-radius: var(--radius-xl);
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+  }
+
+  .modalTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .modalTitle {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .modalName {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 56vw;
+    color: var(--ink);
+  }
+
+  .modalHint {
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+
+  .modalActions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .modalBody {
+    height: calc(100% - 60px);
+    background: var(--surface-subtle);
+  }
+
+  .pdfFrame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  html.modalOpen,
+  html.modalOpen body {
+    overflow: hidden;
+  }
+
+  @media (max-width: 980px) {
+    .toolkitDetail {
+      padding: 0 20px 36px;
     }
 
-    .back{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      text-decoration:none;
-      opacity:.85;
-      margin: 8px 0 14px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-      width: fit-content;
-      transition: transform .12s ease, border-color .12s ease, opacity .12s ease;
-    }
-    .back:hover{
-      transform: translateY(-1px);
-      border-color: rgba(255,255,255,.18);
-      opacity: 1;
-    }
-    .arrow{font-size: 1.05rem; opacity:.9}
-
-    .hero{
-      margin-bottom: 18px;
+    .layout {
+      grid-template-columns: 1fr;
     }
 
-    .coverWrap{
-      width: 100%;
-      aspect-ratio: 16/9;
-      overflow: hidden;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-    }
-    .cover{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display:block;
+    .sideCard {
+      position: static;
     }
 
-    .content{
-      max-width: 75ch;
-    }
-    .block{
-      margin-top: 18px;
-    }
-    .block h2{
-      margin: 0 0 8px;
-    }
-    .block p{
-      margin: 0;
-      opacity: .9;
-      line-height: 1.6;
+    .grid2 {
+      grid-template-columns: 1fr;
     }
 
-    .link{
-      text-decoration:none;
-      border-bottom: 1px solid rgba(255,255,255,.25);
-      padding-bottom: 2px;
-    }
-    .link:hover{
-      border-bottom-color: rgba(255,255,255,.45);
+    .fileName {
+      max-width: 100%;
     }
 
-    /* DOWNLOADS (distinct + bottom) */
-    .downloads{
-      margin: 26px 0 6px;
-      padding: 16px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(75, 75, 75, 0.04);
-      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    .heroGrid {
+      grid-template-columns: 1fr;
     }
 
-    .downloadsHead{
-      display:flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: baseline;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
+    .heroRail {
+      order: 2;
     }
 
-    .downloads h2{
-      margin: 0;
-      font-size: 1.05rem;
-      letter-spacing: .2px;
+    .coverFrame {
+      order: 1;
+    }
+  }
+
+/* Collapsible section (moved out of media query so it works on desktop too) */ .collapsibleBlock { padding: 0; overflow: hidden; } .collapse { width: 100%; } .collapseSummary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: flex-start; padding: 18px 22px; user-select: none; } /* Hide native summary marker (Chrome/Safari/Edge) */ .collapseSummary::-webkit-details-marker { display: none; } /* Hide native summary marker (Firefox) */ .collapseSummary::marker { content: ""; font-size: 0; } .collapseTitle { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.28; font-size: 1.05rem; color: var(--ink); } .collapseChevron { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; flex: 0 0 18px; color: var(--ink-muted); font-size: 20px; font-weight: 700; line-height: 1; transform: translateY(1px); transition: transform 0.22s var(--ease), color 0.22s var(--ease); } .collapseSummary:hover .collapseChevron { color: var(--ink); } .collapse[open] .collapseChevron { transform: translateY(1px) rotate(180deg); } .collapseBody { padding: 0 22px 20px; border-top: 1px solid var(--border); } .collapseBody p { margin: 12px 0 0; color: var(--ink-secondary); font-size: 0.90rem; line-height: 1.58; }
+
+  @media (max-width: 720px) {
+    .modalPanel {
+      height: 85vh;
+      width: calc(100vw - 24px);
     }
 
-    .downloadGrid{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 10px;
+    .modalName {
+      max-width: 70vw;
     }
 
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.04);
-      color: inherit;
-      text-decoration:none;
-      transition: transform .12s ease, border-color .12s ease, background .12s ease;
-    }
-    .btn:hover{
-      transform: translateY(-1px);
-      border-color: rgba(255,255,255,.22);
-      background: rgba(255,255,255,.06);
+    .coverFeedback {
+      left: 10px;
+      bottom: 10px;
+      padding: 6px;
+      gap: 6px;
     }
 
-    .btn.primary{
-      border-color: rgba(255,255,255,.22);
-      background: rgba(255,255,255,.09);
+    .fbBtn {
+      padding: 7px 9px;
     }
 
-    .btnIcon{opacity:.9}
-    .btnText{font-weight: 650}
-  </style>
+    .fbLabel {
+      font-size: 12px;
+    }
+
+    .feedbackMeta {
+      font-size: 11px;
+      gap: 6px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      scroll-behavior: auto !important;
+    }
+
+    .pillBtn,
+    .fileRow,
+    .back,
+    .cover,
+    .qaRow,
+    .fbBtn,
+    .feedbackBarLikes,
+    .feedbackBarDislikes {
+      transition: none !important;
+    }
+
+    .hero:hover .coverFrame {
+      transform: none !important;
+    }
+
+    .hero:hover .cover {
+      transform: none !important;
+    }
+  }
+</style>
+
+  </div>
 </PageShell>

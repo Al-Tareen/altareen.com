@@ -3,6 +3,7 @@ title: "KERNEL Framework"
 primaryCategory: "TBA"
 categories: ["TBA"]
 whenToUse: ""
+whenToUseFull: ""
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -13,5 +14,6 @@ cover: "/toolkit-covers/tba-kernel-framework.png"
 files:
   - name: "KERNEL.png"
     url: "/toolkit-files/tba-kernel-framework--1--kernel-png.png"
+tags: []
 ---
 Coming soon.

@@ -8,9 +8,36 @@
 </footer>
 
 <style>
-  .wrap { border-top: 1px solid rgba(0,0,0,0.08); margin-top: 48px; }
-  .inner { max-width: 1040px; margin: 0 auto; padding: 22px 18px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .muted { opacity: 0.75; font-size: 14px; }
-  a { text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  .wrap {
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+    background: var(--surface);
+  }
+
+  .inner {
+    max-width: var(--content-width, 980px);
+    margin: 0 auto;
+    padding: 28px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .muted {
+    font-size: 14px;
+    font-weight: 450;
+    color: var(--ink-muted);
+  }
+
+  .muted a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s var(--ease);
+  }
+
+  .muted a:hover {
+    color: var(--ink-secondary);
+  }
 </style>

@@ -10,8 +10,12 @@
     "sync:toolkit": "node scripts/notion-sync-toolkit.mjs"
   },
   "dependencies": {
+    "@astrojs/node": "^9.5.4",
     "@notionhq/client": "^5.9.0",
     "astro": "^5.17.1",
     "dotenv": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0"
   }
 }

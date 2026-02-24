@@ -34,6 +34,10 @@ import Footer from "../components/Footer.astro";
         <h2>PM Toolkit</h2>
         <p>Templates, checklists, and frameworks I actually use.</p>
       </a>
+      <a class="card" href="/finance-toolkit">
+        <h2>Finance Toolkit</h2>
+        <p>Financial models and templates for planning and analysis.</p>
+      </a>
       <a class="card" href="/articles">
         <h2>Articles</h2>
         <p>Notes on product, execution, AI, and career growth.</p>
@@ -57,26 +61,129 @@ import Footer from "../components/Footer.astro";
 </BaseLayout>
 
 <style>
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 18px; }
-  .hero { padding: 28px 0 8px; }
-  h1 { font-size: clamp(32px, 4vw, 46px); line-height: 1.05; letter-spacing: -0.03em; margin: 0 0 12px; }
-  .lead { font-size: 18px; max-width: 70ch; opacity: 0.85; margin: 0 0 18px; }
-  .cta { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 8px; }
-  .btn { display: inline-block; padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.14); text-decoration: none; font-weight: 600; }
-  .btn:hover { background: rgba(0,0,0,0.04); }
-  .primary { background: rgba(0,0,0,0.9); color: white; border-color: rgba(0,0,0,0.9); }
-  .primary:hover { background: rgba(0,0,0,0.82); }
+  .wrap {
+    max-width: var(--content-width, 980px);
+    margin: 0 auto;
+    padding: 48px 28px 64px;
+  }
 
-  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 18px 0 10px; }
-  .card { border: 1px solid rgba(0,0,0,0.12); border-radius: 16px; padding: 16px; text-decoration: none; }
-  .card:hover { background: rgba(0,0,0,0.03); }
-  .card h2 { margin: 0 0 6px; font-size: 18px; }
-  .card p { margin: 0; opacity: 0.8; }
+  .hero {
+    padding: 32px 0 48px;
+    max-width: 42rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.25rem, 5vw, 3.25rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    margin: 0 0 20px;
+    color: var(--ink);
+  }
+
+  .lead {
+    font-size: 1.125rem;
+    line-height: 1.65;
+    max-width: 38ch;
+    color: var(--ink-secondary);
+    margin: 0 0 28px;
+  }
+
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    transition: background 0.22s var(--ease), color 0.22s var(--ease), transform 0.2s var(--ease);
+  }
+
+  .btn:not(.primary) {
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  .btn:not(.primary):hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .btn.primary {
+    background: var(--ink);
+    color: var(--surface);
+    border: 1px solid var(--ink);
+  }
+
+  .btn.primary:hover {
+    background: #333;
+    border-color: #333;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    padding: 0;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.28s var(--ease), transform 0.28s var(--ease), border-color 0.28s var(--ease);
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+  }
+
+  .card h2 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .card p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--ink-secondary);
+  }
 
   @media (max-width: 900px) {
-    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
+
   @media (max-width: 560px) {
-    .grid { grid-template-columns: 1fr; }
+    .wrap {
+      padding: 32px 20px 48px;
+    }
+    .hero {
+      padding: 24px 0 36px;
+    }
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .card {
+      padding: 20px;
+    }
   }
 </style>

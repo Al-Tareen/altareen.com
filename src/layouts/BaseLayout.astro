@@ -12,6 +12,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
   <body>
@@ -20,7 +23,40 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
 </html>
 
 <style>
-  :global(:root) { color-scheme: light; }
-  :global(body) { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji"; line-height: 1.5; }
-  :global(a) { color: inherit; }
+  :global(:root) {
+    color-scheme: light;
+    /* Design tokens — restraint, clarity, premium feel */
+    --font-sans: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --ink: #1d1d1f;
+    --ink-secondary: rgba(0, 0, 0, 0.65);
+    --ink-muted: rgba(0, 0, 0, 0.5);
+    --surface: #ffffff;
+    --surface-subtle: #fafafa;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.12);
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 18px;
+    --radius-xl: 22px;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.08);
+    --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --content-width: 980px;
+  }
+
+  :global(body) {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--surface-subtle);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :global(a) {
+    color: inherit;
+  }
 </style>

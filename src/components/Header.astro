@@ -2,10 +2,9 @@
 const nav = [
   { href: "/projects", label: "Projects" },
   { href: "/toolkit", label: "PM Toolkit" },
-  { href: "/articles", label: "Articles" },
-  { href: "/resume", label: "Resume" },
+  { href: "/finance-toolkit", label: "Finance Toolkit" },
+  { href: "/concepts", label: "Concepts" },
   { href: "/about", label: "About" },
-  { href: "/socials", label: "Socials" },
   { href: "/contact", label: "Contact" },
 ];
 const path = Astro.url.pathname;
@@ -14,7 +13,9 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
 
 <header class="wrap">
   <div class="bar">
-    <a class="brand" href="/">Al Tareen</a>
+    <a class="brand" href="/" aria-label="Al Tareen — Home">
+      <img src="/logo.png" alt="Al Tareen" class="brandLogo" width="48" height="48" />
+    </a>
 
     <nav class="nav" aria-label="Primary">
       {nav.map((i) => (
@@ -27,16 +28,92 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
 </header>
 
 <style>
-  .wrap { position: sticky; top: 0; backdrop-filter: blur(10px); background: rgba(255,255,255,0.85); border-bottom: 1px solid rgba(0,0,0,0.08); }
-  .bar { max-width: 1040px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-  .brand { font-weight: 700; text-decoration: none; letter-spacing: -0.02em; }
-  .nav { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
-  .link { text-decoration: none; font-size: 14px; padding: 6px 8px; border-radius: 10px; opacity: 0.85; }
-  .link:hover { opacity: 1; background: rgba(0,0,0,0.05); }
-  .active { opacity: 1; background: rgba(0,0,0,0.08); }
+  :global(:root) {
+    --siteHeaderH: 56px;
+  }
+
+  .wrap {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    isolation: isolate;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.82);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+
+  .wrap::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgba(255, 255, 255, 0.82);
+  }
+
+  .bar {
+    max-width: var(--content-width, 980px);
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    line-height: 0;
+  }
+
+  .brandLogo {
+    display: block;
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    filter: invert(1);
+  }
+
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-end;
+  }
+
+  .link {
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 450;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm, 10px);
+    color: var(--ink-secondary, rgba(0, 0, 0, 0.65));
+    transition: color 0.2s var(--ease, ease), background 0.2s var(--ease, ease);
+  }
+
+  .link:hover {
+    color: var(--ink, #1d1d1f);
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .active {
+    color: var(--ink, #1d1d1f);
+    background: rgba(0, 0, 0, 0.06);
+  }
 
   @media (max-width: 720px) {
-    .bar { align-items: flex-start; flex-direction: column; }
-    .nav { justify-content: flex-start; }
+    :global(:root) {
+      --siteHeaderH: 108px;
+    }
+    .bar {
+      align-items: flex-start;
+      flex-direction: column;
+      padding: 16px 20px;
+    }
+    .nav {
+      justify-content: flex-start;
+    }
   }
 </style>

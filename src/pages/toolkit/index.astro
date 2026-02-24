@@ -2,26 +2,23 @@
 import PageShell from "../../components/PageShell.astro";
 import { getCollection } from "astro:content";
 
-const HIDDEN_CATEGORIES = new Set(["Business Plans", "TBA"]);
+const HIDDEN_CATEGORIES = new Set(["Business Plans", "TBA", "Financial Models"]);
 
-// Pull everything first so we can debug what's being excluded
 const all = await getCollection("toolkit");
 
-// DEBUG: see what dbTitle values exist
+// DEBUG
 const dbTitles = Array.from(new Set(all.map((i) => i.data.dbTitle || ""))).sort();
 console.log("toolkit total:", all.length);
 console.log("dbTitles:", dbTitles);
 
-// If you ONLY want Frameworks, keep this — but debug will show mismatches
 const items = all
   .filter((item) => (item.data.dbTitle || "").trim() === "Frameworks")
   .filter((item) => !HIDDEN_CATEGORIES.has((item.data.primaryCategory || "Uncategorized").trim()));
 
 console.log("frameworks visible:", items.length);
 
-// build grouped structure in frontmatter ONLY
+// Build grouped structure
 const groupsMap = new Map();
-
 for (const item of items) {
   const c = (item.data.primaryCategory || "Uncategorized").trim();
   if (!groupsMap.has(c)) groupsMap.set(c, []);
@@ -29,188 +26,1028 @@ for (const item of items) {
 }
 
 const categories = Array.from(groupsMap.keys()).sort((a, b) => a.localeCompare(b));
-
 for (const c of categories) {
   groupsMap.get(c).sort((a, b) => a.data.title.localeCompare(b.data.title));
 }
-
 const groups = categories.map((c) => ({ category: c, items: groupsMap.get(c) }));
+
+function catId(name) {
+  return (
+    "cat-" +
+    String(name || "")
+      .trim()
+      .toLowerCase()
+      .replace(/['"]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+  );
+}
+
+// Featured (Notion checkbox -> frontmatter `featured: true`)
+const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 ---
-
-
 
 <PageShell
   title="Product Manager Toolkit"
   description="Frameworks that help product managers make better decisions."
 >
-
-
-  <div class="controls">
-    <input id="q" class="input" type="search" placeholder="Search frameworks…" />
-    <select id="cat" class="select">
-      <option value="">All categories</option>
-      {categories.map((c) => <option value={c}>{c}</option>)}
-    </select>
-  </div>
-
-  {groups.map((g) => (
-    <section class="group" data-group={g.category}>
-      <h2>{g.category}</h2>
-      <div class="grid">
-        {g.items.map((item) => (
-          <a
-            class="card"
-            href={`/toolkit/${item.slug}/`}
-            data-title={item.data.title}
-            data-category={item.data.primaryCategory || "Uncategorized"}
-            data-when={item.data.whenToUse || ""}
-          >
-            {item.data.cover && (
-              <div class="thumb">
-                <img
-                  class="cover"
-                  src={item.data.cover}
-                  alt={`Cover for ${item.data.title}`}
-                  loading="lazy"
-                />
-              </div>
-            )}
-
-            <div class="cardTitle">{item.data.title}</div>
-
-            <div class="whenToUse">
-              {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
-            </div>
-          </a>
-        ))}
+  <div class="toolkit" data-view="grid">
+    <!-- Sticky controls -->
+    <div class="controlsBar" role="search" aria-label="Search and filter frameworks">
+      <div class="field">
+        <span class="icon" aria-hidden="true">⌕</span>
+        <input id="q" class="input" type="search" placeholder="Search frameworks…" />
       </div>
-    </section>
-  ))}
 
-  <script is:inline>
-    const q = document.getElementById("q");
-    const cat = document.getElementById("cat");
+      <select id="cat" class="select" aria-label="Filter by category">
+        <option value="">All categories</option>
+        {categories.map((c) => <option value={c}>{c}</option>)}
+      </select>
 
-    function normalize(s) {
-      return (s || "").toLowerCase().trim();
-    }
+      <div class="rightActions">
+        <div class="resultsInline" id="resultsText">Showing {items.length} frameworks</div>
 
-    function applyFilter() {
-      const query = normalize(q?.value);
-      const selected = cat?.value || "";
+        <div class="viewToggle" role="group" aria-label="View toggle">
+          <button id="viewGrid" class="toggleBtn isActive" type="button" aria-pressed="true">
+            Grid
+          </button>
+          <button id="viewCompact" class="toggleBtn" type="button" aria-pressed="false">
+            Compact
+          </button>
+        </div>
 
-      const groups = document.querySelectorAll("section.group");
+        <button id="clear" class="ghost" type="button">Clear</button>
+      </div>
+    </div>
 
-      groups.forEach((group) => {
-        const cards = group.querySelectorAll("a.card");
-        let visibleCount = 0;
+    <!-- Sections nav -->
+    <nav class="sections" aria-label="Sections">
+      <!-- ✅ removed the “Sections” text -->
+      <div class="sectionsLabel" aria-hidden="true"></div>
 
-        cards.forEach((card) => {
-          const title = normalize(card.dataset.title);
-          const c = card.dataset.category || "";
-          const when = normalize(card.dataset.when || "");
+      <div class="sectionsRail" aria-hidden="true">
+        <button class="railBtn railLeft" type="button" id="railLeft" aria-label="Scroll sections left">
+          ‹
+        </button>
+        <button class="railBtn railRight" type="button" id="railRight" aria-label="Scroll sections right">
+          ›
+        </button>
+      </div>
 
-          const catText = normalize(c);
-          const matchText =
-            !query ||
-            title.includes(query) ||
-            catText.includes(query) ||
-            when.includes(query);
+      <div class="sectionsWrap">
+        <div class="sectionsList" id="jumpChips">
+          {featured.length > 0 && (
+            <button class="sectionBtn" type="button" data-jump="__featured" data-cat="__featured">
+              Featured
+            </button>
+          )}
+          {categories.map((c) => (
+            <button class="sectionBtn" type="button" data-jump={catId(c)} data-cat={c}>
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+    </nav>
 
-          const matchCat = !selected || c === selected;
+    <!-- Featured -->
+    {featured.length > 0 && (
+      <section class="featuredBlock" id="__featured" data-group="__featured">
+        <div class="groupHead">
+          <h2 class="groupTitle">
+            Featured <span class="count">({featured.length})</span>
+          </h2>
+          <div class="groupRule" aria-hidden="true"></div>
+        </div>
 
-          const show = matchText && matchCat;
-          card.hidden = !show;
-          if (show) visibleCount++;
-        });
+        <div class="grid">
+          {featured.map((item) => (
+            <a
+              class="card"
+              href={`/toolkit/${item.slug}/`}
+              data-title={item.data.title}
+              data-category={item.data.primaryCategory || "Uncategorized"}
+              data-when={item.data.whenToUse || ""}
+              data-featured="true"
+            >
+              {item.data.cover ? (
+                <div class="thumb" aria-hidden="true">
+                  <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
+                </div>
+              ) : (
+                <div class="thumb thumbEmpty" aria-hidden="true">
+                  <span class="thumbMark">AL</span>
+                </div>
+              )}
 
-        group.hidden = visibleCount === 0;
-      });
-    }
+              <div class="meta">
+                <div class="cardTitle">{item.data.title}</div>
 
-    q?.addEventListener("input", applyFilter);
-    cat?.addEventListener("change", applyFilter);
+                <div class="excerpt">
+                  <div class="excerptLabel">When to use</div>
+                  <div class="whenToUse">
+                    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
+                  </div>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- Empty state -->
+    <div id="empty" class="empty" hidden>
+      <div class="emptyTitle">No frameworks found</div>
+      <div class="emptyDesc">Try a different search term, or clear filters.</div>
+      <button id="emptyClear" class="primary" type="button">Clear filters</button>
+    </div>
+
+    <!-- Groups -->
+    {groups.map((g) => (
+      <section class="group" id={catId(g.category)} data-group={g.category}>
+        <div class="groupHead">
+          <h2 class="groupTitle">
+            {g.category} <span class="count">({g.items.length})</span>
+          </h2>
+          <div class="groupRule" aria-hidden="true"></div>
+        </div>
+
+        <div class="grid">
+          {g.items.map((item) => (
+            <a
+              class="card"
+              href={`/toolkit/${item.slug}/`}
+              data-title={item.data.title}
+              data-category={item.data.primaryCategory || "Uncategorized"}
+              data-when={item.data.whenToUse || ""}
+            >
+              {item.data.cover ? (
+                <div class="thumb" aria-hidden="true">
+                  <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
+                </div>
+              ) : (
+                <div class="thumb thumbEmpty" aria-hidden="true">
+                  <span class="thumbMark">AL</span>
+                </div>
+              )}
+
+              <div class="meta">
+                <div class="cardTitle">{item.data.title}</div>
+
+                <div class="excerpt">
+                  <div class="excerptLabel">When to use</div>
+                  <div class="whenToUse">
+                    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
+                  </div>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <!-- Back to top -->
+    <button id="toTop" class="toTop" type="button" aria-label="Back to top">↑ Top</button>
+
+    <script is:inline>
+      window.addEventListener("DOMContentLoaded", () => {
+        try {
+          const root = document.querySelector(".toolkit");
+          const q = document.getElementById("q");
+          const cat = document.getElementById("cat");
+          const clear = document.getElementById("clear");
+          const empty = document.getElementById("empty");
+          const emptyClear = document.getElementById("emptyClear");
+          const resultsText = document.getElementById("resultsText");
+
+          const viewGrid = document.getElementById("viewGrid");
+          const viewCompact = document.getElementById("viewCompact");
+
+          const toTop = document.getElementById("toTop");
+
+          const jumpChips = document.getElementById("jumpChips");
+          const railLeft = document.getElementById("railLeft");
+          const railRight = document.getElementById("railRight");
+          const sectionsNav = document.querySelector(".sections"); // ✅ used for hasLeft/hasRight
+
+          if (!root) throw new Error("Toolkit root not found (.toolkit). Script not attaching.");
+
+          function normalize(s) {
+            return (s || "").toLowerCase().trim();
+          }
+
+          // Minimal attribute-escape for querySelector attribute match
+          function escAttr(s) {
+            return String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+          }
+
+          function setView(view) {
+            root.dataset.view = view;
+
+            const isGrid = view === "grid";
+            viewGrid?.classList.toggle("isActive", isGrid);
+            viewCompact?.classList.toggle("isActive", !isGrid);
+
+            viewGrid?.setAttribute("aria-pressed", String(isGrid));
+            viewCompact?.setAttribute("aria-pressed", String(!isGrid));
+
+            try {
+              localStorage.setItem("toolkitView", view);
+            } catch {}
+          }
+
+          function clearSectionsActive() {
+            jumpChips?.querySelectorAll(".sectionBtn.isActive").forEach((b) => b.classList.remove("isActive"));
+          }
+
+          function setSectionsActiveByCategory(category) {
+            clearSectionsActive();
+            if (!category) return;
+            const sel = `.sectionBtn[data-cat="${escAttr(category)}"]`;
+            const btn = jumpChips?.querySelector(sel);
+            if (btn) btn.classList.add("isActive");
+          }
+
+let isManualNav = false; // prevents scrollspy from fighting right after a click
+
+function temporarilyPauseScrollSpy() {
+  isManualNav = true;
+  window.setTimeout(() => (isManualNav = false), 700);
+}
+
+          function countVisibleCards() {
+            return document.querySelectorAll("a.card:not(.isHidden)").length;
+          }
+
+          function applyFilter() {
+            const query = normalize(q?.value);
+            const selected = cat?.value || "";
+
+            const sections = document.querySelectorAll("section.group, section.featuredBlock");
+
+            sections.forEach((section) => {
+              const cards = section.querySelectorAll("a.card");
+              let visibleCount = 0;
+
+              cards.forEach((card) => {
+                const title = normalize(card.dataset.title);
+                const c = card.dataset.category || "";
+                const when = normalize(card.dataset.when || "");
+
+                const catText = normalize(c);
+                const matchText = !query || title.includes(query) || catText.includes(query) || when.includes(query);
+                const matchCat = !selected || c === selected;
+
+                const show = matchText && matchCat;
+                card.classList.toggle("isHidden", !show);
+                if (show) visibleCount++;
+              });
+
+              section.classList.toggle("isHidden", visibleCount === 0);
+            });
+
+            const totalVisible = countVisibleCards();
+            if (empty) empty.hidden = totalVisible !== 0;
+
+            if (resultsText) {
+              const suffix = totalVisible === 1 ? "framework" : "frameworks";
+              resultsText.textContent = `Showing ${totalVisible} ${suffix}`;
+            }
+
+if (selected) {
+  // Dropdown-filter mode: highlight the matching capsule
+  setSectionsActiveByCategory(selected);
+} else {
+  // Navigation mode: do NOT force a capsule active here
+  // Let scrollspy decide as you scroll naturally
+  clearSectionsActive();
+  computeActiveSection?.(); // safe if defined below
+}
+          }
+          function clearFilters() {
+            if (q) q.value = "";
+            if (cat) cat.value = "";
+            applyFilter();
+            q?.focus();
+          }
+
+          // ✅ Arrow visibility: left arrow only appears after scrolling right.
+          function updateRails() {
+            if (!jumpChips || !sectionsNav) return;
+
+            const maxScroll = jumpChips.scrollWidth - jumpChips.clientWidth;
+
+            const hasLeft = jumpChips.scrollLeft > 2;
+            const hasRight = jumpChips.scrollLeft < maxScroll - 2;
+
+            sectionsNav.classList.toggle("hasLeft", hasLeft);
+            sectionsNav.classList.toggle("hasRight", hasRight);
+
+            // Always keep right arrow available if there is more content to the right
+            if (railRight) {
+              railRight.style.opacity = hasRight ? "0.85" : "0.35";
+              railRight.style.pointerEvents = hasRight ? "auto" : "none";
+            }
+          }
+
+          // Init saved view
+          try {
+            const saved = localStorage.getItem("toolkitView");
+            if (saved === "compact" || saved === "grid") setView(saved);
+          } catch {}
+
+          // Attach listeners
+          viewGrid?.addEventListener("click", () => setView("grid"));
+          viewCompact?.addEventListener("click", () => setView("compact"));
+
+          q?.addEventListener("input", applyFilter);
+          cat?.addEventListener("change", applyFilter);
+          clear?.addEventListener("click", clearFilters);
+          emptyClear?.addEventListener("click", clearFilters);
+
+          // Jump buttons
+document.querySelectorAll("[data-jump]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const id = btn.getAttribute("data-jump");
+    const el = id && document.getElementById(id);
+    if (!el) return;
+
+    // Clear filters so navigation shows full page
+    if (q) q.value = "";
+    if (cat) cat.value = "";
     applyFilter();
-  </script>
 
-  <style>
-    .lead{max-width:70ch;opacity:.85}
+    temporarilyPauseScrollSpy();
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
+          // Section arrows — scroll the ACTUAL scroller
+          function scrollSections(dir) {
+            if (!jumpChips) return;
+            const step = Math.min(360, jumpChips.clientWidth * 0.7);
+            jumpChips.scrollBy({ left: dir * step, behavior: "smooth" });
+            setTimeout(updateRails, 250); // ✅ update after smooth scroll starts
+          }
+          railLeft?.addEventListener("click", () => scrollSections(-1));
+          railRight?.addEventListener("click", () => scrollSections(1));
 
-    .controls{
-      margin-top:14px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .input, .select{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.04);
-      color: inherit;
-    }
-    .input{ flex:1; min-width:220px; }
-    .select{ min-width:200px; }
+          // ✅ update rails on manual scroll/resize
+          jumpChips?.addEventListener("scroll", updateRails, { passive: true });
+          window.addEventListener("resize", updateRails);
 
-    .group{margin-top:2rem}
+          // Back to top
+          function updateToTop() {
+            if (!toTop) return;
+            const show = window.scrollY > 420;
+            toTop.classList.toggle("isVisible", show);
+          }
+          window.addEventListener("scroll", updateToTop, { passive: true });
+          toTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+          updateToTop();
 
-    .grid{
-      margin-top:1rem;
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-      gap:12px;
-      align-items:stretch;
-    }
+          // Scrollspy (only when not category-filtered)
+          const observedSections = Array.from(document.querySelectorAll("section.group, section.featuredBlock"));
+          let ticking = false;
 
-    .card{
-      display:flex;
-      flex-direction:column;
-      height:100%;
-      padding:14px;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:14px;
-      text-decoration:none;
-      transition:transform .15s ease,border-color .15s ease;
-    }
-    .card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.22)}
+          function computeActiveSection() {
+            if (isManualNav) return;
+            ticking = false;
+            if (!observedSections.length || !jumpChips) return;
 
-    .thumb{
-      width:100%;
-      aspect-ratio:16/9;
-      overflow:hidden;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      margin-bottom:10px;
-      background: rgba(255,255,255,.04);
-    }
+            const selected = cat?.value || "";
+            if (selected) return;
 
-    .cover{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      object-position:center;
-      display:block;
-    }
+            const y = window.scrollY + 120;
+            let currentId = "";
 
-    .cardTitle{
-      font-weight:650;
-      line-height:1.2;
-      margin-bottom:8px;
-    }
+            for (const s of observedSections) {
+              if (s.classList.contains("isHidden")) continue;
+              const top = s.offsetTop;
+              if (top <= y) currentId = s.id || "";
+            }
+            if (!currentId) return;
 
-    .whenToUse{
-      opacity:.82;
-      font-size:.9rem;
-      line-height:1.35;
-      margin-top:0;
-      display:-webkit-box;
-      -webkit-line-clamp:3;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      min-height: calc(1.35em * 3);
-    }
+            clearSectionsActive();
+            const btn = jumpChips.querySelector(`.sectionBtn[data-jump="${escAttr(currentId)}"]`);
+            if (btn) btn.classList.add("isActive");
+          }
 
-    .muted{opacity:.45}
-  </style>
+          window.addEventListener(
+            "scroll",
+            () => {
+              if (!ticking) {
+                ticking = true;
+                requestAnimationFrame(computeActiveSection);
+              }
+            },
+            { passive: true }
+          );
+
+          // First run
+          applyFilter();
+          computeActiveSection();
+          updateRails(); // ✅ initial arrow state
+setTimeout(updateRails, 50);  // ✅ after layout settles
+setTimeout(updateRails, 250); // ✅ after any late paint/font swap
+          console.log("[toolkit] controls initialized");
+        } catch (e) {
+          console.error("[toolkit] init failed:", e);
+        }
+      });
+    </script>
+
+    <style>
+      .toolkit {
+        padding-top: 8px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .group,
+      .featuredBlock {
+        scroll-margin-top: 100px;
+      }
+
+      .isHidden {
+        display: none !important;
+      }
+
+      /* ——— Controls bar: glass, minimal ——— */
+      .controlsBar {
+        position: sticky;
+        top: calc(var(--siteHeaderH) + 14px);
+        z-index: 90;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 14px 18px;
+        min-height: 56px;
+        box-sizing: border-box;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: var(--shadow-md);
+        margin-bottom: 20px;
+        transition: box-shadow 0.28s var(--ease);
+      }
+
+      .controlsBar:focus-within {
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      }
+
+      .field {
+        flex: 1;
+        min-width: 260px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: var(--surface);
+        transition: border-color 0.2s var(--ease);
+      }
+
+      .field:focus-within {
+        border-color: var(--border-strong);
+      }
+
+      .icon {
+        opacity: 0.5;
+        font-size: 15px;
+        user-select: none;
+        color: var(--ink-muted);
+      }
+
+      .input {
+        width: 100%;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--ink);
+        font-size: 15px;
+        font-family: var(--font-sans);
+      }
+
+      .input::placeholder {
+        color: var(--ink-muted);
+      }
+
+      .select {
+        min-width: 200px;
+        max-width: 260px;
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--ink);
+        font-size: 14px;
+        font-family: var(--font-sans);
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color 0.2s var(--ease);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .select:hover {
+        border-color: var(--border-strong);
+      }
+
+      .rightActions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .resultsInline {
+        color: var(--ink-muted);
+        font-size: 14px;
+        font-weight: 450;
+        white-space: nowrap;
+        padding: 0 4px;
+      }
+
+      .ghost {
+        padding: 10px 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--ink-secondary);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+      }
+
+      .ghost:hover {
+        background: var(--surface);
+        color: var(--ink);
+        border-color: var(--border-strong);
+      }
+
+      .viewToggle {
+        display: flex;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.6);
+      }
+
+      .toggleBtn {
+        padding: 10px 14px;
+        border: 0;
+        background: transparent;
+        color: var(--ink-secondary);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.22s var(--ease), color 0.22s var(--ease);
+      }
+
+      .toggleBtn:hover {
+        color: var(--ink);
+      }
+
+      .toggleBtn.isActive {
+        background: var(--surface);
+        color: var(--ink);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* ——— Section chips ——— */
+      .sections {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 12px;
+        align-items: center;
+        margin: 0 2px 24px;
+        position: relative;
+      }
+
+      .sectionsLabel {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+      }
+
+      .sectionsRail {
+        position: absolute;
+        right: 0;
+        top: -2px;
+        display: flex;
+        gap: 6px;
+        z-index: 6;
+        padding-left: 12px;
+        background: linear-gradient(to left, var(--surface-subtle) 72%, transparent);
+      }
+
+      .railBtn {
+        width: 34px;
+        height: 34px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        font-size: 18px;
+        color: var(--ink-secondary);
+        transition: color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+      }
+
+      .railBtn:hover {
+        color: var(--ink);
+        box-shadow: var(--shadow-md);
+      }
+
+      .railLeft {
+        display: none;
+      }
+      .sections.hasLeft .railLeft {
+        display: flex;
+      }
+
+      .sectionsWrap {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .sectionsWrap::before,
+      .sectionsWrap::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 28px;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .sectionsWrap::before {
+        left: 0;
+        background: linear-gradient(to right, var(--surface-subtle), transparent);
+      }
+      .sectionsWrap::after {
+        right: 0;
+        background: linear-gradient(to left, var(--surface-subtle), transparent);
+      }
+
+      .sectionsList {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        padding: 8px 28px;
+        scroll-behavior: smooth;
+        white-space: nowrap;
+      }
+      .sectionsList::-webkit-scrollbar {
+        display: none;
+      }
+
+      .sectionBtn {
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: transparent;
+        cursor: pointer;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-secondary);
+        flex: 0 0 auto;
+        transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+      }
+
+      .sectionBtn:hover {
+        color: var(--ink);
+        background: rgba(0, 0, 0, 0.04);
+        border-color: var(--border);
+      }
+
+      .sectionBtn.isActive {
+        color: var(--ink);
+        background: var(--surface);
+        border-color: var(--border-strong);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* ——— Featured block ——— */
+      .featuredBlock {
+        margin-top: 16px;
+        padding: 24px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, transparent 100%);
+      }
+
+      /* ——— Group headers ——— */
+      .group {
+        margin-top: 40px;
+      }
+
+      .groupHead {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .groupTitle {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        color: var(--ink);
+      }
+
+      .count {
+        font-weight: 500;
+        color: var(--ink-muted);
+        font-size: 0.92em;
+      }
+
+      .groupRule {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(to right, var(--border-strong), transparent);
+      }
+
+      /* ——— Grid & cards ——— */
+      .grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+        align-items: stretch;
+      }
+
+      .card {
+        display: flex;
+        flex-direction: column;
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+        height: 100%;
+        color: inherit;
+        transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease), border-color 0.28s var(--ease);
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        border-color: var(--border-strong);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .thumb {
+        width: 100%;
+        aspect-ratio: 16/9;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, transparent 100%);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .thumb::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, 0.04));
+        pointer-events: none;
+      }
+
+      .cover {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+        padding: 10px;
+        box-sizing: border-box;
+        transition: transform 0.35s var(--ease);
+        border-radius: var(--radius-md);
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: inset 0 0 0 1px var(--border);
+      }
+
+      .card:hover .cover {
+        transform: scale(1.02);
+      }
+
+      .thumbEmpty {
+        background: linear-gradient(145deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.01));
+      }
+
+      .thumbMark {
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        font-size: 13px;
+        color: var(--ink-muted);
+        border: 1px solid var(--border);
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .meta {
+        padding: 20px 20px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 140px;
+      }
+
+      .cardTitle {
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.28;
+        font-size: 1.05rem;
+        margin: 0;
+        color: var(--ink);
+      }
+
+      .excerpt {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 0;
+      }
+
+      .excerptLabel {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-muted);
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .excerptLabel::before {
+        content: "";
+        width: 8px;
+        height: 1px;
+        background: var(--border-strong);
+      }
+
+      .whenToUse {
+        color: var(--ink-secondary);
+        font-size: 0.90rem;
+        line-height: 1.55;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: calc(1.55em * 3);
+      }
+
+      /* ——— Compact view ——— */
+      .toolkit[data-view="compact"] .grid {
+        grid-template-columns: 1fr;
+      }
+      .toolkit[data-view="compact"] .card {
+        flex-direction: row;
+        height: auto;
+      }
+      .toolkit[data-view="compact"] .thumb {
+        width: 200px;
+        aspect-ratio: 16/10;
+        border-bottom: 0;
+        border-right: 1px solid var(--border);
+        flex: 0 0 auto;
+      }
+      .toolkit[data-view="compact"] .meta {
+        min-height: unset;
+        width: 100%;
+      }
+      .toolkit[data-view="compact"] .whenToUse {
+        -webkit-line-clamp: 2;
+        min-height: calc(1.55em * 2);
+      }
+
+      /* ——— Empty state ——— */
+      .empty {
+        margin: 28px 0 12px;
+        padding: 32px 24px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.02);
+        text-align: center;
+      }
+
+      .emptyTitle {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        color: var(--ink);
+      }
+
+      .emptyDesc {
+        color: var(--ink-secondary);
+        margin-bottom: 16px;
+        font-size: 15px;
+      }
+
+      .empty .primary {
+        padding: 12px 20px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow 0.22s var(--ease), transform 0.2s var(--ease);
+      }
+
+      .empty .primary:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+      }
+
+      /* ——— Back to top ——— */
+      .toTop {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 60;
+        padding: 12px 16px;
+        border-radius: 999px;
+        border: 1px solid var(--border-strong);
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(12px);
+        box-shadow: var(--shadow-lg);
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        transition: opacity 0.22s var(--ease), transform 0.22s var(--ease);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-secondary);
+      }
+
+      .toTop.isVisible {
+        opacity: 0.98;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .toTop:hover {
+        color: var(--ink);
+      }
+
+      .ghost:active,
+      .toggleBtn:active,
+      .railBtn:active {
+        transform: translateY(1px);
+      }
+
+      @media (max-width: 520px) {
+        .resultsInline {
+          display: none;
+        }
+        .sectionsRail {
+          display: none;
+        }
+        .sectionsList {
+          padding: 8px 16px;
+        }
+        .controlsBar {
+          padding: 12px 14px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+        }
+        .card,
+        .cover {
+          transition: none !important;
+        }
+      }
+    </style>
+  </div>
 </PageShell>

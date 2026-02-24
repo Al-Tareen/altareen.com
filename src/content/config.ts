@@ -8,7 +8,9 @@ const toolkit = defineCollection({
     categories: z.array(z.string()).optional(),
 
     // card excerpt
+    tags: z.array(z.string()).optional().default([]), 
     whenToUse: z.string().optional(),
+    whenToUseFull: z.string().optional(),   // ✅ ADD THIS
 
     // full fields (detail page)
     inputsRequired: z.string().optional(),

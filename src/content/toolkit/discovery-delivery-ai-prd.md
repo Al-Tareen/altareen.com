@@ -3,6 +3,7 @@ title: "AI PRD"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
 whenToUse: "When you’re building an AI feature for real and need full alignment on requirements, risks, and evaluation."
+whenToUseFull: "When you’re building an AI feature for real and need full alignment on requirements, risks, and evaluation."
 inputsRequired: "Problem/JTBD; requirements; data needs; eval plan; risks/guardrails; rollout plan; metrics."
 outputArtifact: "PRD with scope + non-goals + acceptance + evaluation + monitoring + success metrics."
 commonMistakes: "No eval/monitoring plan; vague requirements; ignores latency/cost; no rollback."
@@ -15,6 +16,7 @@ files:
     url: "/toolkit-files/discovery-delivery-ai-prd--1--ai-product-requirements-document-docx.docx"
   - name: "AI PRD Case Study for Shopify Auto Write Feature.pdf"
     url: "/toolkit-files/discovery-delivery-ai-prd--2--ai-prd-case-study-for-shopify-auto-write-feature-pdf.pdf"
+tags: []
 ---
 ## When to use
 When you’re building an AI feature for real and need full alignment on requirements, risks, and evaluation.

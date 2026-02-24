@@ -15,6 +15,14 @@ const OUT_DIR = path.join(process.cwd(), "src", "content", "toolkit");
 const COVERS_DIR = path.join(process.cwd(), "public", "toolkit-covers");
 const FILES_DIR = path.join(process.cwd(), "public", "toolkit-files");
 
+function getPageCoverUrl(page) {
+  const c = page?.cover;
+  if (!c) return "";
+  if (c.type === "external") return c.external?.url || "";
+  if (c.type === "file") return c.file?.url || "";
+  return "";
+}
+
 function ensureOutDir() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
   fs.mkdirSync(COVERS_DIR, { recursive: true });
@@ -48,6 +56,7 @@ function getProp(page, name) {
   if (p.type === "multi_select") return (p.multi_select ?? []).map((x) => x.name);
   if (p.type === "relation") return (p.relation ?? []).map((x) => x.id);
   if (p.type === "url") return p.url ?? null;
+  if (p.type === "checkbox") return !!p.checkbox; // ✅ NEW: support IsSensitive checkbox
   if (p.type === "files")
     return (p.files ?? []).map((f) => ({
       name: f.name,
@@ -247,12 +256,26 @@ async function main() {
   uniqDbs.forEach((d) => console.log("-", d.title, d.id));
 
   let total = 0;
+  let skippedSensitive = 0; // ✅ NEW
 
   for (const db of uniqDbs) {
     const rows = await queryDatabaseAll(db.id);
 
     for (const row of rows) {
       const name = getProp(row, "Name") || getProp(row, "Title") || "Untitled";
+
+      // ✅ NEW: Skip sensitive items BEFORE any slug/download/write
+      const isSensitive =
+        getProp(row, "IsSensitive") ??
+        getProp(row, "Is Sensitive") ??
+        getProp(row, "Sensitive") ??
+        false;
+
+      if (isSensitive === true) {
+        skippedSensitive++;
+        console.log(`Skipping sensitive framework: "${name}" (${row.id})`);
+        continue;
+      }
 
       // --- Category normalization ---
       const primaryCategoryRaw =
@@ -292,6 +315,16 @@ async function main() {
       const outputArtifact = getProp(row, "Output Artifact") || "";
       const commonMistakes = getProp(row, "Common Mistakes") || "";
       const link = getProp(row, "Link") || "";
+      const tagsRaw =
+  getProp(row, "Tags") ||
+  getProp(row, "Tag") ||
+  [];
+
+  const tags = Array.isArray(tagsRaw)
+  ? tagsRaw.map(String).map((t) => t.trim()).filter(Boolean)
+  : tagsRaw
+    ? [String(tagsRaw).trim()].filter(Boolean)
+    : [];
 
       // Notion attachments from DB property (signed URLs)
       const notionFiles = getProp(row, "File") || [];
@@ -302,18 +335,27 @@ async function main() {
       // ✅ excerpt for cards
       const whenToUse = firstLineExcerpt(whenToUseFull, 220);
 
-      // ✅ cover image download (from first image block in page)
+      // ✅ cover image download (Notion Page Cover; overwrite if changed)
       let cover = "";
       try {
-        const imgUrl = await findFirstImageUrlInPage(row.id);
+        const fullPage = await notion.pages.retrieve({ page_id: row.id });
+
+        // 1) Prefer Notion page cover
+        let imgUrl = getPageCoverUrl(fullPage);
+
+        // 2) Fallback: first image block in the page (optional)
+        if (!imgUrl) {
+          imgUrl = await findFirstImageUrlInPage(row.id);
+        }
+
         if (imgUrl) {
           const ext = guessExtFromUrl(imgUrl) || ".png";
           const filename = `${slug}${ext}`;
           const outPath = path.join(COVERS_DIR, filename);
 
-          if (!fs.existsSync(outPath)) {
-            await downloadToFile(imgUrl, outPath);
-          }
+          // Always overwrite so Notion cover updates reflect immediately
+          await downloadToFile(imgUrl, outPath);
+
           cover = `/toolkit-covers/${filename}`;
         }
       } catch (e) {
@@ -355,6 +397,7 @@ async function main() {
         `primaryCategory: "${toFrontmatterString(mdEscape(primaryCategory))}"`,
         `categories: ${JSON.stringify(categories)}`,
         `whenToUse: "${toFrontmatterString(whenToUse)}"`,
+        `whenToUseFull: "${toFrontmatterString(mdEscape(whenToUseFull))}"`,
         `inputsRequired: "${toFrontmatterString(mdEscape(inputsRequired))}"`,
         `outputArtifact: "${toFrontmatterString(mdEscape(outputArtifact))}"`,
         `commonMistakes: "${toFrontmatterString(mdEscape(commonMistakes))}"`,
@@ -363,11 +406,13 @@ async function main() {
         `link: "${toFrontmatterString(link)}"`,
         `cover: "${toFrontmatterString(cover)}"`,
         yamlListOfObjects("files", filesLocal),
+        `tags: ${JSON.stringify(tags)}`,
         "---",
         "",
       ].join("\n");
 
       const body = [
+        tags.length ? `## Tags\n${tags.map((t) => `- ${mdEscape(t)}`).join("\n")}\n` : "",
         whenToUseFull ? `## When to use\n${mdEscape(whenToUseFull)}\n` : "",
         inputsRequired ? `## Inputs required\n${mdEscape(inputsRequired)}\n` : "",
         outputArtifact ? `## Output artifact\n${mdEscape(outputArtifact)}\n` : "",
@@ -382,6 +427,7 @@ async function main() {
   }
 
   console.log(`Synced ${total} toolkit item(s) from Notion → ${OUT_DIR}`);
+  if (skippedSensitive > 0) console.log(`Skipped sensitive item(s): ${skippedSensitive}`);
 }
 
 main().catch((err) => {

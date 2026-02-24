@@ -1,7 +1,654 @@
-﻿---
-import PageShell from "../components/PageShell.astro";
 ---
-<PageShell title="Contact" description="Reach me quickly.">
-  <p>Email: <a href="mailto:hello@altareen.com">hello@altareen.com</a></p>
-  <p><small>(You can change this address to whatever you actually use — this does not change your email setup.)</small></p>
+import PageShell from "../components/PageShell.astro";
+
+// Web3Forms free endpoint (no backend needed)
+// Access key provided by user
+const web3formsKey = "a662d525-6081-49f0-b6d7-6102e3bf1ec2";
+---
+
+<PageShell
+  title="Contact"
+  description="Send a message or reach me directly by email."
+  hidePageHead={true}
+>
+  <section class="contactPage" aria-label="Contact Al-Ebraheem Tareen">
+    <div class="contactGrid">
+      <!-- Left / Form -->
+      <div class="formPane">
+        <div class="formCard">
+          <form
+            id="contact-form"
+            class="form"
+            action="https://api.web3forms.com/submit"
+            method="POST"
+            aria-label="Contact form"
+          >
+            <input type="hidden" name="access_key" value={web3formsKey} />
+            <input type="hidden" name="subject" value="Contact from altareen.com" />
+            <input type="hidden" name="from_name" value="altareen.com Contact Form" />
+
+            <!-- Honeypot (Web3Forms bot protection) -->
+            <input
+              type="checkbox"
+              name="botcheck"
+              class="gotcha"
+              tabindex="-1"
+              autocomplete="off"
+              aria-hidden="true"
+            />
+
+            <div class="fieldRow">
+              <div class="field">
+                <label for="name">Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  required
+                  autocomplete="name"
+                  placeholder="Your name"
+                />
+              </div>
+
+              <div class="field">
+                <label for="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  autocomplete="email"
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="message">Message</label>
+              <textarea
+                id="message"
+                name="message"
+                required
+                rows="6"
+                placeholder="Feel free to share what’s on your mind, what you need help with, and any timing details."
+              ></textarea>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="submit" id="submit-btn">
+                <span class="submitIcon" aria-hidden="true">→</span>
+                <span>Send message</span>
+              </button>
+            </div>
+          </form>
+
+          <div id="form-success" class="success" hidden>
+            <p class="successTitle">Message sent.</p>
+            <p class="successText">Thanks — I’ll get back to you as soon as I can.</p>
+          </div>
+
+          <div id="form-error" class="error" hidden>
+            <p class="errorText">Something went wrong. Please email me directly instead.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right / Direct contact -->
+      <aside class="sidePane" aria-label="Direct contact">
+        <div class="sideCard">
+          <div class="sideCardTop">
+            <h2>Prefer email?</h2>
+          </div>
+
+          <div class="emailBlock">
+            <div class="emailLabel">Email</div>
+            <a class="emailLink" href="mailto:altareenk@outlook.com">altareenk@outlook.com</a>
+          </div>
+
+          <div class="sideActions">
+            <a class="sideBtn primary" href="mailto:altareenk@outlook.com">
+              <span class="sideIcon" aria-hidden="true">✉</span>
+              <span>Email me</span>
+            </a>
+
+            <button class="sideBtn" type="button" id="copy-email-btn" data-email="altareenk@outlook.com">
+              <span class="sideIcon" aria-hidden="true">⧉</span>
+              <span id="copy-email-text">Copy email</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <script>
+    const form = document.getElementById("contact-form");
+    const submitBtn = document.getElementById("submit-btn");
+    const successEl = document.getElementById("form-success");
+    const errorEl = document.getElementById("form-error");
+    const useAjax = form?.action && form.action.includes("web3forms");
+
+    if (form && useAjax && submitBtn && successEl && errorEl) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending...";
+        successEl.setAttribute("hidden", "");
+        errorEl.setAttribute("hidden", "");
+
+        const formData = new FormData(form);
+
+        try {
+          const res = await fetch(form.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+              Accept: "application/json",
+            },
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            form.reset();
+            successEl.removeAttribute("hidden");
+          } else {
+            errorEl.removeAttribute("hidden");
+            console.error("Web3Forms error:", data);
+          }
+        } catch (err) {
+          errorEl.removeAttribute("hidden");
+          console.error("Contact form submit failed:", err);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Send message";
+        }
+      });
+    }
+
+    const copyEmailBtn = document.getElementById("copy-email-btn");
+    const copyEmailText = document.getElementById("copy-email-text");
+
+    if (copyEmailBtn && copyEmailText) {
+      copyEmailBtn.addEventListener("click", async () => {
+        const email = copyEmailBtn.getAttribute("data-email");
+        if (!email) return;
+
+        try {
+          await navigator.clipboard.writeText(email);
+          copyEmailText.textContent = "Copied";
+          setTimeout(() => {
+            copyEmailText.textContent = "Copy email";
+          }, 1400);
+        } catch {
+          copyEmailText.textContent = "Copy failed";
+          setTimeout(() => {
+            copyEmailText.textContent = "Copy email";
+          }, 1400);
+        }
+      });
+    }
+  </script>
 </PageShell>
+
+<style>
+  .contactPage {
+    width: 100%;
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 4px 0 56px;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    box-sizing: border-box;
+  }
+
+  /* Removed page backdrop shadow/glow + dot texture */
+  .contactPage::before,
+  .contactPage::after {
+    display: none;
+    content: none;
+  }
+
+  .pageIntro {
+    margin: 0 0 18px;
+    padding: 0 2px;
+  }
+
+  .pageTitle {
+    margin: 0;
+    letter-spacing: -0.035em;
+    line-height: 0.98;
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .pageSubtitle {
+    margin: 10px 0 0;
+    color: var(--ink-secondary);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .contactGrid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 16px;
+    align-items: start;
+    margin-top: 8px; /* replaces spacing previously created by .contactShell padding */
+  }
+
+  .formPane,
+  .sidePane {
+    min-width: 0;
+  }
+
+  .paneTop {
+    padding: 6px 6px 10px;
+  }
+
+  .lead {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: var(--ink-secondary);
+    max-width: 62ch;
+  }
+
+  .formCard,
+  .sideCard {
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.03),
+      inset 0 1px 0 rgba(255,255,255,0.75);
+  }
+
+  .formCard {
+    padding: 22px;
+    transition: box-shadow 0.24s var(--ease), border-color 0.24s var(--ease);
+  }
+
+  .formCard:focus-within {
+    box-shadow:
+      0 14px 30px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255,255,255,0.85);
+    border-color: rgba(0, 0, 0, 0.09);
+  }
+
+  .gotcha {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .fieldRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .field label {
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.45;
+    transition:
+      border-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      background 0.2s var(--ease);
+  }
+
+  .field input::placeholder,
+  .field textarea::placeholder {
+    color: var(--ink-muted);
+  }
+
+  .field input:hover,
+  .field textarea:hover {
+    border-color: var(--border-strong);
+    background: #fff;
+  }
+
+  .field input:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: rgba(0, 0, 0, 0.22);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    background: #fff;
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 160px;
+  }
+
+  .actions {
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    min-height: 46px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: var(--ink);
+    color: var(--surface);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition:
+      transform 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      background 0.2s var(--ease);
+  }
+
+  .submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: #202024;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+  }
+
+  .submit:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .submit:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+  }
+
+  .submitIcon {
+    line-height: 1;
+    opacity: 0.95;
+  }
+
+  .success,
+  .error {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .success {
+    background: linear-gradient(
+      180deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0.42) 100%
+    );
+    border-radius: 0 0 12px 12px;
+  }
+
+  .successTitle {
+    margin: 0 0 4px;
+    font-size: 0.98rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .successText,
+  .errorText {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ink-secondary);
+    line-height: 1.5;
+  }
+
+  .sideCard {
+    padding: 16px;
+    position: sticky;
+    top: calc(var(--siteHeaderH) + 14px);
+  }
+
+  .sideCardTop h2 {
+    margin: 6px 0 6px;
+    font-size: 0.98rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    line-height: 1.15;
+  }
+
+  .sideCardTop p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--ink-secondary);
+  }
+
+  .miniEyebrow {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 5px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--border);
+  }
+
+  .emailBlock {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.72);
+  }
+
+  .emailLabel {
+    font-size: 0.73rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .emailLink {
+    display: inline-block;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+      font-size: 0.96rem; /* decrease this */
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+    word-break: break-word;
+  }
+
+  .emailLink:hover {
+    border-bottom-color: rgba(0, 0, 0, 0.38);
+  }
+
+  .sideActions {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .sideBtn {
+    width: 100%;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    min-height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.92);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition:
+      transform 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      background 0.2s var(--ease);
+  }
+
+  .sideBtn:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-strong);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.04);
+    background: #fff;
+  }
+
+  .sideBtn.primary {
+    background: var(--ink);
+    color: var(--surface);
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  }
+
+  .sideBtn.primary:hover {
+    background: #202024;
+  }
+
+  .sideBtn.primary .sideIcon {
+    color: rgba(255,255,255,0.95);
+  }
+
+  .sideIcon {
+    width: 16px;
+    flex: 0 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--ink-secondary);
+    opacity: 0.9;
+  }
+
+  .sideNote {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    color: var(--ink-muted);
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  :where(.submit, .sideBtn, .emailLink):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+    border-color: var(--border-strong);
+  }
+
+  @media (max-width: 980px) {
+    .contactGrid {
+      grid-template-columns: 1fr;
+    }
+
+    .sideCard {
+      position: static;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .contactPage {
+      padding: 0 20px 40px;
+    }
+
+    .contactGrid {
+      gap: 12px;
+      margin-top: 0;
+    }
+
+    .formCard,
+    .sideCard {
+      padding: 14px;
+      border-radius: 14px;
+    }
+
+    .fieldRow {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .pageTitle {
+      font-size: clamp(1.8rem, 8vw, 2.3rem);
+    }
+
+    .pageSubtitle {
+      font-size: 0.94rem;
+    }
+
+    .lead {
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .field textarea {
+      min-height: 140px;
+    }
+
+    .submit {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .submit,
+    .sideBtn,
+    .formCard {
+      transition: none !important;
+    }
+
+    .submit:hover,
+    .sideBtn:hover {
+      transform: none !important;
+    }
+  }
+</style>

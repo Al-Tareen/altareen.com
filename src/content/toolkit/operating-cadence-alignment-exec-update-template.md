@@ -1,8 +1,9 @@
 ---
-title: "Exec update template"
+title: "Exec Update Template"
 primaryCategory: "Operating Cadence & Alignment"
 categories: ["Operating Cadence & Alignment"]
 whenToUse: "When leaders need status and decisions—fast, metrics-driven, and with clear asks."
+whenToUseFull: "When leaders need status and decisions—fast, metrics-driven, and with clear asks."
 inputsRequired: "KPI status; bet progress; risks/issues; asks/decisions needed; timeline changes."
 outputArtifact: "Exec update memo (outcomes-first) + clear asks."
 commonMistakes: "Status without outcomes; hiding risks; no asks; too long."
@@ -11,6 +12,7 @@ notionId: "2da39950-eddd-806b-ad6c-c749dc462f12"
 link: ""
 cover: "/toolkit-covers/operating-cadence-alignment-exec-update-template.png"
 files: []
+tags: []
 ---
 ## When to use
 When leaders need status and decisions—fast, metrics-driven, and with clear asks.
