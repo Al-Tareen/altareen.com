@@ -2,11 +2,17 @@
 import PageShell from "../../components/PageShell.astro";
 import { getCollection } from "astro:content";
 
+import PageShell from "../../components/PageShell.astro";
+import { getCollection } from "astro:content";
+
+const ALLOWED_CATEGORIES = new Set(["Concepts", "Business Plans"]);
+
 export async function getStaticPaths() {
-  const IDEAS_CATEGORY = "Concepts";
+  const allowedCategories = new Set(["Concepts", "Business Plans"]);
+
   const all = await getCollection("toolkit");
-  const items = all.filter(
-    (item) => (item.data.primaryCategory || "Uncategorized").trim() === IDEAS_CATEGORY
+  const items = all.filter((item) =>
+    allowedCategories.has((item.data.primaryCategory || "Uncategorized").trim())
   );
 
   return items.map((item) => ({
@@ -31,11 +37,14 @@ if (!item) {
 }
 
 // Guard: only allow Business Plans items on /ideas/[slug]
-const itemCategory = (item.data.primaryCategory || "Uncategorized").trim();
-if (itemCategory !== IDEAS_CATEGORY) {
-  throw new Error(`Ideas page only supports "${IDEAS_CATEGORY}" items. Got: ${itemCategory}`);
-}
+const allowedCategoriesForPage = new Set(["Concepts", "Business Plans"]);
 
+const itemCategory = (item.data.primaryCategory || "Uncategorized").trim();
+if (!allowedCategoriesForPage.has(itemCategory)) {
+  throw new Error(
+    `Concepts page only supports Concepts/Business Plans. Got: ${itemCategory}`
+  );
+}
 const files = Array.isArray(item.data.files) ? item.data.files : [];
 const hasFiles = files.length > 0;
 
