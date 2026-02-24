@@ -2,9 +2,8 @@
 import PageShell from "../../components/PageShell.astro";
 import { getCollection } from "astro:content";
 
-const IDEAS_CATEGORY = "Business Plans";
-
 export async function getStaticPaths() {
+  const IDEAS_CATEGORY = "Concepts";
   const all = await getCollection("toolkit");
   const items = all.filter(
     (item) => (item.data.primaryCategory || "Uncategorized").trim() === IDEAS_CATEGORY
