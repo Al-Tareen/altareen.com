@@ -442,14 +442,6 @@ description="Who I am and where you can find me.">
         gap: 16px;
       }
 
-      .heroRail {
-        order: 2;
-      }
-
-      .heroContent {
-        order: 1;
-      }
-
       .profileCard {
         height: auto;
       }
@@ -459,20 +451,27 @@ description="Who I am and where you can find me.">
       }
     }
 
-    @media (max-width: 720px) {
-      .aboutPage {
-        padding: 0 20px 40px;
-      }
+@media (max-width: 720px) {
+  .aboutPage {
+    /* Let PageShell control horizontal padding so widths match divider line */
+    max-width: none;
+    width: 100%;
+    padding: 0 0 40px;
+  }
 
-      .aboutPage::before,
-      .aboutPage::after {
-        left: -20px;
-        right: -20px;
-      }
+  .heroGrid {
+    grid-template-columns: 1fr; /* safe */
+  }
+
+  /* Mobile-only: photo card first */
+  .heroRail { order: 1; }
+  .heroContent { order: 2; }
+}
 
       .heroCard {
         padding: 14px;
         border-radius: 18px;
+        
       }
 
       .heroContent {

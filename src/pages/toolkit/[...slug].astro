@@ -1438,39 +1438,49 @@ const title = item.data.title || "";
     overflow: hidden;
   }
 
-  @media (max-width: 980px) {
-    .toolkitDetail {
-      padding: 0 20px 36px;
-    }
-
-    .layout {
-      grid-template-columns: 1fr;
-    }
-
-    .sideCard {
-      position: static;
-    }
-
-    .grid2 {
-      grid-template-columns: 1fr;
-    }
-
-    .fileName {
-      max-width: 100%;
-    }
-
-    .heroGrid {
-      grid-template-columns: 1fr;
-    }
-
-    .heroRail {
-      order: 2;
-    }
-
-    .coverFrame {
-      order: 1;
-    }
+ @media (max-width: 980px) {
+  .toolkitDetail {
+    /* Let PageShell control horizontal padding so widths match divider line */
+    max-width: none;
+    width: 100%;
+    padding: 0 0 36px;
   }
+
+  /* Ensure major blocks span full available width */
+  .topRow,
+  .hero,
+  .heroGrid,
+  .coverFrame,
+  .heroRail,
+  .layout,
+  .content,
+  .grid2,
+  .cardBlock,
+   {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .sideCard {
+    position: static;
+  }
+
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .heroGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroRail {
+    order: 2;
+  }
+
+  .coverFrame {
+    order: 1;
+  }
+}
 
 /* Collapsible section (moved out of media query so it works on desktop too) */ .collapsibleBlock { padding: 0; overflow: hidden; } .collapse { width: 100%; } .collapseSummary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: flex-start; padding: 18px 22px; user-select: none; } /* Hide native summary marker (Chrome/Safari/Edge) */ .collapseSummary::-webkit-details-marker { display: none; } /* Hide native summary marker (Firefox) */ .collapseSummary::marker { content: ""; font-size: 0; } .collapseTitle { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.28; font-size: 1.05rem; color: var(--ink); } .collapseChevron { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; flex: 0 0 18px; color: var(--ink-muted); font-size: 20px; font-weight: 700; line-height: 1; transform: translateY(1px); transition: transform 0.22s var(--ease), color 0.22s var(--ease); } .collapseSummary:hover .collapseChevron { color: var(--ink); } .collapse[open] .collapseChevron { transform: translateY(1px) rotate(180deg); } .collapseBody { padding: 0 22px 20px; border-top: 1px solid var(--border); } .collapseBody p { margin: 12px 0 0; color: var(--ink-secondary); font-size: 0.90rem; line-height: 1.58; }
 
