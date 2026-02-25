@@ -1408,70 +1408,36 @@ const feedbackKey = `ideas:${item.slug}`;
     overflow: hidden;
   }
 
-  @media (max-width: 980px) {
-    .toolkitDetail {
-      padding: 0 20px 36px;
-    }
-
-    .layout {
-      grid-template-columns: 1fr;
-    }
-
-    .sideCard {
-      position: static;
-    }
-
-    .grid2 {
-      grid-template-columns: 1fr;
-    }
-
-    .fileName {
-      max-width: 100%;
-    }
-
-    .heroGrid {
-      grid-template-columns: 1fr;
-    }
-
-    .heroRail {
-      order: 2;
-    }
-
-    .coverFrame {
-      order: 1;
-    }
+@media (max-width: 980px) {
+  .toolkitDetail {
+    /* Let PageShell control horizontal padding so cards align with divider */
+    max-width: none;
+    width: 100%;
+    padding: 0 0 36px;
+    box-sizing: border-box;
+    overflow-x: clip;
   }
 
-  @media (max-width: 720px) {
-    .modalPanel {
-      height: 85vh;
-      width: calc(100vw - 24px);
-    }
-
-    .modalName {
-      max-width: 70vw;
-    }
-
-    .coverFeedback {
-      left: 10px;
-      bottom: 10px;
-      padding: 6px;
-      gap: 6px;
-    }
-
-    .fbBtn {
-      padding: 7px 9px;
-    }
-
-    .fbLabel {
-      font-size: 12px;
-    }
-
-    .feedbackMeta {
-      font-size: 11px;
-      gap: 6px;
-    }
+  .layout,
+  .content,
+  .heroGrid,
+  .coverFrame,
+  .heroRail,
+  .sideCard,
+  .cardBlock {
+    max-width: 100%;
+    box-sizing: border-box;
   }
+
+  .layout { grid-template-columns: 1fr; }
+  .sideCard { position: static; }
+  .grid2 { grid-template-columns: 1fr; }
+  .fileName { max-width: 100%; }
+
+  .heroGrid { grid-template-columns: 1fr; }
+  .heroRail { order: 2; }
+  .coverFrame { order: 1; }
+}
 
   @media (prefers-reduced-motion: reduce) {
     * {
