@@ -1439,6 +1439,18 @@ const feedbackKey = `ideas:${item.slug}`;
   .coverFrame { order: 1; }
 }
 
+@media (max-width: 520px) {
+  .fileName {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .fileRow {
+    align-items: flex-start;
+  }
+}
+
   @media (prefers-reduced-motion: reduce) {
     * {
       scroll-behavior: auto !important;
