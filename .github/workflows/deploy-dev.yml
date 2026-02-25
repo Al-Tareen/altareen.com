@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: "20"
           cache: "npm"
 
       - name: Install deps
@@ -29,12 +29,33 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
 
-      - name: Deploy via rsync
+      - name: Deploy build + package files
         env:
           HOST: ${{ secrets.DEV_SSH_HOST }}
           USER: ${{ secrets.DEV_SSH_USER }}
+          DEST: /home/admin/domains/dev.altareen.com/public_html
         run: |
+          ssh -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p '$DEST'"
+
           rsync -az --delete \
             --exclude 'cgi-bin/' \
+            --exclude 'node_modules/' \
+            --exclude '.feedback-store.json' \
             -e "ssh -o StrictHostKeyChecking=no" \
-            dist/ "$USER@$HOST:./"
+            dist/ "$USER@$HOST:$DEST/"
+
+          rsync -az \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            package.json package-lock.json "$USER@$HOST:$DEST/"
+
+      - name: Install production deps
+        env:
+          HOST: ${{ secrets.DEV_SSH_HOST }}
+          USER: ${{ secrets.DEV_SSH_USER }}
+          DEST: /home/admin/domains/dev.altareen.com/public_html
+        run: |
+          ssh -o StrictHostKeyChecking=no "$USER@$HOST" "
+            set -e
+            cd '$DEST'
+            npm ci --omit=dev
+          "
