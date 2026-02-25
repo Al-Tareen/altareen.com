@@ -50,17 +50,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
     --content-width: 980px;
   }
 
-  /* Clamp horizontal overflow at the root */
-  :global(html),
   :global(body) {
     margin: 0;
-    padding: 0;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-
-  :global(body) {
     font-family: var(--font-sans);
     font-size: 17px;
     line-height: 1.55;
@@ -68,24 +59,24 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
     background: var(--surface-subtle);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
   }
 
   :global(a) {
     color: inherit;
   }
 
+  /* ✅ This is what makes the footer stick on short pages */
   :global(.siteShell) {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden; /* catches rogue child overflow */
   }
 
   :global(*),
-  :global(*::before),
-  :global(*::after) {
-    box-sizing: border-box;
-  }
+:global(*::before),
+:global(*::after) {
+  box-sizing: border-box;
+}
+
 </style>
