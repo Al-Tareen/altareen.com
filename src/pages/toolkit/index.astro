@@ -459,11 +459,11 @@ setTimeout(updateRails, 250); // ✅ after any late paint/font swap
     </script>
 
     <style>
-      .toolkit {
-        padding-top: 8px;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
+.toolkit {
+  padding-top: 8px;
+  box-sizing: border-box;
+}
+      
 
       .group,
       .featuredBlock {
@@ -474,7 +474,7 @@ setTimeout(updateRails, 250); // ✅ after any late paint/font swap
         display: none !important;
       }
 
-      /* ——— Controls bar: glass, minimal ——— */
+           /* ——— Controls bar: glass, minimal ——— */
       .controlsBar {
         position: sticky;
         top: calc(var(--siteHeaderH) + 14px);
@@ -494,6 +494,9 @@ setTimeout(updateRails, 250); // ✅ after any late paint/font swap
         box-shadow: var(--shadow-md);
         margin-bottom: 20px;
         transition: box-shadow 0.28s var(--ease);
+        width: 100%;
+          margin-left: 0;
+  margin-right: 0;
       }
 
       .controlsBar:focus-within {
@@ -1021,44 +1024,31 @@ setTimeout(updateRails, 250); // ✅ after any late paint/font swap
         transform: translateY(1px);
       }
 
-@media (max-width: 720px) {
-  .controlsBar {
-    top: calc(var(--siteHeaderH) + 67px);
-  }
-}
 
-@media (max-width: 520px) {
-  .resultsInline {
-    display: none;
-  }
+      @media (max-width: 520px) {
+        .resultsInline {
+          display: none;
+        }
+        .sectionsRail {
+          display: none;
+        }
+        .sectionsList {
+          padding: 8px 16px;
+        }
+        .controlsBar {
+          padding: 12px 14px;
+              top: calc(var(--siteHeaderH) + 67px + env(safe-area-inset-top, 0px));
+              width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    border-radius: 0; /* optional: looks cleaner edge-to-edge */
+        }
+        
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
 
-  /* Keep arrows visible on mobile */
-  .sectionsRail {
-    display: flex;
-    right: 6px;
-    top: 2px;
-    padding-left: 10px;
-    background: linear-gradient(to left, var(--surface-subtle) 78%, transparent);
-  }
-
-  .railBtn {
-    width: 30px;
-    height: 30px;
-    font-size: 16px;
-  }
-
-  .sectionsList {
-    padding: 8px 44px 8px 16px; /* extra right padding so chips don’t sit under arrows */
-  }
-
-  .controlsBar {
-    padding: 12px 14px;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
 
       @media (prefers-reduced-motion: reduce) {
         * {
