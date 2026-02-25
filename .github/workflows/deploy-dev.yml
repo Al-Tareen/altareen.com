@@ -37,7 +37,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p '$DEST'"
 
-          rsync -az --delete --no-owner --no-group \
+          rsync -rz --delete --no-times --no-perms --no-owner --no-group \
             --exclude 'cgi-bin/' \
             --exclude 'node_modules/' \
             --exclude '.feedback-store.json' \
