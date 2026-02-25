@@ -3,19 +3,26 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "./Header.astro";
 import Footer from "./Footer.astro";
 
-const { title, description, subtitle } = Astro.props;
+const {
+  title,
+  description,
+  subtitle,
+  hidePageHead = false,
+} = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
   <Header />
-  <main class="wrap">
-    <header class="pagehead">
-      <h1>{title}</h1>
+  <main class={`wrap ${hidePageHead ? "isHeadHidden" : ""}`}>
+    {!hidePageHead && (
+      <header class="pagehead">
+        <h1>{title}</h1>
 
-      {subtitle && <div class="subtitle">{subtitle}</div>}
+        {subtitle && <div class="subtitle">{subtitle}</div>}
 
-      {description && <p class="desc">{description}</p>}
-    </header>
+        {description && <p class="desc">{description}</p>}
+      </header>
+    )}
 
     <section class="content">
       <slot />
@@ -30,7 +37,12 @@ const { title, description, subtitle } = Astro.props;
     margin: 0 auto;
     padding: 40px 28px 56px;
     flex: 1;
-    width:100%;
+    width: 100%;
+  }
+
+  /* Detail pages (framework/concepts) already render their own internal header */
+  .wrap.isHeadHidden {
+    padding-top: 24px;
   }
 
   .pagehead {
@@ -71,5 +83,21 @@ const { title, description, subtitle } = Astro.props;
 
   .content {
     padding: 0;
+    min-width: 0;
+  }
+
+  @media (max-width: 980px) {
+    .wrap {
+      padding: 28px 20px 44px;
+    }
+
+    .wrap.isHeadHidden {
+      padding-top: 16px;
+    }
+
+    .pagehead {
+      padding: 10px 0 20px;
+      margin-bottom: 20px;
+    }
   }
 </style>

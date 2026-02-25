@@ -11,12 +11,9 @@ const items = all.filter(
   (item) => (item.data.primaryCategory || "Uncategorized").trim() === IDEAS_CATEGORY
 );
 
-// Optional: if you only want a specific DB too, uncomment this line:
-// .filter((item) => (item.data.dbTitle || "").trim() === "Business Plans");
-
 console.log("ideas total:", items.length);
 
-// Build grouped structure (will usually be a single category, but keeps UI consistent)
+// Build grouped structure
 const groupsMap = new Map();
 for (const item of items) {
   const c = (item.data.primaryCategory || "Uncategorized").trim();
@@ -48,10 +45,9 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 
 <PageShell
   title="Concepts"
-  description="Business plan ideas and concepts."
+  description="Early-stage concepts and strategic business ideas."
 >
-  <div class="toolkit" data-view="grid">
-    <!-- Featured -->
+  <div class="toolkit">
     {featured.length > 0 && (
       <section class="featuredBlock" id="__featured" data-group="__featured">
         <div class="groupHead">
@@ -72,7 +68,12 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
             >
               {item.data.cover ? (
                 <div class="thumb" aria-hidden="true">
-                  <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
+                  <img
+                    class="cover"
+                    src={item.data.cover}
+                    alt={`Cover for ${item.data.title}`}
+                    loading="lazy"
+                  />
                 </div>
               ) : (
                 <div class="thumb thumbEmpty" aria-hidden="true">
@@ -82,22 +83,21 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 
               <div class="meta">
                 <div class="cardTitle">{item.data.title}</div>
-<div class="excerpt">
-  <div class="excerptLabel">Description</div>
-  <div class="whenToUse">
-    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">�</span>}
-  </div>
-</div>
 
-{Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
-  <div class="tagsRow" aria-label="Tags">
-    {item.data.tags.slice(0, 4).map((tag) => (
-      <span class="tagChip">{tag}</span>
-    ))}
-  </div>
-)}
+                <div class="excerpt">
+                  <div class="excerptLabel">Description</div>
+                  <div class="whenToUse">
+                    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">No description yet.</span>}
                   </div>
                 </div>
+
+                {Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
+                  <div class="tagsRow" aria-label="Tags">
+                    {item.data.tags.slice(0, 4).map((tag) => (
+                      <span class="tagChip">{tag}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </a>
           ))}
@@ -105,7 +105,6 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
       </section>
     )}
 
-    <!-- Groups -->
     {groups.map((g) => (
       <section class="group" id={catId(g.category)} data-group={g.category}>
         <div class="groupHead">
@@ -126,7 +125,12 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
             >
               {item.data.cover ? (
                 <div class="thumb" aria-hidden="true">
-                  <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
+                  <img
+                    class="cover"
+                    src={item.data.cover}
+                    alt={`Cover for ${item.data.title}`}
+                    loading="lazy"
+                  />
                 </div>
               ) : (
                 <div class="thumb thumbEmpty" aria-hidden="true">
@@ -137,22 +141,20 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
               <div class="meta">
                 <div class="cardTitle">{item.data.title}</div>
 
-<div class="excerpt">
-  <div class="excerptLabel">Description</div>
-  <div class="whenToUse">
-    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">�</span>}
-  </div>
-</div>
-
-{Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
-  <div class="tagsRow" aria-label="Tags">
-    {item.data.tags.slice(0, 4).map((tag) => (
-      <span class="tagChip">{tag}</span>
-    ))}
-  </div>
-)}
+                <div class="excerpt">
+                  <div class="excerptLabel">Description</div>
+                  <div class="whenToUse">
+                    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">No description yet.</span>}
                   </div>
                 </div>
+
+                {Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
+                  <div class="tagsRow" aria-label="Tags">
+                    {item.data.tags.slice(0, 4).map((tag) => (
+                      <span class="tagChip">{tag}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </a>
           ))}
@@ -160,577 +162,94 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
       </section>
     ))}
 
-    <!-- Back to top -->
-    <button id="toTop" class="toTop" type="button" aria-label="Back to top">? Top</button>
+    <button id="toTop" class="toTop" type="button" aria-label="Back to top">↑ Top</button>
 
     <script is:inline>
       window.addEventListener("DOMContentLoaded", () => {
-        try {
-          const root = document.querySelector(".toolkit");
-          const q = document.getElementById("q");
-          const cat = document.getElementById("cat");
-          const clear = document.getElementById("clear");
-          const empty = document.getElementById("empty");
-          const emptyClear = document.getElementById("emptyClear");
-          const resultsText = document.getElementById("resultsText");
+        const toTop = document.getElementById("toTop");
+        if (!toTop) return;
 
-          const viewGrid = document.getElementById("viewGrid");
-          const viewCompact = document.getElementById("viewCompact");
-
-          const toTop = document.getElementById("toTop");
-
-          const jumpChips = document.getElementById("jumpChips");
-          const railLeft = document.getElementById("railLeft");
-          const railRight = document.getElementById("railRight");
-          const sectionsNav = document.querySelector(".sections");
-
-          if (!root) throw new Error("Ideas root not found (.toolkit). Script not attaching.");
-
-          function normalize(s) {
-            return (s || "").toLowerCase().trim();
-          }
-
-          function escAttr(s) {
-            return String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-          }
-
-          function setView(view) {
-            root.dataset.view = view;
-
-            const isGrid = view === "grid";
-            viewGrid?.classList.toggle("isActive", isGrid);
-            viewCompact?.classList.toggle("isActive", !isGrid);
-
-            viewGrid?.setAttribute("aria-pressed", String(isGrid));
-            viewCompact?.setAttribute("aria-pressed", String(!isGrid));
-
-            try {
-              localStorage.setItem("ideasView", view);
-            } catch {}
-          }
-
-          function clearSectionsActive() {
-            jumpChips?.querySelectorAll(".sectionBtn.isActive").forEach((b) => b.classList.remove("isActive"));
-          }
-
-          function setSectionsActiveByCategory(category) {
-            clearSectionsActive();
-            if (!category) return;
-            const sel = `.sectionBtn[data-cat="${escAttr(category)}"]`;
-            const btn = jumpChips?.querySelector(sel);
-            if (btn) btn.classList.add("isActive");
-          }
-
-          let isManualNav = false;
-          function temporarilyPauseScrollSpy() {
-            isManualNav = true;
-            window.setTimeout(() => (isManualNav = false), 700);
-          }
-
-          function countVisibleCards() {
-            return document.querySelectorAll("a.card:not(.isHidden)").length;
-          }
-
-          function applyFilter() {
-            const query = normalize(q?.value);
-            const selected = cat?.value || "";
-
-            const sections = document.querySelectorAll("section.group, section.featuredBlock");
-
-            sections.forEach((section) => {
-              const cards = section.querySelectorAll("a.card");
-              let visibleCount = 0;
-
-              cards.forEach((card) => {
-                const title = normalize(card.dataset.title);
-                const c = card.dataset.category || "";
-                const when = normalize(card.dataset.when || "");
-
-                const catText = normalize(c);
-                const matchText = !query || title.includes(query) || catText.includes(query) || when.includes(query);
-                const matchCat = !selected || c === selected;
-
-                const show = matchText && matchCat;
-                card.classList.toggle("isHidden", !show);
-                if (show) visibleCount++;
-              });
-
-              section.classList.toggle("isHidden", visibleCount === 0);
-            });
-
-            const totalVisible = countVisibleCards();
-            if (empty) empty.hidden = totalVisible !== 0;
-
-            if (resultsText) {
-              const suffix = totalVisible === 1 ? "idea" : "ideas";
-              resultsText.textContent = `Showing ${totalVisible} ${suffix}`;
-            }
-
-            if (selected) {
-              setSectionsActiveByCategory(selected);
-            } else {
-              clearSectionsActive();
-              computeActiveSection?.();
-            }
-          }
-
-          function clearFilters() {
-            if (q) q.value = "";
-            if (cat) cat.value = "";
-            applyFilter();
-            q?.focus();
-          }
-
-          function updateRails() {
-            if (!jumpChips || !sectionsNav) return;
-
-            const maxScroll = jumpChips.scrollWidth - jumpChips.clientWidth;
-
-            const hasLeft = jumpChips.scrollLeft > 2;
-            const hasRight = jumpChips.scrollLeft < maxScroll - 2;
-
-            sectionsNav.classList.toggle("hasLeft", hasLeft);
-            sectionsNav.classList.toggle("hasRight", hasRight);
-
-            if (railRight) {
-              railRight.style.opacity = hasRight ? "0.85" : "0.35";
-              railRight.style.pointerEvents = hasRight ? "auto" : "none";
-            }
-          }
-
-          try {
-            const saved = localStorage.getItem("ideasView");
-            if (saved === "compact" || saved === "grid") setView(saved);
-          } catch {}
-
-          viewGrid?.addEventListener("click", () => setView("grid"));
-          viewCompact?.addEventListener("click", () => setView("compact"));
-
-          q?.addEventListener("input", applyFilter);
-          cat?.addEventListener("change", applyFilter);
-          clear?.addEventListener("click", clearFilters);
-          emptyClear?.addEventListener("click", clearFilters);
-
-          document.querySelectorAll("[data-jump]").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              const id = btn.getAttribute("data-jump");
-              const el = id && document.getElementById(id);
-              if (!el) return;
-
-              if (q) q.value = "";
-              if (cat) cat.value = "";
-              applyFilter();
-
-              temporarilyPauseScrollSpy();
-              el.scrollIntoView({ behavior: "smooth", block: "start" });
-            });
-          });
-
-          function scrollSections(dir) {
-            if (!jumpChips) return;
-            const step = Math.min(360, jumpChips.clientWidth * 0.7);
-            jumpChips.scrollBy({ left: dir * step, behavior: "smooth" });
-            setTimeout(updateRails, 250);
-          }
-          railLeft?.addEventListener("click", () => scrollSections(-1));
-          railRight?.addEventListener("click", () => scrollSections(1));
-
-          jumpChips?.addEventListener("scroll", updateRails, { passive: true });
-          window.addEventListener("resize", updateRails);
-
-          function updateToTop() {
-            if (!toTop) return;
-            const show = window.scrollY > 420;
-            toTop.classList.toggle("isVisible", show);
-          }
-          window.addEventListener("scroll", updateToTop, { passive: true });
-          toTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-          updateToTop();
-
-          const observedSections = Array.from(document.querySelectorAll("section.group, section.featuredBlock"));
-          let ticking = false;
-
-          function computeActiveSection() {
-            if (isManualNav) return;
-            ticking = false;
-            if (!observedSections.length || !jumpChips) return;
-
-            const selected = cat?.value || "";
-            if (selected) return;
-
-            const y = window.scrollY + 120;
-            let currentId = "";
-
-            for (const s of observedSections) {
-              if (s.classList.contains("isHidden")) continue;
-              const top = s.offsetTop;
-              if (top <= y) currentId = s.id || "";
-            }
-            if (!currentId) return;
-
-            clearSectionsActive();
-            const btn = jumpChips.querySelector(`.sectionBtn[data-jump="${escAttr(currentId)}"]`);
-            if (btn) btn.classList.add("isActive");
-          }
-
-          window.addEventListener(
-            "scroll",
-            () => {
-              if (!ticking) {
-                ticking = true;
-                requestAnimationFrame(computeActiveSection);
-              }
-            },
-            { passive: true }
-          );
-
-          applyFilter();
-          computeActiveSection();
-          updateRails();
-          setTimeout(updateRails, 50);
-          setTimeout(updateRails, 250);
-
-          console.log("[ideas] controls initialized");
-        } catch (e) {
-          console.error("[ideas] init failed:", e);
+        function updateToTop() {
+          const show = window.scrollY > 420;
+          toTop.classList.toggle("isVisible", show);
         }
+
+        window.addEventListener("scroll", updateToTop, { passive: true });
+        toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+        updateToTop();
       });
     </script>
 
-    <!-- Reuse the SAME styles from PM Toolkit page -->
     <style>
       .toolkit {
         padding-top: 8px;
+        padding-bottom: 72px;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
 
       .group,
       .featuredBlock {
-        scroll-margin-top: 100px;
+        scroll-margin-top: 96px;
       }
 
       .isHidden {
         display: none !important;
       }
 
-      /* ��� Controls bar: glass, minimal ��� */
-      .controlsBar {
-        position: sticky;
-        top: calc(var(--siteHeaderH) + 14px);
-        z-index: 90;
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        align-items: center;
-        padding: 14px 18px;
-        min-height: 56px;
-        box-sizing: border-box;
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.78);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        box-shadow: var(--shadow-md);
-        margin-bottom: 20px;
-        transition: box-shadow 0.28s var(--ease);
-      }
-
-      .controlsBar:focus-within {
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-      }
-
-      .field {
-        flex: 1;
-        min-width: 260px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border);
-        background: var(--surface);
-        transition: border-color 0.2s var(--ease);
-      }
-
-      .field:focus-within {
-        border-color: var(--border-strong);
-      }
-
-      .icon {
-        opacity: 0.5;
-        font-size: 15px;
-        user-select: none;
-        color: var(--ink-muted);
-      }
-
-      .input {
-        width: 100%;
-        border: 0;
-        outline: 0;
-        background: transparent;
-        color: var(--ink);
-        font-size: 15px;
-        font-family: var(--font-sans);
-      }
-
-      .input::placeholder {
-        color: var(--ink-muted);
-      }
-
-      .select {
-        min-width: 200px;
-        max-width: 260px;
-        width: 100%;
-        padding: 12px 14px;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--ink);
-        font-size: 14px;
-        font-family: var(--font-sans);
-        font-weight: 500;
-        cursor: pointer;
-        transition: border-color 0.2s var(--ease);
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .select:hover {
-        border-color: var(--border-strong);
-      }
-
-      .rightActions {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .resultsInline {
-        color: var(--ink-muted);
-        font-size: 14px;
-        font-weight: 450;
-        white-space: nowrap;
-        padding: 0 4px;
-      }
-
-      .ghost {
-        padding: 10px 14px;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border);
-        background: rgba(255, 255, 255, 0.9);
-        color: var(--ink-secondary);
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
-      }
-
-      .ghost:hover {
-        background: var(--surface);
-        color: var(--ink);
-        border-color: var(--border-strong);
-      }
-
-      .viewToggle {
-        display: flex;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-md);
-        overflow: hidden;
-        background: rgba(255, 255, 255, 0.6);
-      }
-
-      .toggleBtn {
-        padding: 10px 14px;
-        border: 0;
-        background: transparent;
-        color: var(--ink-secondary);
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.22s var(--ease), color 0.22s var(--ease);
-      }
-
-      .toggleBtn:hover {
-        color: var(--ink);
-      }
-
-      .toggleBtn.isActive {
-        background: var(--surface);
-        color: var(--ink);
-        box-shadow: var(--shadow-sm);
-      }
-
-      /* ��� Section chips ��� */
-      .sections {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 8px 12px;
-        align-items: center;
-        margin: 0 2px 24px;
-        position: relative;
-      }
-
-      .sectionsLabel {
-        opacity: 0;
-        width: 0;
-        height: 0;
-        overflow: hidden;
-      }
-
-      .sectionsRail {
-        position: absolute;
-        right: 0;
-        top: -2px;
-        display: flex;
-        gap: 6px;
-        z-index: 6;
-        padding-left: 12px;
-        background: linear-gradient(to left, var(--surface-subtle) 72%, transparent);
-      }
-
-      .railBtn {
-        width: 34px;
-        height: 34px;
-        border-radius: var(--radius-sm);
-        border: 1px solid var(--border-strong);
-        background: var(--surface);
-        box-shadow: var(--shadow-sm);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        line-height: 1;
-        font-size: 18px;
-        color: var(--ink-secondary);
-        transition: color 0.2s var(--ease), box-shadow 0.2s var(--ease);
-      }
-
-      .railBtn:hover {
-        color: var(--ink);
-        box-shadow: var(--shadow-md);
-      }
-
-      .railLeft {
-        display: none;
-      }
-      .sections.hasLeft .railLeft {
-        display: flex;
-      }
-
-      .sectionsWrap {
-        position: relative;
-        overflow: hidden;
-      }
-
-      .sectionsWrap::before,
-      .sectionsWrap::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 28px;
-        pointer-events: none;
-        z-index: 2;
-      }
-      .sectionsWrap::before {
-        left: 0;
-        background: linear-gradient(to right, var(--surface-subtle), transparent);
-      }
-      .sectionsWrap::after {
-        right: 0;
-        background: linear-gradient(to left, var(--surface-subtle), transparent);
-      }
-
-      .sectionsList {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scrollbar-width: none;
-        padding: 8px 28px;
-        scroll-behavior: smooth;
-        white-space: nowrap;
-      }
-      .sectionsList::-webkit-scrollbar {
-        display: none;
-      }
-
-      .sectionBtn {
-        border: 1px solid transparent;
-        border-radius: 999px;
-        background: transparent;
-        cursor: pointer;
-        padding: 8px 14px;
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--ink-secondary);
-        flex: 0 0 auto;
-        transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
-      }
-
-      .sectionBtn:hover {
-        color: var(--ink);
-        background: rgba(0, 0, 0, 0.04);
-        border-color: var(--border);
-      }
-
-      .sectionBtn.isActive {
-        color: var(--ink);
-        background: var(--surface);
-        border-color: var(--border-strong);
-        box-shadow: var(--shadow-sm);
-      }
-
-      /* ��� Featured block ��� */
       .featuredBlock {
-        margin-top: 16px;
-        padding: 24px;
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border);
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, transparent 100%);
+        margin-top: 12px;
+        padding: 18px;
+        border-radius: 16px;
+        border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+        background:
+          linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--surface) 98%, white 2%),
+            color-mix(in srgb, var(--surface) 98%, black 2%)
+          );
+        box-shadow:
+          0 1px 0 rgba(255,255,255,0.62) inset,
+          0 8px 20px rgba(0,0,0,0.018);
       }
 
-      /* ��� Group headers ��� */
-.group {
-  margin-top: 0;
-}
+      .group {
+        margin-top: 0;
+      }
 
-.group + .group {
-  margin-top: 40px;
-}
+      .group + .group {
+        margin-top: 34px;
+      }
 
       .groupHead {
         display: flex;
         align-items: baseline;
-        gap: 14px;
-        margin-bottom: 14px;
+        gap: 12px;
+        margin-bottom: 12px;
       }
 
       .groupTitle {
         margin: 0;
-        font-size: 1.05rem;
-        font-weight: 600;
-        letter-spacing: -0.025em;
         color: var(--ink);
+        font-size: 1rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
       }
 
       .count {
         font-weight: 500;
-        color: var(--ink-muted);
-        font-size: 0.92em;
+        color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
+        font-size: 0.9em;
       }
 
       .groupRule {
-display:none
+        display: none;
       }
 
-      /* ��� Grid & cards ��� */
       .grid {
         display: grid;
-        gap: 20px;
+        gap: 16px;
         grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
         align-items: stretch;
       }
@@ -738,28 +257,41 @@ display:none
       .card {
         display: flex;
         flex-direction: column;
-        border-radius: var(--radius-lg);
+        border-radius: 16px;
         text-decoration: none;
         overflow: hidden;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        box-shadow: var(--shadow-sm);
+        border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+        background:
+          linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--surface) 98%, white 2%),
+            color-mix(in srgb, var(--surface) 98%, black 2%)
+          );
+        box-shadow:
+          0 1px 0 rgba(255,255,255,0.62) inset,
+          0 8px 20px rgba(0,0,0,0.018);
         height: 100%;
         color: inherit;
-        transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease), border-color 0.28s var(--ease);
+        transition:
+          transform 0.2s var(--ease),
+          box-shadow 0.2s var(--ease),
+          border-color 0.2s var(--ease);
+        box-sizing: border-box;
       }
 
       .card:hover {
-        transform: translateY(-4px);
-        border-color: var(--border-strong);
-        box-shadow: var(--shadow-lg);
+        transform: translateY(-1px);
+        border-color: color-mix(in srgb, var(--border) 92%, transparent);
+        box-shadow:
+          0 1px 0 rgba(255,255,255,0.72) inset,
+          0 12px 24px rgba(0,0,0,0.035);
       }
 
       .thumb {
         width: 100%;
         aspect-ratio: 16/9;
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, transparent 100%);
-        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.015) 0%, transparent 100%);
+        border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -770,7 +302,7 @@ display:none
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, 0.04));
+        background: linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, 0.025));
         pointer-events: none;
       }
 
@@ -782,47 +314,48 @@ display:none
         display: block;
         padding: 10px;
         box-sizing: border-box;
-        transition: transform 0.35s var(--ease);
-        border-radius: var(--radius-md);
-        background: rgba(255, 255, 255, 0.85);
-        box-shadow: inset 0 0 0 1px var(--border);
+        transition: transform 0.22s var(--ease);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.86);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 68%, transparent);
       }
 
       .card:hover .cover {
-        transform: scale(1.02);
+        transform: scale(1.01);
       }
 
       .thumbEmpty {
-        background: linear-gradient(145deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.01));
+        background: linear-gradient(145deg, rgba(0, 0, 0, 0.025), rgba(0, 0, 0, 0.01));
       }
 
       .thumbMark {
         font-weight: 700;
-        letter-spacing: 0.1em;
-        font-size: 13px;
+        letter-spacing: 0.08em;
+        font-size: 12px;
         color: var(--ink-muted);
-        border: 1px solid var(--border);
-        padding: 10px 14px;
+        border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+        padding: 8px 12px;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.75);
       }
 
       .meta {
-        padding: 20px 20px 22px;
+        padding: 16px 16px 18px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        min-height: 140px;
-          height: 100%; /* ? helps bottom-align tags */
+        gap: 10px;
+        min-height: 132px;
+        height: 100%;
+        box-sizing: border-box;
       }
 
       .cardTitle {
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        line-height: 1.28;
-        font-size: 1.05rem;
         margin: 0;
         color: var(--ink);
+        font-weight: 650;
+        letter-spacing: -0.015em;
+        line-height: 1.22;
+        font-size: 1rem;
       }
 
       .excerpt {
@@ -830,158 +363,96 @@ display:none
         flex-direction: column;
         gap: 6px;
         margin-top: 0;
-          flex: 1; /* ? key */
-
+        flex: 1;
       }
 
       .excerptLabel {
-        font-size: 11px;
-        letter-spacing: 0.08em;
+        font-size: 10px;
+        line-height: 1.1;
+        letter-spacing: 0.085em;
         text-transform: uppercase;
-        color: var(--ink-muted);
-        line-height: 1;
+        color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        font-weight: 700;
       }
 
       .excerptLabel::before {
         content: "";
         width: 8px;
         height: 1px;
-        background: var(--border-strong);
+        background: color-mix(in srgb, var(--border) 80%, transparent);
       }
 
       .whenToUse {
-        color: var(--ink-secondary);
-        font-size: 0.90rem;
-        line-height: 1.55;
+        color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
+        font-size: 0.88rem;
+        line-height: 1.52;
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        min-height: calc(1.55em * 3);
-          max-height: calc(1.55em * 3); /* ? keeps height uniform */
+        min-height: calc(1.52em * 3);
+        max-height: calc(1.52em * 3);
+      }
+
+      .muted {
+        color: var(--ink-muted);
       }
 
       .tagsRow {
-  margin-top: auto; /* ? pushes tags to bottom */
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding-top: 4px;
-    min-height: 56px; /* reserve space for up to ~2 rows of tags */
-  align-content: flex-start;
-}
-
-.tagsRow:empty {
-  display: none;
-}
-
-.tagChip {
-  display: inline-flex;
-  align-items: center;
-  max-width: 100%;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.03);
-  color: var(--ink-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.toolkit[data-view="compact"] .tagsRow {
-  margin-top: 6px; /* optional: more natural spacing in compact layout */
-}
-
-      /* ��� Compact view ��� */
-      .toolkit[data-view="compact"] .grid {
-        grid-template-columns: 1fr;
-      }
-      .toolkit[data-view="compact"] .card {
-        flex-direction: row;
-        height: auto;
-      }
-      .toolkit[data-view="compact"] .thumb {
-        width: 200px;
-        aspect-ratio: 16/10;
-        border-bottom: 0;
-        border-right: 1px solid var(--border);
-        flex: 0 0 auto;
-      }
-      .toolkit[data-view="compact"] .meta {
-        min-height: unset;
-        width: 100%;
-      }
-      .toolkit[data-view="compact"] .whenToUse {
-        -webkit-line-clamp: 2;
-        min-height: calc(1.55em * 2);
+        margin-top: auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding-top: 2px;
+        min-height: 48px;
+        align-content: flex-start;
       }
 
-      /* ��� Empty state ��� */
-      .empty {
-        margin: 28px 0 12px;
-        padding: 32px 24px;
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border);
-        background: rgba(0, 0, 0, 0.02);
-        text-align: center;
+      .tagsRow:empty {
+        display: none;
       }
 
-      .emptyTitle {
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin-bottom: 8px;
-        color: var(--ink);
+      .tagChip {
+        display: inline-flex;
+        align-items: center;
+        max-width: 100%;
+        padding: 5px 8px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+        background: rgba(0, 0, 0, 0.025);
+        color: color-mix(in srgb, var(--ink-muted) 82%, var(--ink) 18%);
+        font-size: 11px;
+        font-weight: 550;
+        line-height: 1;
+        white-space: nowrap;
       }
 
-      .emptyDesc {
-        color: var(--ink-secondary);
-        margin-bottom: 16px;
-        font-size: 15px;
-      }
-
-      .empty .primary {
-        padding: 12px 20px;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border-strong);
-        background: var(--surface);
-        color: var(--ink);
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        box-shadow: var(--shadow-sm);
-        transition: box-shadow 0.22s var(--ease), transform 0.2s var(--ease);
-      }
-
-      .empty .primary:hover {
-        box-shadow: var(--shadow-md);
-        transform: translateY(-1px);
-      }
-
-      /* ��� Back to top ��� */
       .toTop {
         position: fixed;
-        right: 24px;
-        bottom: 24px;
+        right: 20px;
+        bottom: 20px;
         z-index: 60;
-        padding: 12px 16px;
+        min-height: 36px;
+        padding: 0 12px;
         border-radius: 999px;
-        border: 1px solid var(--border-strong);
-        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+        background: color-mix(in srgb, var(--surface) 96%, white 4%);
         backdrop-filter: blur(12px);
-        box-shadow: var(--shadow-lg);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow:
+          0 1px 0 rgba(255,255,255,0.62) inset,
+          0 10px 20px rgba(0,0,0,0.05);
         cursor: pointer;
         opacity: 0;
         transform: translateY(8px);
         pointer-events: none;
-        transition: opacity 0.22s var(--ease), transform 0.22s var(--ease);
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--ink-secondary);
+        transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), border-color 0.2s var(--ease);
+        font-size: 12px;
+        font-weight: 600;
+        color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
       }
 
       .toTop.isVisible {
@@ -992,29 +463,47 @@ display:none
 
       .toTop:hover {
         color: var(--ink);
+        border-color: color-mix(in srgb, var(--border) 92%, transparent);
       }
 
-      .ghost:active,
-      .toggleBtn:active,
-      .railBtn:active {
-        transform: translateY(1px);
-      }
+      @media (max-width: 720px) {
+        .toolkit {
+          padding-bottom: 52px;
+        }
 
-      @media (max-width: 520px) {
-        .resultsInline {
-          display: none;
+        .featuredBlock {
+          padding: 12px;
+          border-radius: 14px;
         }
-        .sectionsRail {
-          display: none;
-        }
-        .sectionsList {
-          padding: 8px 16px;
-        }
-        .controlsBar {
-          padding: 12px 14px;
-        }
+
         .grid {
+          gap: 10px;
           grid-template-columns: 1fr;
+        }
+
+        .card {
+          border-radius: 14px;
+        }
+
+        .meta {
+          padding: 14px;
+          gap: 8px;
+        }
+
+        .cardTitle {
+          font-size: 0.96rem;
+        }
+
+        .whenToUse {
+          font-size: 0.86rem;
+          line-height: 1.48;
+          min-height: calc(1.48em * 3);
+          max-height: calc(1.48em * 3);
+        }
+
+        .toTop {
+          right: 14px;
+          bottom: 14px;
         }
       }
 
@@ -1022,9 +511,15 @@ display:none
         * {
           scroll-behavior: auto !important;
         }
+
         .card,
-        .cover {
+        .cover,
+        .toTop {
           transition: none !important;
+        }
+
+        .card:hover {
+          transform: none !important;
         }
       }
     </style>

@@ -5,54 +5,74 @@ import Footer from "../components/Footer.astro";
 ---
 
 <BaseLayout
-  title="Al Tareen — Product Manager"
-  description="Personal site: projects, PM toolkit, articles, resume, and ways to connect."
+  title="Al Tareen — AI Transformation, Product Management, Product Strategy"
+  description="Personal site: projects, PM toolkit, finance toolkit, concepts, resume, and ways to connect."
 >
   <Header />
 
   <main class="wrap">
-    <section class="hero">
-      <h1>Product Manager. Builder. Systems thinker.</h1>
+    <section class="hero" aria-labelledby="home-title">
+      <p class="eyebrow">AI Transformation • Product Management • Product Strategy</p>
+
+      <h1 id="home-title">Turning AI and product strategy into execution.</h1>
+
       <p class="lead">
-        I build practical products and workflows—especially around AI, automation, and operations.
-        This is my portfolio, toolkit, and writing hub.
+        Explore selected Projects, a PM Toolkit for practical decision-making, a Finance Toolkit with models and templates, and Concepts that reflect how I think through new opportunities.
       </p>
 
       <div class="cta">
-        <a class="btn primary" href="/projects">View Projects</a>
-        <a class="btn" href="/resume">Resume</a>
-        <a class="btn" href="/contact">Contact</a>
+        <div class="cta-row cta-row-main">
+          <a class="btn primary" href="/projects">View Projects</a>
+          <a class="btn" href="/files/Al-Tareen-Resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+        </div>
+
+
       </div>
     </section>
 
-    <section class="grid">
-      <a class="card" href="/projects">
+    <section class="grid" aria-label="Homepage sections">
+      <a class="card card-feature" href="/projects">
+        <div class="card-label">Featured Work</div>
         <h2>Projects</h2>
-        <p>Selected work, outcomes, and demos.</p>
+        <p>Selected projects with measurable outcomes.</p>
+        <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
+
+      <!-- PM Toolkit now uses the same standard card style -->
       <a class="card" href="/toolkit">
+        <div class="card-label">Frameworks</div>
         <h2>PM Toolkit</h2>
-        <p>Templates, checklists, and frameworks I actually use.</p>
+        <p>Frameworks that help product managers make better decisions.</p>
+        <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
+
       <a class="card" href="/finance-toolkit">
+        <div class="card-label">Models</div>
         <h2>Finance Toolkit</h2>
-        <p>Financial models and templates for planning and analysis.</p>
+        <p>Financial models for founders and finance professionals.</p>
+        <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
-      <a class="card" href="/articles">
-        <h2>Articles</h2>
-        <p>Notes on product, execution, AI, and career growth.</p>
+
+      <a class="card" href="/concepts">
+        <div class="card-label">Concepts</div>
+        <h2>Concepts</h2>
+        <p>Early-stage concepts and strategic business ideas.</p>
+        <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
-      <a class="card" href="/socials">
-        <h2>Socials</h2>
-        <p>Where to find me online.</p>
-      </a>
+
       <a class="card" href="/about">
+        <div class="card-label">Profile</div>
         <h2>About</h2>
-        <p>My background and what I’m optimizing for.</p>
+        <p>Who I am and where to find me.</p>
+        <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
-      <a class="card" href="/contact">
+
+      <!-- Mobile-only Contact tile (appears under About on mobile) -->
+      <a class="card mobile-only-card" href="/contact">
+        <div class="card-label">Connect</div>
         <h2>Contact</h2>
-        <p>Reach me fast without spam.</p>
+        <p>Ways to get in touch for collaboration, work, or inquiries.</p>
+        <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
     </section>
   </main>
@@ -61,129 +81,457 @@ import Footer from "../components/Footer.astro";
 </BaseLayout>
 
 <style>
+  /* Reinforce sticky header on mobile from this page too */
+  :global(header.wrap) {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
   .wrap {
     max-width: var(--content-width, 980px);
     margin: 0 auto;
-    padding: 48px 28px 64px;
+    padding: 56px 28px 112px;
+    box-sizing: border-box;
   }
 
   .hero {
-    padding: 32px 0 48px;
-    max-width: 42rem;
+    padding: 20px 0 42px;
+    max-width: 52rem;
+    position: relative;
+    isolation: isolate;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    left: -5%;
+    top: -18px;
+    width: min(720px, 92vw);
+    height: 300px;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        70% 70% at 18% 20%,
+        rgba(255, 255, 255, 0.72) 0%,
+        rgba(255, 255, 255, 0.42) 38%,
+        rgba(255, 255, 255, 0) 100%
+      );
+    opacity: 0.55;
+  }
+
+  .hero::after {
+    content: "";
+    display: block;
+    margin-top: 28px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--border) 74%, transparent) 0%,
+      color-mix(in srgb, var(--border) 54%, transparent) 44%,
+      transparent 100%
+    );
+  }
+
+  .eyebrow {
+    margin: 0 0 12px;
+    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    text-wrap: balance;
   }
 
   .hero h1 {
-    font-size: clamp(2.25rem, 5vw, 3.25rem);
-    font-weight: 600;
-    line-height: 1.1;
-    letter-spacing: -0.04em;
-    margin: 0 0 20px;
+    margin: 0 0 16px;
     color: var(--ink);
+    font-size: clamp(1.95rem, 5vw, 2.95rem);
+    font-weight: 650;
+    line-height: 1.04;
+    letter-spacing: -0.038em;
+    text-wrap: balance;
+    max-width: 20ch;
   }
 
   .lead {
-    font-size: 1.125rem;
-    line-height: 1.65;
-    max-width: 38ch;
-    color: var(--ink-secondary);
-    margin: 0 0 28px;
+    margin: 0;
+    color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 90%, var(--ink) 10%);
+    font-size: 0.98rem;
+    line-height: 1.68;
+    max-width: 58ch;
   }
 
   .cta {
+    margin-top: 22px;
+    display: grid;
+    gap: 8px;
+  }
+
+  .cta-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin: 0;
+    align-items: center;
+    gap: 10px;
   }
 
   .btn {
-    display: inline-block;
-    padding: 12px 20px;
-    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 10px;
     text-decoration: none;
-    font-weight: 500;
-    font-size: 15px;
-    transition: background 0.22s var(--ease), color 0.22s var(--ease), transform 0.2s var(--ease);
-  }
-
-  .btn:not(.primary) {
-    border: 1px solid var(--border-strong);
-    background: var(--surface);
-    color: var(--ink);
-  }
-
-  .btn:not(.primary):hover {
-    background: rgba(0, 0, 0, 0.04);
+    font-weight: 550;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0.003em;
+    border: 1px solid transparent;
+    box-sizing: border-box;
+    transition:
+      background-color 0.18s var(--ease),
+      border-color 0.18s var(--ease),
+      color 0.18s var(--ease),
+      box-shadow 0.18s var(--ease),
+      transform 0.18s var(--ease);
   }
 
   .btn.primary {
     background: var(--ink);
     color: var(--surface);
-    border: 1px solid var(--ink);
+    border-color: var(--ink);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
   }
 
   .btn.primary:hover {
-    background: #333;
-    border-color: #333;
+    background: color-mix(in srgb, var(--ink) 92%, black 8%);
+    border-color: color-mix(in srgb, var(--ink) 92%, black 8%);
+    transform: translateY(-1px);
+  }
+
+  .btn:not(.primary) {
+    background: color-mix(in srgb, var(--surface) 98%, black 2%);
+    color: var(--ink);
+    border-color: color-mix(in srgb, var(--border) 78%, transparent);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.60) inset;
+  }
+
+  .btn:not(.primary):hover {
+    background: color-mix(in srgb, var(--surface) 95%, black 2%);
+    border-color: color-mix(in srgb, var(--border) 92%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .text-link {
+    color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 560;
+    line-height: 1;
+    padding: 0 2px;
+    transition: color 0.18s var(--ease), opacity 0.18s var(--ease);
+    opacity: 0.96;
+  }
+
+  .text-link:hover {
+    color: var(--ink);
+    opacity: 1;
+  }
+
+  .cta-row-secondary .text-link {
+    opacity: 0.88;
+  }
+
+  .mobile-only,
+  .mobile-only-card {
+    display: none;
   }
 
   .grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
-    padding: 0;
+    gap: 16px;
+    padding: 2px 0 6px;
   }
 
   .card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 24px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 132px;
+    padding: 18px;
+    padding-right: 34px;
     text-decoration: none;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.28s var(--ease), transform 0.28s var(--ease), border-color 0.28s var(--ease);
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--surface) 98%, white 2%),
+        color-mix(in srgb, var(--surface) 98%, black 2%)
+      );
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.62) inset,
+      0 8px 20px rgba(0,0,0,0.018);
+    transition:
+      border-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      transform 0.2s var(--ease);
+    box-sizing: border-box;
   }
 
   .card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--border-strong);
-    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--border) 92%, transparent);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.72) inset,
+      0 12px 24px rgba(0,0,0,0.035);
+    transform: translateY(-1px);
+  }
+
+  .card-feature {
+    grid-column: span 2;
+    min-height: 142px;
+  }
+
+  .card-label {
+    margin: 0 0 1px;
+    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
+    font-size: 10px;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
   }
 
   .card h2 {
-    margin: 0 0 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    margin: 0;
     color: var(--ink);
+    font-size: 1.04rem;
+    font-weight: 650;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
   }
 
   .card p {
     margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: var(--ink-secondary);
+    color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
+    font-size: 0.92rem;
+    line-height: 1.52;
+    max-width: 34ch;
+  }
+
+  .card-feature p {
+    max-width: 52ch;
+  }
+
+  .card-arrow {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    color: color-mix(in srgb, var(--ink-muted) 74%, var(--ink) 26%);
+    font-size: 12px;
+    line-height: 1;
+    opacity: 0;
+    transform: translate(-1px, 1px);
+    transition:
+      opacity 0.18s var(--ease),
+      transform 0.18s var(--ease),
+      color 0.18s var(--ease);
+    pointer-events: none;
+  }
+
+  .card:hover .card-arrow {
+    opacity: 0.95;
+    transform: translate(0, 0);
+    color: var(--ink);
   }
 
   @media (max-width: 900px) {
+    .wrap {
+      padding: 44px 20px 112px;
+    }
+
+    .hero {
+      padding: 18px 0 36px;
+    }
+
+    .hero::before {
+      left: -10%;
+      top: -12px;
+      height: 260px;
+      opacity: 0.48;
+    }
+
     .grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card-feature {
+      grid-column: span 2;
+    }
+
+    .card {
+      padding: 16px;
+      padding-right: 30px;
+    }
+
+    .card-arrow {
+      right: 12px;
+      top: 12px;
     }
   }
 
   @media (max-width: 560px) {
     .wrap {
-      padding: 32px 20px 48px;
+      padding: 34px 16px 112px;
     }
+
     .hero {
-      padding: 24px 0 36px;
+      padding: 18px 0 30px;
+      max-width: none;
     }
+
+    .hero::before {
+      left: -14%;
+      top: -6px;
+      width: 132%;
+      height: 240px;
+      opacity: 0.34;
+    }
+
+    .hero::after {
+      margin-top: 24px;
+    }
+
+    .eyebrow {
+      margin-bottom: 14px;
+      font-size: 10.25px;
+      line-height: 1.35;
+      letter-spacing: 0.085em;
+      max-width: 32ch;
+      opacity: 0.9;
+    }
+
+    .hero h1 {
+      font-size: clamp(1.9rem, 8.2vw, 2.35rem);
+      line-height: 1.03;
+      letter-spacing: -0.032em;
+      margin-bottom: 14px;
+      max-width: 12.5ch;
+      text-wrap: balance;
+    }
+
+    .lead {
+      max-width: 34ch;
+      font-size: 0.97rem;
+      line-height: 1.62;
+      color: color-mix(in srgb, var(--ink-muted) 92%, var(--ink) 8%);
+    }
+
+    .cta {
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    .cta-row-main {
+      gap: 8px;
+    }
+
+    .cta-row-secondary {
+      margin-top: 2px;
+    }
+
+    .mobile-only {
+      display: flex;
+    }
+
+    .btn {
+      min-height: 40px;
+      padding: 0 13px;
+      font-size: 13px;
+      border-radius: 11px;
+    }
+
+    .btn.primary {
+      min-width: 116px;
+    }
+
+    .text-link {
+      font-size: 13px;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 4px;
+    }
+
     .grid {
       grid-template-columns: 1fr;
-      gap: 16px;
+      gap: 12px;
+      padding-bottom: 2px;
     }
-    .card {
-      padding: 20px;
+
+    .card,
+    .card-feature {
+      grid-column: auto;
+      min-height: 0;
+      padding: 14px;
+      padding-right: 28px;
+      border-radius: 14px;
+    }
+
+    .mobile-only-card {
+      display: flex;
+    }
+
+    .card-label {
+      font-size: 10px;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+    }
+
+    .card p {
+      font-size: 0.88rem;
+      max-width: none;
+    }
+
+    .card-arrow {
+      right: 11px;
+      top: 11px;
+      font-size: 11px;
+      opacity: 0.72;
+      transform: none;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .hero h1 {
+      max-width: 11.8ch;
+    }
+
+    .lead {
+      max-width: 32ch;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .btn.primary {
+      min-width: 110px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn,
+    .card,
+    .text-link,
+    .card-arrow {
+      transition: none;
     }
   }
 </style>

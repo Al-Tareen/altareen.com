@@ -7,6 +7,7 @@ const nav = [
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
+
 const path = Astro.url.pathname;
 const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href));
 ---
@@ -17,15 +18,204 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
       <img src="/logo.png" alt="Al Tareen" class="brandLogo" width="48" height="48" />
     </a>
 
-    <nav class="nav" aria-label="Primary">
+    <!-- Desktop nav -->
+    <nav class="nav desktopNav" aria-label="Primary">
       {nav.map((i) => (
         <a class:list={["link", isActive(i.href) && "active"]} href={i.href}>
           {i.label}
         </a>
       ))}
     </nav>
+
+    <!-- Mobile menu -->
+    <details class="mobileMenu" data-mobile-menu>
+      <summary class="menuBtn" aria-label="Open navigation menu">
+        <span class="menuBtnInner">
+          <span class="menuIcon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" focusable="false" aria-hidden="true">
+              <path d="M4 7h16" />
+              <path d="M4 12h16" />
+              <path d="M4 17h16" />
+            </svg>
+          </span>
+          <span class="menuBtnText">Menu</span>
+          <span class="menuCaret" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none" focusable="false" aria-hidden="true">
+              <path d="M5.5 7.5L10 12l4.5-4.5" />
+            </svg>
+          </span>
+        </span>
+      </summary>
+
+      <!-- Mobile backdrop overlay -->
+      <button
+        type="button"
+        class="mobileBackdrop"
+        aria-label="Close navigation menu"
+        data-mobile-backdrop
+        tabindex="-1"
+      ></button>
+
+      <nav class="mobilePanel" aria-label="Mobile Primary Navigation">
+        <div class="mobilePanelHead">Navigation</div>
+
+        {nav.map((i) => (
+          <a class:list={["mobileLink", isActive(i.href) && "active"]} href={i.href}>
+            <span>{i.label}</span>
+            <span class="mobileLinkArrow" aria-hidden="true">→</span>
+          </a>
+        ))}
+      </nav>
+    </details>
   </div>
 </header>
+
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", () => {
+    const menu = document.querySelector("[data-mobile-menu]");
+    if (!menu) return;
+
+    const summary = menu.querySelector("summary");
+    const backdrop = menu.querySelector("[data-mobile-backdrop]");
+    const panel = menu.querySelector(".mobilePanel");
+    const links = menu.querySelectorAll(".mobileLink");
+
+    let scrollYBeforeLock = 0;
+    let isClosing = false;
+    let closeTimer;
+
+    const isMobile = () => window.innerWidth <= 720;
+
+    function lockScroll() {
+      if (!isMobile()) return;
+      if (document.body.classList.contains("menu-lock")) return;
+
+      scrollYBeforeLock = window.scrollY || window.pageYOffset || 0;
+      document.body.style.top = `-${scrollYBeforeLock}px`;
+      document.body.classList.add("menu-lock");
+      document.documentElement.classList.add("menu-lock");
+    }
+
+    function unlockScroll() {
+      if (!document.body.classList.contains("menu-lock")) return;
+
+      const top = document.body.style.top;
+      document.body.classList.remove("menu-lock");
+      document.documentElement.classList.remove("menu-lock");
+      document.body.style.top = "";
+
+      const restoreY = top ? Math.abs(parseInt(top, 10)) : scrollYBeforeLock;
+      window.scrollTo(0, restoreY || 0);
+    }
+
+    function finishClose({ focusSummary = false } = {}) {
+      menu.removeAttribute("open");
+      menu.classList.remove("isClosing");
+      isClosing = false;
+      unlockScroll();
+      if (focusSummary) summary?.focus();
+    }
+
+    function closeMenu({ focusSummary = false } = {}) {
+      if (!menu.hasAttribute("open") || isClosing) return;
+
+      isClosing = true;
+      menu.classList.add("isClosing");
+
+      window.clearTimeout(closeTimer);
+      closeTimer = window.setTimeout(() => {
+        finishClose({ focusSummary });
+      }, 180);
+    }
+
+    function openMenu() {
+      if (!menu.hasAttribute("open")) return;
+      menu.classList.remove("isClosing");
+      isClosing = false;
+      window.clearTimeout(closeTimer);
+      lockScroll();
+    }
+
+    menu.addEventListener("toggle", () => {
+      if (menu.hasAttribute("open")) {
+        openMenu();
+      } else {
+        // native close fallback
+        window.clearTimeout(closeTimer);
+        menu.classList.remove("isClosing");
+        isClosing = false;
+        unlockScroll();
+      }
+    });
+
+    // Intercept summary click ONLY when menu is already open, so we can animate close
+    summary?.addEventListener("click", (e) => {
+      if (!isMobile()) return;
+      if (!menu.hasAttribute("open")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      closeMenu({ focusSummary: true });
+    });
+
+    // Close on nav click
+    links.forEach((link) => {
+      link.addEventListener("click", () => closeMenu());
+    });
+
+    // Backdrop click (main outside click)
+    backdrop?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeMenu({ focusSummary: true });
+    });
+
+    // Capture-phase outside click fallback (more reliable than bubble on mobile)
+    document.addEventListener(
+      "pointerdown",
+      (e) => {
+        if (!isMobile()) return;
+        if (!menu.hasAttribute("open") || isClosing) return;
+
+        const target = e.target;
+        if (!(target instanceof Node)) return;
+
+        const clickedSummary = summary?.contains(target);
+        const clickedPanel = panel?.contains(target);
+        const clickedInsideMenu = menu.contains(target);
+
+        // If click is not on summary/panel, close
+        if (!clickedSummary && !clickedPanel) {
+          // If backdrop exists this may be redundant, but it's a safe fallback
+          if (!clickedInsideMenu || target === backdrop) {
+            closeMenu();
+          }
+        }
+      },
+      true
+    );
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (!menu.hasAttribute("open")) return;
+      closeMenu({ focusSummary: true });
+    });
+
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 720) {
+        window.clearTimeout(closeTimer);
+        menu.classList.remove("isClosing");
+        isClosing = false;
+        unlockScroll();
+        menu.removeAttribute("open");
+      }
+    });
+
+    window.addEventListener("pagehide", () => {
+      window.clearTimeout(closeTimer);
+      unlockScroll();
+    });
+  });
+</script>
 
 <style>
   :global(:root) {
@@ -37,35 +227,50 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
     top: 0;
     z-index: 100;
     isolation: isolate;
-    border-bottom: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.82);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    background:
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--surface) 92%, transparent),
+        color-mix(in srgb, var(--surface) 98%, black 2%)
+      );
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
   }
 
   .wrap::before {
     content: "";
     position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: rgba(255, 255, 255, 0.82);
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--ink-muted) 18%, transparent) 20%,
+      color-mix(in srgb, var(--ink-muted) 20%, transparent) 80%,
+      transparent 100%
+    );
+    pointer-events: none;
   }
 
   .bar {
     max-width: var(--content-width, 980px);
     margin: 0 auto;
-    padding: 16px 24px;
+    padding: 14px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 16px;
+    position: relative;
   }
 
   .brand {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     text-decoration: none;
     line-height: 0;
+    border-radius: 10px;
+    flex-shrink: 0;
   }
 
   .brandLogo {
@@ -76,7 +281,7 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
     filter: invert(1);
   }
 
-  .nav {
+  .desktopNav {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -85,35 +290,402 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
 
   .link {
     text-decoration: none;
-    font-size: 15px;
-    font-weight: 450;
-    padding: 8px 12px;
-    border-radius: var(--radius-sm, 10px);
-    color: var(--ink-secondary, rgba(0, 0, 0, 0.65));
-    transition: color 0.2s var(--ease, ease), background 0.2s var(--ease, ease);
+    font-size: 14px;
+    line-height: 1;
+    font-weight: 560;
+    letter-spacing: 0.003em;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
+    transition:
+      color 0.18s var(--ease),
+      background-color 0.18s var(--ease),
+      border-color 0.18s var(--ease),
+      box-shadow 0.18s var(--ease);
+    border: 1px solid transparent;
+    white-space: nowrap;
   }
 
   .link:hover {
-    color: var(--ink, #1d1d1f);
-    background: rgba(0, 0, 0, 0.04);
+    color: var(--ink);
+    background: color-mix(in srgb, var(--surface) 82%, black 3%);
+    border-color: color-mix(in srgb, var(--border) 72%, transparent);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset;
   }
 
-  .active {
-    color: var(--ink, #1d1d1f);
-    background: rgba(0, 0, 0, 0.06);
+  .link.active {
+    color: var(--ink);
+    background: color-mix(in srgb, var(--surface) 78%, black 4%);
+    border-color: color-mix(in srgb, var(--border) 80%, transparent);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.45) inset;
+  }
+
+  .mobileMenu {
+    display: none;
+  }
+
+  :global(html.menu-lock),
+  :global(body.menu-lock) {
+    overflow: hidden;
+  }
+
+  :global(body.menu-lock) {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
   }
 
   @media (max-width: 720px) {
     :global(:root) {
-      --siteHeaderH: 108px;
+      --siteHeaderH: 64px;
     }
+
     .bar {
-      align-items: flex-start;
-      flex-direction: column;
-      padding: 16px 20px;
+      padding: 12px 16px;
+      gap: 10px;
+      align-items: center;
     }
-    .nav {
-      justify-content: flex-start;
+
+    .brandLogo {
+      height: 34px;
+    }
+
+    .desktopNav {
+      display: none;
+    }
+
+    .mobileMenu {
+      display: block;
+      margin-left: auto;
+      position: relative;
+    }
+
+    .mobileMenu > summary {
+      list-style: none;
+      position: relative;
+      z-index: 3;
+    }
+
+    .mobileMenu > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .menuBtn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 0;
+      border-radius: 11px;
+      border: 1px solid color-mix(in srgb, var(--border) 66%, transparent);
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--surface) 96%, white 4%),
+          color-mix(in srgb, var(--surface) 92%, black 2%)
+        );
+      color: color-mix(in srgb, var(--ink-muted) 76%, var(--ink) 24%);
+      cursor: pointer;
+      user-select: none;
+      transition:
+        color 0.18s var(--ease),
+        border-color 0.18s var(--ease),
+        background-color 0.18s var(--ease),
+        box-shadow 0.18s var(--ease),
+        transform 0.18s var(--ease);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.5) inset,
+        0 4px 14px rgba(0,0,0,0.04);
+    }
+
+    .menuBtnInner {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 10px 8px 9px;
+      line-height: 1;
+    }
+
+    .menuBtn:hover {
+      color: var(--ink);
+      border-color: color-mix(in srgb, var(--border) 82%, transparent);
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--surface) 98%, white 2%),
+          color-mix(in srgb, var(--surface) 94%, black 1%)
+        );
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.55) inset,
+        0 6px 16px rgba(0,0,0,0.05);
+    }
+
+    .menuBtn:active {
+      transform: translateY(0.5px);
+    }
+
+    .menuIcon {
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.9;
+      flex: 0 0 auto;
+    }
+
+    .menuIcon svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+    }
+
+    .menuBtnText {
+      font-size: 12.5px;
+      line-height: 1;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .menuCaret {
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.8;
+      transition: transform 0.18s var(--ease), opacity 0.18s var(--ease);
+      margin-left: 1px;
+    }
+
+    .menuCaret svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .mobileMenu[open] .menuBtn {
+      color: var(--ink);
+      border-color: color-mix(in srgb, var(--border) 86%, transparent);
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--surface) 90%, white 4%),
+          color-mix(in srgb, var(--surface) 86%, black 3%)
+        );
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.45) inset,
+        0 8px 20px rgba(0,0,0,0.07);
+    }
+
+    .mobileMenu[open] .menuCaret {
+      transform: rotate(180deg);
+      opacity: 1;
+    }
+
+.mobileBackdrop {
+  display: none;
+}
+
+.mobileMenu[open] .mobileBackdrop {
+  display: block;
+  position: fixed;
+  inset: var(--siteHeaderH) 0 0 0;
+  z-index: 1;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  appearance: none;
+  cursor: pointer;
+  pointer-events: auto;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(10, 10, 10, 0.10) 0%,
+      rgba(10, 10, 10, 0.30) 100%
+    );
+
+  -webkit-backdrop-filter: blur(8px) saturate(115%);
+  backdrop-filter: blur(8px) saturate(115%);
+
+  animation: mobileBackdropFade 180ms var(--ease) both;
+}
+
+.mobilePanel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 2;
+  width: min(276px, calc(100vw - 32px));
+  padding: 8px;
+  border-radius: 14px;
+
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(255, 255, 255, 0.98)
+    );
+  -webkit-backdrop-filter: blur(148px) saturate(140%);
+  backdrop-filter: blur(148px) saturate(140%);
+
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.12),
+    0 1px 0 rgba(255,255,255,0.65) inset;
+
+  display: grid;
+  gap: 4px;
+
+  /* animation base state */
+  opacity: 0;
+  transform: translateY(-6px) scale(0.985);
+  transform-origin: top right;
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity 180ms var(--ease),
+    transform 220ms var(--ease),
+    visibility 0s linear 220ms;
+}
+
+.mobileMenu[open] .mobilePanel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+  transition:
+    opacity 180ms var(--ease),
+    transform 220ms var(--ease),
+    visibility 0s linear 0s;
+}
+
+    .mobilePanelHead {
+      padding: 6px 8px 8px;
+      margin: 0 0 2px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: color-mix(in srgb, var(--ink) 72%, var(--ink-muted) 28%);
+      opacity: 0.82;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    }
+
+.mobileLink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;
+  padding: 8px 10px 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 560;
+  letter-spacing: 0.002em;
+  transition:
+    color 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    background-color 0.18s var(--ease),
+    transform 0.18s var(--ease),
+    box-shadow 0.18s var(--ease);
+}
+
+/* thin left accent rail (hidden by default) */
+.mobileLink::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 72%, transparent);
+  opacity: 0;
+  transform: scaleY(0.7);
+  transform-origin: center;
+  transition:
+    opacity 0.18s var(--ease),
+    transform 0.18s var(--ease);
+}
+
+    .mobileLinkArrow {
+      font-size: 11px;
+      line-height: 1;
+      opacity: 0.45;
+      transition: opacity 0.18s var(--ease), transform 0.18s var(--ease);
+    }
+
+.mobileLink:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 84%, black 2%);
+  border-color: color-mix(in srgb, var(--border) 62%, transparent);
+}
+
+.mobileLink:hover .mobileLinkArrow {
+  opacity: 0.8;
+  transform: translateX(1px);
+}
+
+.mobileLink.active {
+  font-weight: 600;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 82%, black 2%);
+  border-color: color-mix(in srgb, var(--border) 68%, transparent);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset;
+}
+
+.mobileLink.active::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.mobileLink.active .mobileLinkArrow {
+  opacity: 0.9;
+}
+
+    .menuBtn:focus-visible,
+    .mobileLink:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 10%, transparent);
+    }
+
+    @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .mobileMenu[open] .mobileBackdrop {
+    background: rgba(0, 0, 0, 0.10);
+  }
+
+  .mobilePanel {
+    background: rgba(255, 255, 255, 0.95);
+  }
+}
+  }
+
+@keyframes mobileBackdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+  @media (prefers-reduced-motion: reduce) {
+    .link,
+    .menuBtn,
+    .mobileLink,
+    .menuCaret,
+    .mobileLinkArrow,
+    .mobileBackdrop {
+      transition: none;
     }
   }
 </style>

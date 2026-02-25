@@ -1,43 +1,439 @@
-<footer class="wrap">
-  <div class="inner">
-    <div class="muted">© {new Date().getFullYear()} Al Tareen</div>
-    <div class="muted">
-      <a href="/contact">Contact</a> · <a href="/socials">Socials</a>
+<footer class="footer-wrap">
+  <div class="footer-shell">
+    <!-- Top section -->
+    <div class="footer-grid">
+      <!-- Column 1: Branding -->
+      <section class="brand-col" aria-label="Brand">
+        <a href="/" class="brand-link" aria-label="Al Tareen Home">
+          <img src="/logoblack.png" alt="Al Tareen logo" class="brand-logo" loading="lazy" />
+          <!-- <span class="brand-logo-fallback">AL</span> -->
+        </a>
+
+        <div class="brand-text">
+          <div class="brand-name">Al Tareen</div>
+          <p class="brand-tagline">
+            AI Transformation • Product Management • Product Strategy
+          </p>
+
+          <!-- Social links under branding -->
+          <div class="brand-social" aria-label="External links">
+            <a href="https://www.linkedin.com/in/California" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <span class="sep" aria-hidden="true">·</span>
+            <a href="https://github.com/Al-Tareen" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <span class="sep" aria-hidden="true">·</span>
+            <a href="/files/Al-Tareen-Resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Column 2: Navigation -->
+      <nav class="nav-col" aria-label="Footer Navigation">
+        <div class="col-title">Navigation</div>
+        <ul class="link-list">
+          <li><a href="/">Home</a></li>
+          <li><a href="/projects">Projects</a></li>
+          <li><a href="/toolkit">PM Toolkit</a></li>
+          <li><a href="/finance-toolkit">Finance Toolkit</a></li>
+          <li><a href="/concepts">Concepts</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Column 3: Legal -->
+      <nav class="legal-col" aria-label="Legal and Notice">
+        <div class="col-title">Legal & Notice</div>
+        <ul class="link-list">
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/disclaimer">Disclaimer</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="notice-line" role="note" aria-label="Disclaimer">
+      Educational content only. Nothing on this site constitutes financial, legal, or tax advice.
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="bottom-bar">
+      <div class="bottom-left">© 2026 Al Tareen. All rights reserved.</div>
     </div>
   </div>
 </footer>
 
 <style>
-  .wrap {
-    border-top: 1px solid var(--border);
-      margin-top: auto;      /* ✅ pushes footer to bottom when page is short */
-    background: var(--surface);
+.footer-wrap {
+  margin-top: 102px;
+  position: relative;
+  border-top: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 96%, transparent) 0%,
+      color-mix(in srgb, var(--surface) 99%, black 1%) 100%
+    );
+  -webkit-backdrop-filter: blur(6px) saturate(110%);
+  backdrop-filter: blur(6px) saturate(110%);
+}
+
+.footer-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--ink-muted) 14%, transparent) 22%,
+    color-mix(in srgb, var(--ink-muted) 16%, transparent) 78%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.footer-shell {
+  max-width: var(--content-width, 980px);
+  margin: 0 auto;
+  padding: 40px 28px 18px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr 0.85fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.brand-col {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  display: block;
+  border-radius: 10px;
+}
+
+.brand-logo-fallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 78%, white 22%),
+      color-mix(in srgb, var(--surface) 90%, black 10%)
+    );
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 8px 22px rgba(0, 0, 0, 0.10);
+}
+
+.brand-name {
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.1;
+  font-weight: 660;
+  letter-spacing: 0.003em;
+  margin-bottom: 6px;
+}
+
+.brand-tagline {
+  margin: 0;
+  color: color-mix(in srgb, var(--ink-muted) 90%, var(--ink) 10%);
+  font-size: 12.5px;
+  line-height: 1.4;
+  font-weight: 450;
+  max-width: 31ch;
+  text-wrap: balance;
+}
+
+.brand-social {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
+  font-size: 11.25px;
+  line-height: 1.35;
+  font-weight: 450;
+}
+
+.brand-social .sep {
+  opacity: 0.38;
+  margin: 0 1px;
+}
+
+.brand-social a {
+  color: inherit;
+  text-decoration: none;
+  transition:
+    color 0.18s var(--ease),
+    opacity 0.18s var(--ease),
+    text-decoration-color 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    background 0.18s var(--ease);
+  opacity: 0.95;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: transparent;
+  border-radius: 999px;
+}
+
+.brand-social a:hover {
+  color: var(--ink);
+  text-decoration-color: color-mix(in srgb, var(--ink) 24%, transparent);
+  opacity: 1;
+}
+
+.col-title {
+  color: color-mix(in srgb, var(--ink) 78%, var(--ink-muted) 22%);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  opacity: 0.82;
+}
+
+.link-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.link-list a {
+  display: inline-block;
+  color: color-mix(in srgb, var(--ink-muted) 91%, var(--ink) 9%);
+  text-decoration: none;
+  font-size: 13.25px;
+  line-height: 1.32;
+  font-weight: 450;
+  transition:
+    color 0.18s var(--ease),
+    opacity 0.18s var(--ease),
+    text-decoration-color 0.18s var(--ease);
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: transparent;
+  opacity: 0.93;
+}
+
+.link-list a:hover {
+  color: var(--ink);
+  text-decoration-color: color-mix(in srgb, var(--ink) 24%, transparent);
+  opacity: 1;
+}
+
+.notice-line {
+  margin-top: 22px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
+  color: color-mix(in srgb, var(--ink-muted) 95%, var(--ink) 5%);
+  font-size: 10.75px;
+  line-height: 1.4;
+  font-weight: 430;
+  opacity: 0.70;
+  max-width: 78ch;
+}
+
+.bottom-bar {
+  margin-top: 8px;
+  padding-top: 0;        /* removed extra divider spacing */
+  border-top: none;      /* removed one more divider */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.bottom-left {
+  color: color-mix(in srgb, var(--ink-muted) 92%, var(--ink) 8%);
+  font-size: 10.9px;
+  line-height: 1.3;
+  font-weight: 430;
+  white-space: nowrap;
+  opacity: 0.82;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .footer-shell {
+    padding: 32px 20px 16px;
   }
 
-  .inner {
-    max-width: var(--content-width, 980px);
-    margin: 0 auto;
-    padding: 28px 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 20px;
   }
 
-  .muted {
+  .brand-col {
+    grid-column: 1 / -1;
+  }
+
+  .brand-tagline {
+    max-width: none;
+  }
+
+  .notice-line {
+    margin-top: 18px;
+    max-width: none;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .footer-shell {
+    padding: 20px 16px 12px;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* Keep only one divider after brand */
+  .brand-col {
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 54%, transparent);
+  }
+
+  .brand-logo,
+  .brand-logo-fallback {
+    width: 36px;
+    height: 36px;
+  }
+
+  .brand-name {
     font-size: 14px;
-    font-weight: 450;
-    color: var(--ink-muted);
+    margin-bottom: 4px;
   }
 
-  .muted a {
+  .brand-tagline {
+    font-size: 11.25px;
+    line-height: 1.32;
+    max-width: 28ch;
+  }
+
+  .brand-social {
+    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+    font-size: 10.25px;
+    line-height: 1.15;
+  }
+
+  .brand-social .sep {
+    display: none;
+  }
+
+  .brand-social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    border: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
+    background: color-mix(in srgb, var(--surface) 95%, white 5%);
+    color: color-mix(in srgb, var(--ink-muted) 90%, var(--ink) 10%);
     text-decoration: none;
-    color: inherit;
-    transition: color 0.2s var(--ease);
+    text-underline-offset: 0;
+    text-decoration-color: transparent;
+    opacity: 1;
   }
 
-  .muted a:hover {
-    color: var(--ink-secondary);
+  .brand-social a:hover {
+    color: var(--ink);
+    border-color: color-mix(in srgb, var(--border) 80%, transparent);
+    background: color-mix(in srgb, var(--surface) 98%, white 2%);
+    text-decoration: none;
   }
+
+  .nav-col {
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+
+  .col-title {
+    margin-bottom: 7px;
+    font-size: 9.75px;
+    letter-spacing: 0.10em;
+    opacity: 0.8;
+  }
+
+  .nav-col .link-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 14px;
+    row-gap: 2px;
+  }
+
+  .legal-col .link-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .link-list a {
+    font-size: 12.75px;
+    line-height: 1.24;
+    padding: 2px 0;
+  }
+
+  .notice-line {
+    margin-top: 10px;
+    padding-top: 0;
+    border-top: none; /* less lines on mobile */
+    font-size: 10px;
+    line-height: 1.32;
+    opacity: 0.62; /* reduced prominence further */
+  }
+
+  .bottom-bar {
+    margin-top: 6px;
+    padding-top: 0;
+    border-top: none; /* no extra divider */
+  }
+
+  .bottom-left {
+    font-size: 10px;
+    line-height: 1.25;
+    white-space: normal;
+    opacity: 0.72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link-list a,
+  .brand-social a {
+    transition: none;
+  }
+}
 </style>

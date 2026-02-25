@@ -14,8 +14,8 @@ const profile = {
 };
 ---
 
-<PageShell title="About" hidePageHead={true}
-description="Who I am and where you can find me.">
+<PageShell title="About" hidePageHead={false}
+description="Who I am and where to find me.">
 
   <section class="aboutPage" aria-label="About Al-Ebraheem Tareen">
     <div class="heroCard">
@@ -46,7 +46,7 @@ description="Who I am and where you can find me.">
 
           <div class="signatureLine" aria-hidden="true"></div>
 
-          <p class="microNote">Carpe diem.</p>
+          <p class="microNote">"An hour of planning can save you 10 hours of doing." — Unknown</p>
         </div>
 
         <!-- Right column -->
@@ -71,7 +71,7 @@ description="Who I am and where you can find me.">
             <div class="railActions" role="group" aria-label="Primary actions">
               <a class="railBtn primary" href={profile.resumeUrl} download target="_blank" rel="noopener">
                 <span class="railIcon" aria-hidden="true">↓</span>
-                <span class="railText">Download Resume</span>
+                <span class="railText">Resume</span>
               </a>
 
               <a class="railBtn" href={profile.linkedin} target="_blank" rel="noopener">
@@ -91,87 +91,62 @@ description="Who I am and where you can find me.">
   </section>
 
   <style>
-.aboutPage {
-  max-width: var(--content-width);
-  margin: 0 auto;
-  padding: 2px 0 60px;
-  position: relative;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: transparent;
-  box-sizing: border-box;
-}
-
-.aboutPage::before,
-.aboutPage::after {
-  display: none !important;
-  content: none !important;
-}
-
-    .heroCard,
-    .profileCard {
-      border-radius: 22px;
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: none;
-    }
-
-    .heroCard {
-      padding: 12px;
-      margin-top: 14px;
+    .aboutPage {
+      width: 100%;
+      max-width: var(--content-width);
+      margin: 0 auto;
+      padding: 10px 0 72px; /* more breathing room before footer */
       position: relative;
-      overflow: hidden;
-
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      box-sizing: border-box;
+      background: transparent;
     }
 
-    .heroCard::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
+    .aboutPage::before,
+    .aboutPage::after {
+      display: none !important;
+      content: none !important;
+    }
+
+    /* Outer shell aligns with homepage card language */
+    .heroCard {
+      margin-top: 6px;
+      padding: 12px;
+      border-radius: 20px;
+      border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
       background:
         linear-gradient(
           180deg,
-          rgba(255, 255, 255, 0.64) 0%,
-          rgba(255, 255, 255, 0.2) 38%,
-          transparent 100%
+          color-mix(in srgb, var(--surface) 98%, white 2%),
+          color-mix(in srgb, var(--surface) 98%, black 2%)
         );
-        
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.62) inset,
+        0 8px 20px rgba(0,0,0,0.02);
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
     }
-
-    .heroCard::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(620px 220px at 12% 0%, rgba(0, 0, 0, 0.03), transparent 60%),
-        radial-gradient(340px 180px at 90% 10%, rgba(0, 0, 0, 0.018), transparent 72%),
-        radial-gradient(120% 100% at 85% 90%, rgba(0,0,0,0.02), transparent 55%);
-    }
-
-.heroCard::before,
-.heroCard::after {
-  display: none;
-  content: none;
-}
 
     .heroGrid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 332px;
+      gap: 16px;
+      align-items: stretch;
       position: relative;
       z-index: 1;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 340px;
-      gap: 22px;
-      align-items: stretch;
     }
 
+    /* Left content panel */
     .heroContent {
-      border-radius: 18px;
-      padding: 24px 24px 22px;
-      background: rgba(255, 255, 255, 0.8);
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.82);
       min-width: 0;
+      border-radius: 16px;
+      padding: 22px 22px 20px;
+      border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+      background: rgba(255, 255, 255, 0.74);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+      box-sizing: border-box;
     }
 
     .nameBlock {
@@ -180,19 +155,19 @@ description="Who I am and where you can find me.">
 
     .heroTitle {
       margin: 0;
-      letter-spacing: -0.038em;
-      line-height: 0.98;
-      font-size: clamp(2rem, 4vw, 3.15rem);
       color: var(--ink);
-      font-weight: 700;
+      font-size: clamp(1.95rem, 4vw, 3rem);
+      font-weight: 650; /* match homepage */
+      line-height: 1.02;
+      letter-spacing: -0.038em;
       text-wrap: balance;
     }
 
     .heroSubtitle {
       margin: 10px 0 0;
-      font-size: 0.95rem;
+      color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 90%, var(--ink) 10%);
+      font-size: 0.93rem;
       line-height: 1.45;
-      color: var(--ink-secondary);
       font-weight: 500;
       letter-spacing: -0.01em;
       text-wrap: balance;
@@ -204,95 +179,99 @@ description="Who I am and where you can find me.">
       margin: 14px 0 0;
       background: linear-gradient(
         90deg,
-        rgba(0, 0, 0, 0.12),
-        rgba(0, 0, 0, 0.05),
-        transparent
+        color-mix(in srgb, var(--border) 78%, transparent) 0%,
+        color-mix(in srgb, var(--border) 54%, transparent) 48%,
+        transparent 100%
       );
     }
 
     .copyStack {
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
     .heroSummary {
       margin: 0;
-      color: var(--ink-secondary);
-      font-size: 0.90rem;
-      line-height: 1.72;
-      max-width: 62ch;
+      color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 90%, var(--ink) 10%);
+      font-size: 0.93rem;
+      line-height: 1.64;
+      max-width: 64ch;
       letter-spacing: -0.005em;
     }
 
     .heroSummarySecondary {
-      color: rgba(0, 0, 0, 0.68);
+      color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
     }
 
     .signatureLine {
-      margin-top: 16px;
-      width: 86px;
+      margin-top: 14px;
+      width: 72px;
       height: 2px;
       border-radius: 999px;
       background: linear-gradient(
         90deg,
-        rgba(0, 0, 0, 0.45),
-        rgba(0, 0, 0, 0.12)
+        color-mix(in srgb, var(--ink) 32%, transparent),
+        color-mix(in srgb, var(--ink) 10%, transparent)
       );
     }
 
     .microNote {
-      margin: 12px 0 0;
-      color: var(--ink-muted);
-      font-size: 0.88rem;
-      line-height: 1.45;
+      margin: 10px 0 0;
+      color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
+      font-size: 0.84rem;
+      line-height: 1.35;
       letter-spacing: -0.01em;
     }
 
-    .heroRail,
-    .profileCard,
-    .railActions {
-      min-width: 0;
-    }
-
+    /* Right rail */
     .heroRail {
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 12px;
     }
 
     .profileCard {
-      padding: 18px 16px 16px;
-      background: rgba(255, 255, 255, 0.92);
+      min-width: 0;
+      height: 100%;
+      border-radius: 16px;
+      border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+      background:
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--surface) 98%, white 2%),
+          color-mix(in srgb, var(--surface) 98%, black 2%)
+        );
       box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.035),
-        inset 0 1px 0 rgba(255,255,255,0.74);
+        0 1px 0 rgba(255,255,255,0.62) inset,
+        0 8px 20px rgba(0,0,0,0.018);
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      height: 100%;
       overflow: hidden;
+      box-sizing: border-box;
     }
 
     .portraitShell {
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 4px 2px 2px;
+      padding: 2px 0 0;
     }
 
     .profileFrame {
-      width: min(236px, 100%);
+      width: min(224px, 100%);
       aspect-ratio: 1 / 1;
       border-radius: 999px;
       padding: 4px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.78));
-      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.78));
+      border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
       box-shadow:
-        0 10px 28px rgba(0, 0, 0, 0.085),
+        0 10px 24px rgba(0, 0, 0, 0.08),
         inset 0 1px 0 rgba(255,255,255,0.95);
       position: relative;
       margin: 0 auto;
       flex: 0 0 auto;
+      box-sizing: border-box;
     }
 
     .profileFrame::after {
@@ -320,37 +299,38 @@ description="Who I am and where you can find me.">
     }
 
     .profileInfo {
-      margin-top: 14px;
+      margin-top: 12px;
       text-align: center;
-      padding: 0 4px 0;
+      padding: 0 2px;
     }
 
     .profileName {
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: 0.98rem;
+      font-weight: 650;
+      line-height: 1.2;
       letter-spacing: -0.02em;
       color: var(--ink);
-      line-height: 1.2;
       text-wrap: balance;
     }
 
     .profileRole {
-      margin-top: 5px;
-      font-size: 0.84rem;
-      color: var(--ink-muted);
-      line-height: 1.35;
+      margin-top: 4px;
+      font-size: 0.82rem;
+      line-height: 1.3;
+      color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
     }
 
     .railActions {
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid var(--border);
       width: 100%;
+      min-width: 0;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
       display: grid;
-      gap: 10px;
+      gap: 8px;
     }
 
-    /* Premium black buttons */
+    /* Button system aligned with homepage/Contact page */
     .railBtn {
       width: 100%;
       min-width: 0;
@@ -358,168 +338,177 @@ description="Who I am and where you can find me.">
       display: inline-flex;
       align-items: center;
       gap: 10px;
+      min-height: 40px;
+      padding: 0 12px;
+      border-radius: 10px;
       text-decoration: none;
-      color: var(--surface);
-      padding: 12px 14px;
-      min-height: 44px;
-      border-radius: 12px;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      background: var(--ink);
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+      border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+      background: color-mix(in srgb, var(--surface) 98%, black 2%);
+      color: var(--ink);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.60) inset;
       transition:
-        transform 0.22s var(--ease),
-        box-shadow 0.22s var(--ease),
-        background 0.22s var(--ease),
-        border-color 0.22s var(--ease);
+        background-color 0.18s var(--ease),
+        border-color 0.18s var(--ease),
+        color 0.18s var(--ease),
+        box-shadow 0.18s var(--ease),
+        transform 0.18s var(--ease);
     }
 
     .railBtn:hover {
+      background: color-mix(in srgb, var(--surface) 95%, black 2%);
+      border-color: color-mix(in srgb, var(--border) 92%, transparent);
       transform: translateY(-1px);
-      background: #202024;
-      border-color: rgba(0, 0, 0, 0.12);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.16);
     }
 
     .railBtn.primary {
       background: var(--ink);
       color: var(--surface);
+      border-color: var(--ink);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
     }
 
     .railBtn.primary:hover {
-      background: #202024;
+      background: color-mix(in srgb, var(--ink) 92%, black 8%);
+      border-color: color-mix(in srgb, var(--ink) 92%, black 8%);
     }
 
-    /* Consistent icon typography */
     .railIcon {
-      width: 18px;
-      height: 18px;
-      flex: 0 0 18px;
+      width: 16px;
+      height: 16px;
+      flex: 0 0 16px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255, 255, 255, 0.95);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       line-height: 1;
       letter-spacing: 0;
-      opacity: 0.95;
+      opacity: 0.9;
+      color: currentColor;
       transform: translateY(-0.5px);
     }
 
-    /* "in" needs a touch more visual consistency */
     .railIconText {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: -0.01em;
-      text-transform: none;
     }
 
-    /* Consistent button label typography */
     .railText {
       flex: 1;
       min-width: 0;
-      white-space: nowrap;
       overflow: hidden;
+      white-space: nowrap;
       text-overflow: ellipsis;
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
-      color: var(--surface);
       text-align: left;
+      font-size: 14px;
+      font-weight: 550;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      color: inherit;
     }
 
     :where(.railBtn):focus-visible {
       outline: none;
-      border-color: rgba(0, 0, 0, 0.12);
-      box-shadow:
-        0 0 0 3px rgba(0, 0, 0, 0.08),
-        0 10px 20px rgba(0, 0, 0, 0.14);
+      border-color: color-mix(in srgb, var(--border) 92%, transparent);
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
     }
 
     @media (max-width: 1080px) {
       .heroGrid {
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 12px;
       }
-
 
       .profileCard {
         height: auto;
       }
 
       .profileFrame {
-        width: min(220px, 100%);
+        width: min(208px, 100%);
       }
     }
 
     @media (max-width: 720px) {
       .aboutPage {
-    max-width: none;
-    width: 100%;
-    padding: 0 0 40px;
-
-    overflow-x: clip;
-    box-sizing: border-box;
-  }
-
-
-
-      .heroCard {
-        padding: 14px;
-        border-radius: 18px;
+        max-width: none;
+        width: 100%;
+        padding: 0 0 52px;
+        overflow-x: clip;
+        box-sizing: border-box;
       }
 
-      .heroContent {
-        padding: 16px;
-        border-radius: 14px;
+      .heroCard {
+        margin-top: 0;
+        padding: 10px;
+        border-radius: 16px;
+      }
+
+      .heroGrid,
+      .heroContent,
+      .profileCard {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
       }
 
       .heroRail { order: 1; }
-.heroContent { order: 2; }
+      .heroContent { order: 2; }
+
+      .heroContent {
+        padding: 14px;
+        border-radius: 14px;
+      }
 
       .heroTitle {
         font-size: clamp(1.7rem, 8vw, 2.2rem);
       }
 
       .heroSubtitle {
-        font-size: 0.92rem;
+        font-size: 0.9rem;
       }
 
       .heroSummary {
-        font-size: 0.94rem;
-        line-height: 1.65;
+        font-size: 0.9rem;
+        line-height: 1.58;
+      }
+
+      .signatureLine {
+        margin-top: 12px;
+      }
+
+      .microNote {
+        margin-top: 8px;
+        font-size: 0.82rem;
       }
 
       .profileCard {
         padding: 14px;
+        border-radius: 14px;
       }
 
       .profileFrame {
-        width: min(198px, 100%);
+        width: min(190px, 100%);
+      }
+
+      .profileInfo {
+        margin-top: 10px;
       }
 
       .railActions {
-        margin-top: 14px;
-        padding-top: 12px;
+        margin-top: 12px;
+        padding-top: 10px;
+        gap: 8px;
       }
 
       .railBtn {
-        padding: 11px 12px;
+        min-height: 38px;
+        padding: 0 11px;
       }
 
       .railText {
-        font-size: 13.5px;
+        font-size: 13px;
       }
-
-        .heroCard,
-  .heroGrid,
-  .heroContent,
-  .profileCard {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
     }
 
     @media (prefers-reduced-motion: reduce) {
