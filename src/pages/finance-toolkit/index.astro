@@ -477,9 +477,6 @@ setTimeout(updateRails, 250); // ✅ after any late paint/font swap
         box-shadow: var(--shadow-md);
         margin-bottom: 20px;
         transition: box-shadow 0.28s var(--ease);
-        width: 100%;
-          margin-left: 0;
-  margin-right: 0;
       }
 
       .controlsBar:focus-within {
@@ -954,7 +951,7 @@ setTimeout(updateRails, 250); // ✅ after any late paint/font swap
         gap: 8px;
       }
 
-      .excerptLabel::before {@
+      .excerptLabel::before {
         content: "";
         width: 8px;
         height: 1px;
@@ -1075,8 +1072,6 @@ setTimeout(updateRails, 250); // ✅ after any late paint/font swap
         transform: translateY(1px);
       }
 
-      
-
       @media (max-width: 520px) {
         .resultsInline {
           display: none;
@@ -1089,13 +1084,7 @@ setTimeout(updateRails, 250); // ✅ after any late paint/font swap
         }
         .controlsBar {
           padding: 12px 14px;
-              top: calc(var(--siteHeaderH) + 67px + env(safe-area-inset-top, 0px));
-              width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
-    border-radius: 0; /* optional: looks cleaner edge-to-edge */
         }
-        
         .grid {
           grid-template-columns: 1fr;
         }
