@@ -1021,23 +1021,44 @@ setTimeout(updateRails, 250); // ✅ after any late paint/font swap
         transform: translateY(1px);
       }
 
-      @media (max-width: 520px) {
-        .resultsInline {
-          display: none;
-        }
-        .sectionsRail {
-          display: none;
-        }
-        .sectionsList {
-          padding: 8px 16px;
-        }
-        .controlsBar {
-          padding: 12px 14px;
-        }
-        .grid {
-          grid-template-columns: 1fr;
-        }
-      }
+@media (max-width: 720px) {
+  .controlsBar {
+    top: calc(var(--siteHeaderH) + 67px);
+  }
+}
+
+@media (max-width: 520px) {
+  .resultsInline {
+    display: none;
+  }
+
+  /* Keep arrows visible on mobile */
+  .sectionsRail {
+    display: flex;
+    right: 6px;
+    top: 2px;
+    padding-left: 10px;
+    background: linear-gradient(to left, var(--surface-subtle) 78%, transparent);
+  }
+
+  .railBtn {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+
+  .sectionsList {
+    padding: 8px 44px 8px 16px; /* extra right padding so chips don’t sit under arrows */
+  }
+
+  .controlsBar {
+    padding: 12px 14px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
 
       @media (prefers-reduced-motion: reduce) {
         * {
