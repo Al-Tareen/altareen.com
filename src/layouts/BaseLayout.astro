@@ -14,18 +14,23 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <title>{title}</title>
   </head>
+
   <body>
-    <slot />
+    <div class="siteShell">
+      <slot />
+    </div>
   </body>
 </html>
 
 <style>
   :global(:root) {
     color-scheme: light;
-    /* Design tokens — restraint, clarity, premium feel */
     --font-sans: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --ink: #1d1d1f;
     --ink-secondary: rgba(0, 0, 0, 0.65);
@@ -58,5 +63,12 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
 
   :global(a) {
     color: inherit;
+  }
+
+  /* ✅ This is what makes the footer stick on short pages */
+  :global(.siteShell) {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 </style>
