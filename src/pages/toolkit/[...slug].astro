@@ -809,8 +809,7 @@ const title = item.data.title || "";
   position: relative;
   border-radius: var(--radius-xl);
   padding: 0 0 18px 0; /* no top/left/right padding */
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   transition:
@@ -1550,6 +1549,20 @@ const title = item.data.title || "";
           order: 1;
         }
       }
+
+      /* Remove the white-ish background behind hero and Quick Actions */
+.hero,
+.heroGrid,
+.coverFrame {
+  background: transparent !important;
+  box-shadow: none !important; /* Remove shadow if any */
+  border: none !important;      /* Remove border if any */
+}
+
+/* Ensure the cover image itself still displays correctly */
+.coverWrap {
+  background: transparent !important;
+}
 
       @media (max-width: 720px) {
 

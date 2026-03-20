@@ -70,7 +70,7 @@ const web3formsKey = "a662d525-6081-49f0-b6d7-6102e3bf1ec2";
                 name="message"
                 required
                 rows="6"
-                placeholder="Feel free to share what’s on your mind, what you need help with, and any timing details."
+                placeholder="Feel free to share what’s on your mind, what you need help with, and any additional details."
               ></textarea>
             </div>
 
@@ -92,34 +92,43 @@ const web3formsKey = "a662d525-6081-49f0-b6d7-6102e3bf1ec2";
           </div>
         </div>
       </div>
+<aside class="sidePane" aria-label="Direct contact">
+  <div class="sideCard">
+    <div class="sideCardTop">
+      <div class="miniLabel">Direct contact</div>
 
-      <!-- Right / Direct contact -->
-      <aside class="sidePane" aria-label="Direct contact">
-        <div class="sideCard">
-          <div class="sideCardTop">
-            <div class="miniLabel">Direct contact</div>
-          </div>
+      <!-- Toggle button only visible on mobile -->
+<button class="expandBtn" aria-expanded="false" type="button">
+  <span class="arrow" aria-hidden="true">▼</span>
+</button>
+    </div>
 
-          <div class="emailBlock">
-            <div class="emailLabel">Email</div>
-            <a class="emailLink" href="mailto:altareenk@outlook.com">altareenk@outlook.com</a>
-          </div>
+    <!-- Collapsible content -->
+    <div id="direct-contact-content">
+      <div class="emailBlock">
+        <div class="emailLabel">Email</div>
+        <a class="emailLink" href="mailto:altareenk@outlook.com">altareenk@outlook.com</a>
+      </div>
 
-          <div class="sideActions">
-            <a class="sideBtn primary" href="mailto:altareenk@outlook.com">
-              <span class="sideIcon" aria-hidden="true">✉</span>
-              <span>Email me</span>
-            </a>
+      <div class="sideActions">
+        <a class="sideBtn primary" href="mailto:altareenk@outlook.com">
+          <span class="sideIcon" aria-hidden="true">✉</span>
+          <span>Email me</span>
+        </a>
 
-            <button class="sideBtn" type="button" id="copy-email-btn" data-email="altareenk@outlook.com">
-              <span class="sideIcon" aria-hidden="true">⧉</span>
-              <span id="copy-email-text">Copy email</span>
-            </button>
-          </div>
-        </div>
+        <button class="sideBtn" type="button" id="copy-email-btn" data-email="altareenk@outlook.com">
+          <span class="sideIcon" aria-hidden="true">⧉</span>
+          <span id="copy-email-text">Copy email</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</aside>
       </aside>
     </div>
   </section>
+
+  
 
   <script>
     const form = document.getElementById("contact-form");
@@ -166,6 +175,44 @@ const web3formsKey = "a662d525-6081-49f0-b6d7-6102e3bf1ec2";
         }
       });
     }
+
+    const expandBtn = document.querySelector(".expandBtn");
+const collapsible = document.getElementById("direct-contact-content");
+
+function isMobile() {
+  return window.innerWidth <= 980;
+}
+
+if (expandBtn && collapsible) {
+  // initial state
+  if (isMobile()) {
+    collapsible.hidden = true;
+    expandBtn.setAttribute("aria-expanded", false);
+  }
+
+expandBtn.addEventListener("click", () => {
+  const isExpanded = expandBtn.getAttribute("aria-expanded") === "true";
+  expandBtn.setAttribute("aria-expanded", !isExpanded);
+  collapsible.hidden = isExpanded;
+  collapsible.classList.toggle("show", !isExpanded);
+
+  // rotate arrow
+  const arrow = expandBtn.querySelector(".arrow");
+  if (arrow) arrow.style.transform = !isExpanded ? "rotate(180deg)" : "rotate(0deg)";
+});
+
+  // reset on resize
+  window.addEventListener("resize", () => {
+    if (!isMobile()) {
+      collapsible.hidden = false;
+      collapsible.classList.remove("show");
+      expandBtn.setAttribute("aria-expanded", true);
+    } else {
+      collapsible.hidden = true;
+      expandBtn.setAttribute("aria-expanded", false);
+    }
+  });
+}
 
     const copyEmailBtn = document.getElementById("copy-email-btn");
     const copyEmailText = document.getElementById("copy-email-text");
@@ -378,6 +425,11 @@ const web3formsKey = "a662d525-6081-49f0-b6d7-6102e3bf1ec2";
     cursor: not-allowed;
   }
 
+  .expandBtn .arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
   .submitIcon {
     line-height: 1;
     opacity: 0.95;
@@ -431,6 +483,16 @@ const web3formsKey = "a662d525-6081-49f0-b6d7-6102e3bf1ec2";
     font-weight: 650;
     letter-spacing: -0.02em;
   }
+
+  .sideCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.expandBtn .arrow {
+  margin-left: 6px; /* small spacing from text */
+}
 
   .emailBlock {
     margin-top: 12px;
@@ -502,6 +564,12 @@ const web3formsKey = "a662d525-6081-49f0-b6d7-6102e3bf1ec2";
       transform 0.18s var(--ease);
   }
 
+  .sideBtn.noBg {
+  background: transparent;
+  border: 1px solid var(--ink); /* optional for border only */
+  box-shadow: none;
+}
+
   .sideBtn:hover {
     background: color-mix(in srgb, var(--surface) 95%, black 2%);
     border-color: color-mix(in srgb, var(--border) 92%, transparent);
@@ -538,15 +606,47 @@ const web3formsKey = "a662d525-6081-49f0-b6d7-6102e3bf1ec2";
     border-color: color-mix(in srgb, var(--border) 78%, var(--ink) 16%);
   }
 
-  @media (max-width: 980px) {
-    .contactGrid {
-      grid-template-columns: 1fr;
-    }
-
-    .sideCard {
-      position: static;
-    }
+@media (max-width: 980px) {
+  /* Default hidden on mobile */
+  #direct-contact-content {
+    overflow: hidden;
+        position: static !important;
+    top: auto !important;
+    transition: max-height 0.35s ease, opacity 0.35s ease;
+    max-height: 0;
+    opacity: 0;
+    display: block; /* keep layout for JS toggle */
   }
+
+  #direct-contact-content.show {
+    max-height: 500px; /* enough for content */
+    opacity: 1;
+  }
+
+/* Remove background and border from mobile arrow toggle button */
+.expandBtn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0; /* optional: remove extra padding */
+  min-width: 0; /* optional: shrink to content */
+  cursor: pointer;
+}
+}
+
+@media (min-width: 981px) {
+  #direct-contact-content {
+    max-height: none !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+    display: block !important;
+    position: static;
+  }
+
+  .expandBtn {
+    display: none; /* hide button on desktop */
+  }
+}
 
   @media (max-width: 720px) {
     .contactPage {
@@ -557,6 +657,8 @@ const web3formsKey = "a662d525-6081-49f0-b6d7-6102e3bf1ec2";
 
     .contactGrid {
       gap: 12px;
+    display: grid;
+    grid-template-columns: 1fr;
     }
 
     .formCard,

@@ -22,13 +22,108 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
   </head>
 
   <body>
+
+  <!-- Thin page loader -->
+  <div id="pageLoaderBar" class="page-loader-bar" aria-hidden="true"></div>
+  
     <div class="siteShell">
       <slot />
     </div>
+
+    <script is:inline type="module">
+const loader = document.getElementById('pageLoaderBar');
+
+let progress = 0;
+let interval;
+
+const startLoader = () => {
+  loader.classList.add('active');
+  progress = 0;
+  loader.style.width = '0%';
+
+  interval = setInterval(() => {
+    progress += Math.random() * 4;
+    if (progress < 90) loader.style.width = progress + '%';
+  }, 150);
+};
+
+const finishLoader = () => {
+  clearInterval(interval);
+  loader.style.width = '100%';
+  setTimeout(() => {
+    loader.classList.remove('active');
+    loader.style.width = '0%';
+  }, 250);
+};
+
+// Intercept internal links
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a');
+  if (!link) return;
+
+  if (
+    link.target === '_blank' ||
+    link.href.startsWith('mailto:') ||
+    link.href.startsWith('tel:') ||
+    !link.href.startsWith(window.location.origin)
+  ) return;
+
+  e.preventDefault();
+  startLoader();
+
+  setTimeout(() => {
+    window.location.href = link.href;
+  }, 50);
+});
+
+// Complete loader on page load / back/forward cache
+window.addEventListener('pageshow', finishLoader);
+window.addEventListener('load', finishLoader);
+</script>
+
   </body>
 </html>
 
 <style>
+
+/* Put at the very top of your PageShell style */
+:global(:root) {
+  --scrollbar-bg: #fff;
+  --scrollbar-thumb: #333;
+  --scrollbar-thumb-hover: #555;
+}
+
+/* Apply to html and body */
+:global(html),
+:global(body) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+:global(html::-webkit-scrollbar),
+:global(body::-webkit-scrollbar) {
+  width: 8px;
+  height: 8px;
+}
+
+:global(html::-webkit-scrollbar-track),
+:global(body::-webkit-scrollbar-track) {
+  background: var(--scrollbar-bg);
+}
+
+:global(html::-webkit-scrollbar-thumb),
+:global(body::-webkit-scrollbar-thumb) {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid var(--scrollbar-bg);
+}
+
+:global(html::-webkit-scrollbar-thumb:hover),
+:global(body::-webkit-scrollbar-thumb:hover) {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
   :global(:root) {
     color-scheme: light;
     --font-sans: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -77,6 +172,22 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
 :global(*::before),
 :global(*::after) {
   box-sizing: border-box;
+}
+
+.page-loader-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: linear-gradient(90deg, rgb(75, 75, 75), rgb(114, 114, 114));
+  z-index: 9999;
+  transition: width 0.2s ease;
+  pointer-events: none;
+}
+
+.page-loader-bar.active {
+  /* width is controlled via JS */
 }
 
 </style>

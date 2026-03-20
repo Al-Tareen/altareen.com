@@ -1435,6 +1435,21 @@ const feedbackKey = `ideas:${item.slug}`;
         }
       }
 
+      /* Remove the white-ish background behind hero and Quick Actions */
+.hero,
+.heroGrid,
+.coverFrame {
+  background: transparent !important;
+  box-shadow: none !important; /* Remove shadow if any */
+  border: none !important;      /* Remove border if any */
+}
+
+/* Ensure the cover image itself still displays correctly */
+.coverWrap {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
       @media (max-width: 720px) {
         .modalPanel {
           height: 85vh;

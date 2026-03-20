@@ -13,9 +13,6 @@ const {
 
 <BaseLayout title={title} description={description}>
 
-<!-- Thin page loader -->
-<div id="pageLoaderBar" class="page-loader-bar" aria-hidden="true"></div>
-
   <Header />
   <main class={`wrap ${hidePageHead ? "isHeadHidden" : ""}`}>
     {!hidePageHead && (
@@ -36,6 +33,7 @@ const {
 </BaseLayout>
 
 <style>
+
   .wrap {
     max-width: var(--content-width, 980px);
     margin: 0 auto;
@@ -105,73 +103,9 @@ const {
     }
   }
 
-  .page-loader-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 3px;
-    width: 0;
-    background: linear-gradient(90deg,rgb(75, 75, 75),rgb(114, 114, 114));
-    z-index: 9999;
-    transition: width 0.2s ease;
-    pointer-events: none;
-  }
 
-  .page-loader-bar.active {
-    /* width is controlled dynamically via JS */
-  }
+  
+
+  
 </style>
 
-<script is:inline type="module">
-  const loader = document.getElementById('pageLoaderBar');
-
-  let progress = 0;
-  let interval;
-
-  const startLoader = () => {
-    loader.classList.add('active');
-    progress = 0;
-    loader.style.width = '0%';
-
-    interval = setInterval(() => {
-      // Increase progress gradually (max ~90%)
-      progress += Math.random() * 4;
-      if (progress < 90) {
-        loader.style.width = progress + '%';
-      }
-    }, 150);
-  };
-
-  const finishLoader = () => {
-    clearInterval(interval);
-    loader.style.width = '100%';
-    setTimeout(() => {
-      loader.classList.remove('active');
-      loader.style.width = '0%';
-    }, 250);
-  };
-
-  // Intercept internal links
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('a');
-    if (!link) return;
-
-    if (
-      link.target === '_blank' ||
-      link.href.startsWith('mailto:') ||
-      link.href.startsWith('tel:') ||
-      !link.href.startsWith(window.location.origin)
-    ) return;
-
-    e.preventDefault();
-    startLoader();
-
-    setTimeout(() => {
-      window.location.href = link.href;
-    }, 50);
-  });
-
-  // Complete loader on page load / back/forward cache
-  window.addEventListener('pageshow', finishLoader);
-  window.addEventListener('load', finishLoader);
-</script>
