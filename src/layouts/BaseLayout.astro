@@ -29,20 +29,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
     <div class="siteShell">
       <slot />
 
-        <!-- Overlay and banner inside the shell -->
-  <div id="cookie-overlay" class="cookieOverlay"></div>
-  <div id="cookie-banner" class="cookieBanner" role="dialog" aria-label="Cookie consent">
-    <div class="cookieContent">
-      <p>
-        This website uses cookies to improve your experience and analyze traffic.
-        By clicking “Accept”, you consent to our use of cookies.
-      </p>
-      <div class="cookieActions">
-              <button id="cookie-accept" class="cookieBtn primary">Accept</button>
-        <button id="cookie-decline" class="cookieBtn">Decline</button>
-      </div>
+<div id="cookie-overlay" class="cookieOverlay"></div>
+<div id="cookie-banner" class="cookieBanner" role="dialog" aria-label="Cookie consent">
+  <div class="cookieContent">
+    <p>
+      This website uses cookies to improve your experience and analyze traffic.
+      By clicking “Accept”, you consent to our use of cookies.
+    </p>
+    <div class="cookieActions">
+      <button id="cookie-decline" class="cookieBtn">Decline</button>
+      <button id="cookie-accept" class="cookieBtn primary">Accept</button>
     </div>
   </div>
+</div>
 
     </div>
 
@@ -106,18 +105,7 @@ function showBanner() {
 }
 </script>
 
-<script is:inline type="module">
-
-function showBanner() {
-  overlay.style.display = "block";
-  banner.style.display = "block";
-
-  // fade in
-  overlay.style.opacity = "0";
-  setTimeout(() => overlay.style.opacity = "1", 10);
-}
-
-
+<script>
 document.addEventListener("DOMContentLoaded", () => {
   const banner = document.getElementById("cookie-banner");
   const overlay = document.getElementById("cookie-overlay");
@@ -126,15 +114,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const CONSENT_KEY = "cookie_consent";
 
   function hideBanner() {
-    banner.style.display = "none";
-    overlay.style.display = "none";
-    document.body.style.overflow = ""; // restore scroll
+    banner.style.opacity = "0";
+    banner.style.transform = "translate(-50%, -45%)";
+    overlay.style.opacity = "0";
+    setTimeout(() => {
+      banner.style.display = "none";
+      overlay.style.display = "none";
+    }, 250);
   }
 
   function showBanner() {
-    banner.style.display = "block";
     overlay.style.display = "block";
-    document.body.style.overflow = "hidden"; // lock background scroll
+    banner.style.display = "block";
+    // small timeout to trigger transition
+    setTimeout(() => {
+      overlay.style.opacity = "1";
+      banner.style.opacity = "1";
+      banner.style.transform = "translate(-50%, -50%)";
+    }, 10);
   }
 
   if (!localStorage.getItem(CONSENT_KEY)) {
@@ -270,21 +267,22 @@ document.addEventListener("DOMContentLoaded", () => {
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0.25); /* semi-transparent dark overlay */
-  backdrop-filter: blur(6px); /* adds blur to everything behind */
+  backdrop-filter: blur(6px); /* blur background */
   -webkit-backdrop-filter: blur(6px); /* Safari support */
-  z-index: 9998; /* below the popup */
+  z-index: 9998; /* below popup */
   display: none; /* hidden by default */
+  opacity: 0;
   transition: opacity 0.25s ease;
 }
 
-/* Centered cookie popup with better spacing */
+/* Centered cookie popup */
 .cookieBanner {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: calc(100% - 32px);
-  max-width: 450px; /* slightly wider for better readability */
+  max-width: 400px;
   z-index: 9999;
 
   border-radius: 14px;
@@ -298,40 +296,42 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
   box-shadow:
-    0 4px 0 rgba(255,255,255,0.6) inset,
-    0 16px 32px rgba(0,0,0,0.12);
+    0 2px 0 rgba(255,255,255,0.6) inset,
+    0 10px 24px rgba(0,0,0,0.12);
 
-  padding: 24px 28px; /* increased padding for breathing room */
+  padding: 20px 18px; /* more comfortable spacing */
   display: none;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .cookieContent {
   display: flex;
   flex-direction: column;
-  gap: 16px; /* more space between text and buttons */
+  gap: 12px; /* more spacing between text and buttons */
   text-align: center;
 }
 
 .cookieContent p {
   margin: 0;
-  font-size: 0.92rem;
-  line-height: 1.5; /* more comfortable line height */
+  font-size: 0.95rem;
+  line-height: 1.5;
   color: var(--ink-secondary);
 }
 
 .cookieActions {
   display: flex;
   justify-content: center;
-  gap: 12px; /* more spacing between buttons */
+  gap: 10px; /* slightly wider button spacing */
 }
 
 .cookieBtn {
-  padding: 10px 18px; /* larger buttons for easier click */
-  border-radius: 8px;
+  padding: 8px 16px;
+  border-radius: 6px;
   border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
   background: color-mix(in srgb, var(--surface) 98%, black 2%);
   color: var(--ink);
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -350,22 +350,12 @@ document.addEventListener("DOMContentLoaded", () => {
   background: color-mix(in srgb, var(--ink) 92%, black 8%);
 }
 
-/* Mobile adjustments */
 @media (max-width: 640px) {
   .cookieActions {
     flex-direction: column;
   }
-
   .cookieBtn {
     width: 100%;
-  }
-
-  .cookieBanner {
-    padding: 20px 16px; /* slightly smaller padding for mobile */
-  }
-
-  .cookieContent {
-    gap: 12px;
   }
 }
 
