@@ -1,6 +1,15 @@
 ---
-const { title = "Al Tareen", description = "AI Transformation • Product Management • Strategy" } = Astro.props;
+const { 
+  title = "Al Tareen", 
+  description = "AI Transformation • Product Management • Strategy", 
+  slug = "",            // slug of the page, e.g., "ai-product-quality-risk-safety-abuse-misuse-threat-model"
+  toolkitType = ""      // "pm", "finance", or "concepts" for pages that have images
+} = Astro.props;
+
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
+const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
+  ? `/toolkit-covers/${slug}.png`
+  : `/logo.png`;
 ---
 
 <!doctype html>
@@ -10,6 +19,20 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph & Twitter Images -->
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={canonical} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,6 +42,33 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
       rel="stylesheet"
     />
     <title>{title}</title>
+
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "{title}",
+  "description": "{description}",
+  "url": "{canonical}",
+  "author": {
+    "@type": "Person",
+    "name": "Al Tareen"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Al Tareen",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/logo.png"
+    }
+  },
+  "datePublished": "{Astro.props.datePublished ?? '2026-01-01'}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{canonical}"
+  }
+}
+</script>
   </head>
 
   <body>
@@ -29,25 +79,23 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).to
     <div class="siteShell">
       <slot />
 
-<div id="cookie-overlay" class="cookieOverlay"></div>
-<div id="cookie-banner" class="cookieBanner" role="dialog" aria-label="Cookie consent">
-  <div class="cookieContent">
-    <p>
-      This website uses cookies to improve your experience and analyze traffic.
-      By clicking “Accept”, you consent to our use of cookies.
-    </p>
-    <div class="cookieActions">
-          <button id="cookie-accept" class="cookieBtn primary">Accept</button>
-      <button id="cookie-decline" class="cookieBtn">Decline</button>
-    </div>
-  </div>
-</div>
-
+      <div id="cookie-overlay" class="cookieOverlay"></div>
+      <div id="cookie-banner" class="cookieBanner" role="dialog" aria-label="Cookie consent">
+        <div class="cookieContent">
+          <p>
+            This website uses cookies to improve your experience and analyze traffic.
+            By clicking “Accept”, you consent to our use of cookies.
+          </p>
+          <div class="cookieActions">
+            <button id="cookie-accept" class="cookieBtn primary">Accept</button>
+            <button id="cookie-decline" class="cookieBtn">Decline</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script is:inline type="module">
 const loader = document.getElementById('pageLoaderBar');
-
 let progress = 0;
 let interval;
 
@@ -55,7 +103,6 @@ const startLoader = () => {
   loader.classList.add('active');
   progress = 0;
   loader.style.width = '0%';
-
   interval = setInterval(() => {
     progress += Math.random() * 4;
     if (progress < 90) loader.style.width = progress + '%';
@@ -71,38 +118,20 @@ const finishLoader = () => {
   }, 250);
 };
 
-// Intercept internal links
 document.addEventListener('click', (e) => {
   const link = e.target.closest('a');
   if (!link) return;
-
-  if (
-    link.target === '_blank' ||
-    link.href.startsWith('mailto:') ||
-    link.href.startsWith('tel:') ||
-    !link.href.startsWith(window.location.origin)
-  ) return;
+  if (link.target === '_blank' || link.href.startsWith('mailto:') || link.href.startsWith('tel:') || !link.href.startsWith(window.location.origin)) return;
 
   e.preventDefault();
   startLoader();
-
   setTimeout(() => {
     window.location.href = link.href;
   }, 50);
 });
 
-// Complete loader on page load / back/forward cache
 window.addEventListener('pageshow', finishLoader);
 window.addEventListener('load', finishLoader);
-
-function showBanner() {
-  overlay.style.display = "block";
-  banner.style.display = "block";
-
-  // fade in
-  overlay.style.opacity = "0";
-  setTimeout(() => overlay.style.opacity = "1", 10);
-}
 </script>
 
 <script>
@@ -126,7 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function showBanner() {
     overlay.style.display = "block";
     banner.style.display = "block";
-    // small timeout to trigger transition
     setTimeout(() => {
       overlay.style.opacity = "1";
       banner.style.opacity = "1";
