@@ -56,29 +56,7 @@ const publishedDate = datePublished
   <title>{title}</title>
 
   <!-- JSON-LD structured data -->
-  <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "TechArticle",
-  "headline": "${title}",
-  "description": "${description}",
-  "image": {
-    "@type": "ImageObject",
-    "url": "${ogImage}",
-    "width": 1200,
-    "height": 630
-  },
-  "url": "${canonical}",
-  "author": { "@type": "Person", "name": "Al Tareen" },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Al Tareen",
-    "logo": { "@type": "ImageObject", "url": "https://dev.altareen.com/logo.png", "width": 512, "height": 512 }
-  },
-  "datePublished": "${publishedDate}",
-  "mainEntityOfPage": { "@type": "WebPage", "@id": "${canonical}" }
-}
-  </script>
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd, null, 2)}></script>
 </head>
 
 </html>
