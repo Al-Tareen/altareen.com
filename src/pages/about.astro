@@ -435,6 +435,17 @@ Leveraging critical thinking while deploying various mental models, I create lon
         box-sizing: border-box;
       }
 
+  /* Hide only the name, keep tagline visible */
+  .heroContent .nameBlock .heroTitle {
+    display: none;
+  }
+
+  /* Ensure the tagline remains visible */
+  .heroContent .nameBlock .heroSubtitle {
+    display: block;
+  }
+
+
       .heroCard {
         margin-top: 0;
         padding: 10px;
@@ -448,6 +459,8 @@ Leveraging critical thinking while deploying various mental models, I create lon
         max-width: 100%;
         box-sizing: border-box;
       }
+
+      
 
       .heroRail { order: 1; }
       .heroContent { order: 2; }
