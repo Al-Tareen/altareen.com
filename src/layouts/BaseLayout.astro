@@ -3,13 +3,15 @@ const {
   title = "Al Tareen", 
   description = "AI Transformation • Product Management • Strategy", 
   slug = "",            // slug of the page, e.g., "ai-product-quality-risk-safety-abuse-misuse-threat-model"
-  toolkitType = ""      // "pm", "finance", or "concepts" for pages that have images
+  toolkitType = "",     // "pm", "finance", or "concepts" for pages that have images
+  datePublished        // optional ISO 8601 date string
 } = Astro.props;
 
-const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
+const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://altareen.com").toString();
 const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
-  ? `/toolkit-covers/${slug}.png`
-  : `/logo.png`;
+  ? `https://altareen.com/toolkit-covers/${slug}.png`
+  : `https://altareen.com/logo.png`;
+const publishedDate = datePublished ?? new Date().toISOString();
 ---
 
 <!doctype html>
@@ -21,8 +23,8 @@ const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
     <link rel="canonical" href={canonical} />
 
     <!-- Open Graph & Twitter Images -->
-<meta property="og:image" content={`/toolkit-covers/${slug || "logo"}.png`} />
-<meta name="twitter:image" content={`/toolkit-covers/${slug || "logo"}.png`} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:image" content={ogImage} />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -43,12 +45,14 @@ const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
     />
     <title>{title}</title>
 
+    <!-- JSON-LD structured data -->
     <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
   "headline": "{title}",
   "description": "{description}",
+  "image": "{ogImage}",
   "url": "{canonical}",
   "author": {
     "@type": "Person",
@@ -59,10 +63,10 @@ const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
     "name": "Al Tareen",
     "logo": {
       "@type": "ImageObject",
-      "url": "/logo.png"
+      "url": "https://altareen.com/logo.png"
     }
   },
-  "datePublished": "{Astro.props.datePublished ?? '2026-01-01'}",
+  "datePublished": "{publishedDate}",
   "mainEntityOfPage": {
     "@type": "WebPage",
     "@id": "{canonical}"
