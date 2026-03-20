@@ -2,24 +2,45 @@
 const { 
   title = "Al Tareen", 
   description = "AI Transformation • Product Management • Strategy", 
-  slug = "",            // slug of the page, e.g., "ai-product-quality-risk-safety-abuse-misuse-threat-model"
-  toolkitType = "",     // "pm", "finance", or "concepts" for pages that have images
-  datePublished        // optional ISO 8601 date string
+  slug = "",            // slug of the page
+  toolkitType = "",     // "pm", "finance", or "concepts"
+  datePublished
 } = Astro.props;
 
-// Make canonical URL absolute (dev environment)
 const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://dev.altareen.com").toString();
 
-// Open Graph / Twitter image absolute URL with fallback
 const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
   ? `https://dev.altareen.com/toolkit-covers/${slug}.png`
   : `https://dev.altareen.com/logo.png`;
 
-// Ensure ISO 8601 date
 const publishedDate = datePublished
   ? new Date(datePublished).toISOString()
   : new Date().toISOString();
+
+// JSON-LD object
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": title,
+  "description": description,
+  "image": {
+    "@type": "ImageObject",
+    "url": ogImage,
+    "width": 1200,
+    "height": 630
+  },
+  "url": canonical,
+  "author": { "@type": "Person", "name": "Al Tareen" },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Al Tareen",
+    "logo": { "@type": "ImageObject", "url": "https://dev.altareen.com/logo.png", "width": 512, "height": 512 }
+  },
+  "datePublished": publishedDate,
+  "mainEntityOfPage": { "@type": "WebPage", "@id": canonical }
+};
 ---
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -56,29 +77,7 @@ const publishedDate = datePublished
   <title>{title}</title>
 
   <!-- JSON-LD structured data -->
-  <script type="application/ld+json">
-{`{
-  "@context": "https://schema.org",
-  "@type": "TechArticle",
-  "headline": "${title}",
-  "description": "${description}",
-  "image": {
-    "@type": "ImageObject",
-    "url": "${ogImage}",
-    "width": 1200,
-    "height": 630
-  },
-  "url": "${canonical}",
-  "author": { "@type": "Person", "name": "Al Tareen" },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Al Tareen",
-    "logo": { "@type": "ImageObject", "url": "https://dev.altareen.com/logo.png", "width": 512, "height": 512 }
-  },
-  "datePublished": "${publishedDate}",
-  "mainEntityOfPage": { "@type": "WebPage", "@id": "${canonical}" }
-}`}
-</script>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
 </head>
 
 </html>
