@@ -1,0 +1,210 @@
+---
+import PageShell from "../components/PageShell.astro";
+---
+
+<PageShell
+  title="Privacy Policy"
+  description="How Al Tareen collects, uses, and protects your information."
+  hidePageHead={false}
+>
+  <section class="legalPage" aria-label="Privacy Policy">
+    <div class="legalContainer">
+      <h1>Privacy Policy</h1>
+      <p class="effective">Effective Date: March 20, 2026</p>
+
+      <p>
+        At <strong>Al Tareen</strong> (https://altareen.com), your privacy is important.
+        This Privacy Policy outlines how information is collected, used, and protected
+        when you access or interact with this website. By using this website, you agree
+        to the terms described in this policy.
+      </p>
+
+      <h2>1. Information We Collect</h2>
+      <ul>
+        <li>
+          <strong>Automatically collected data:</strong> IP address, browser type,
+          device information, cookies, and usage data for analytics and performance.
+        </li>
+        <li>
+          <strong>Voluntarily provided data:</strong> Name, email address, and any additional information when
+          submitted through the contact form.
+        </li>
+      </ul>
+
+      <h2>2. How We Use Your Information</h2>
+      <p>Your information is used to:</p>
+      <ul>
+        <li>Analyze website traffic and usage patterns</li>
+        <li>Improve content, features, and overall user experience</li>
+        <li>Respond to inquiries or communications</li>
+        <li>Support future product, service, or marketing initiatives (if applicable)</li>
+      </ul>
+
+      <p>
+        Your information is <strong>never sold, rented, or traded</strong> to third parties.
+      </p>
+
+      <h2>3. Cookies and Tracking Technologies</h2>
+      <p>
+        This website may use cookies and similar tracking technologies to enhance
+        user experience and analyze performance.
+      </p>
+      <p>
+        Third-party services such as analytics providers (e.g., Google Analytics)
+        may be used to better understand user behavior.
+      </p>
+      <p>
+        You can manage or disable cookies through your browser settings or request
+        deletion by contacting us.
+      </p>
+
+      <h2>4. Data Retention</h2>
+      <p>
+        Personal data is retained only for as long as necessary to fulfill the purposes
+        outlined in this policy, unless a longer retention period is required or permitted by law.
+      </p>
+
+      <h2>5. Your Rights</h2>
+      <p>You may request:</p>
+      <ul>
+        <li><strong>Deletion:</strong> Request removal of your personal data</li>
+      </ul>
+
+      <p>
+        To make a request, contact:
+        <a href="mailto:altareenk@outlook.com">altareenk@outlook.com</a>
+      </p>
+
+      <h2>6. Children’s Privacy</h2>
+      <p>
+        This website is not intended for individuals under the age of 13.
+        No personal information is knowingly collected from children.
+      </p>
+
+      <h2>7. External Links</h2>
+      <p>
+        This website may contain links to external websites. We are not responsible
+        for the privacy practices or content of those third-party sites.
+      </p>
+
+      <h2>8. Changes to This Policy</h2>
+      <p>
+        This Privacy Policy may be updated periodically. Any updates will be reflected
+        by the revised effective date above.
+      </p>
+
+      <h2>9. Contact</h2>
+      <p>
+        For any questions regarding this Privacy Policy:
+        <a href="mailto:altareenk@outlook.com">altareenk@outlook.com</a>
+      </p>
+    </div>
+  </section>
+
+<style is:global>
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .legalPage {
+    width: 100%;
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 0 0 64px;
+    display: flow-root;
+  }
+
+  .legalContainer {
+    width: 100%;
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--surface) 98%, white 2%),
+        color-mix(in srgb, var(--surface) 98%, black 2%)
+      );
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.62) inset,
+      0 8px 20px rgba(0,0,0,0.018);
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+
+  .effective {
+    margin-bottom: 18px;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+  }
+
+  h2 {
+    margin-top: 22px;
+    margin-bottom: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  p {
+    margin: 0 0 10px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--ink-secondary);
+  }
+
+  ul {
+    margin: 0 0 12px 18px;
+    padding: 0;
+  }
+
+  li {
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    color: var(--ink-secondary);
+  }
+
+  a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  a:hover {
+    border-bottom-color: var(--ink-muted);
+  }
+
+  /* Fix header logo unwanted styling */
+  header a,
+  .logo {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Remove underline from footer links */
+  footer a {
+    text-decoration: none !important;
+    border-bottom: none !important;
+  }
+
+  @media (max-width: 720px) {
+    .legalContainer {
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+    }
+  }
+</style>
+</PageShell>
