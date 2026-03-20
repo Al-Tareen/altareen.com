@@ -75,9 +75,7 @@ const jsonLd = {
   <title>{title}</title>
 
   <!-- JSON-LD structured data -->
-  <script type="application/ld+json">
-    {JSON.stringify(jsonLd, null, 2)}
-  </script>
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd, null, 2)}></script>
 </head>
 
   <body>
