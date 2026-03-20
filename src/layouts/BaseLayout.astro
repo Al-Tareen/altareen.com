@@ -7,10 +7,10 @@ const {
   datePublished        // optional ISO 8601 date string
 } = Astro.props;
 
-const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://altareen.com").toString();
+const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://dev.altareen.com").toString();
 const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
-  ? `https://altareen.com/toolkit-covers/${slug}.png`
-  : `https://altareen.com/logo.png`;
+  ? `https://dev.altareen.com/toolkit-covers/${slug}.png`
+  : `https://dev.altareen.com/logo.png`;
 const publishedDate = datePublished ?? new Date().toISOString();
 ---
 
@@ -63,7 +63,7 @@ const publishedDate = datePublished ?? new Date().toISOString();
     "name": "Al Tareen",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://altareen.com/logo.png"
+      "url": "https://dev.altareen.com/logo.png"
     }
   },
   "datePublished": "{publishedDate}",
