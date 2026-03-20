@@ -21,8 +21,8 @@ const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
     <link rel="canonical" href={canonical} />
 
     <!-- Open Graph & Twitter Images -->
-    <meta property="og:image" content={ogImage} />
-    <meta name="twitter:image" content={ogImage} />
+<meta property="og:image" content={`/toolkit-covers/${slug || "logo"}.png`} />
+<meta name="twitter:image" content={`/toolkit-covers/${slug || "logo"}.png`} />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
