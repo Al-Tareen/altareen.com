@@ -19,29 +19,6 @@ const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
 const publishedDate = datePublished
   ? new Date(datePublished).toISOString()
   : new Date().toISOString();
-
-// JSON-LD object with ImageObject for proper Rich Results
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "TechArticle",
-  "headline": title,
-  "description": description,
-  "image": {
-    "@type": "ImageObject",
-    "url": ogImage,
-    "width": 1200,
-    "height": 630
-  },
-  "url": canonical,
-  "author": { "@type": "Person", "name": "Al Tareen" },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Al Tareen",
-    "logo": { "@type": "ImageObject", "url": "https://dev.altareen.com/logo.png", "width": 512, "height": 512 }
-  },
-  "datePublished": publishedDate,
-  "mainEntityOfPage": { "@type": "WebPage", "@id": canonical }
-};
 ---
 <!doctype html>
 <html lang="en">
@@ -79,11 +56,31 @@ const jsonLd = {
   <title>{title}</title>
 
   <!-- JSON-LD structured data -->
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd, null, 2)}></script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "${title}",
+  "description": "${description}",
+  "image": {
+    "@type": "ImageObject",
+    "url": "${ogImage}",
+    "width": 1200,
+    "height": 630
+  },
+  "url": "${canonical}",
+  "author": { "@type": "Person", "name": "Al Tareen" },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Al Tareen",
+    "logo": { "@type": "ImageObject", "url": "https://dev.altareen.com/logo.png", "width": 512, "height": 512 }
+  },
+  "datePublished": "${publishedDate}",
+  "mainEntityOfPage": { "@type": "WebPage", "@id": "${canonical}" }
+}
+  </script>
 </head>
-<body>
-  <!-- Page content here -->
-</body>
+
 </html>
 
   <body>
