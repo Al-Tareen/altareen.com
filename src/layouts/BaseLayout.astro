@@ -19,72 +19,66 @@ const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
 const publishedDate = datePublished
   ? new Date(datePublished).toISOString()
   : new Date().toISOString();
----
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-
-    <!-- Open Graph -->
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content="article" />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={ogImage} />
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImage} />
-
-    <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-
-    <title>{title}</title>
-
-    <!-- JSON-LD structured data with image fallback -->
-    <script type="application/ld+json">
-{JSON.stringify({
+// JSON-LD object
+const jsonLd = {
   "@context": "https://schema.org",
   "@type": "TechArticle",
   "headline": title,
   "description": description,
-  "image": ogImage || "https://dev.altareen.com/logo.png",
+  "image": ogImage,
   "url": canonical,
-  "author": {
-    "@type": "Person",
-    "name": "Al Tareen"
-  },
+  "author": { "@type": "Person", "name": "Al Tareen" },
   "publisher": {
     "@type": "Organization",
     "name": "Al Tareen",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://dev.altareen.com/logo.png"
-    }
+    "logo": { "@type": "ImageObject", "url": "https://dev.altareen.com/logo.png" }
   },
   "datePublished": publishedDate,
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": canonical
-  }
-}, null, 2)}
-</script>
-  </head>
+  "mainEntityOfPage": { "@type": "WebPage", "@id": canonical }
+};
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImage} />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <title>{title}</title>
+
+  <!-- JSON-LD structured data -->
+  <script type="application/ld+json">
+    {JSON.stringify(jsonLd, null, 2)}
+  </script>
+</head>
 
   <body>
 
