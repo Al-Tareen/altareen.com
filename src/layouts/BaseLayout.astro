@@ -7,11 +7,18 @@ const {
   datePublished        // optional ISO 8601 date string
 } = Astro.props;
 
+// Make canonical URL absolute (pointing to dev)
 const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://dev.altareen.com").toString();
+
+// Open Graph / Twitter image absolute URL (pointing to dev)
 const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
   ? `https://dev.altareen.com/toolkit-covers/${slug}.png`
   : `https://dev.altareen.com/logo.png`;
-const publishedDate = datePublished ?? new Date().toISOString();
+
+// Ensure ISO 8601 date
+const publishedDate = datePublished
+  ? new Date(datePublished).toISOString()
+  : new Date().toISOString();
 ---
 
 <!doctype html>
@@ -22,38 +29,42 @@ const publishedDate = datePublished ?? new Date().toISOString();
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
 
-    <!-- Open Graph & Twitter Images -->
-    <meta property="og:image" content={ogImage} />
-    <meta name="twitter:image" content={ogImage} />
-
+    <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="article" />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
 
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
 
+    <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
     <title>{title}</title>
 
     <!-- JSON-LD structured data -->
     <script type="application/ld+json">
-{
+{JSON.stringify({
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "{title}",
-  "description": "{description}",
-  "image": "{ogImage}",
-  "url": "{canonical}",
+  "headline": title,
+  "description": description,
+  "image": ogImage,
+  "url": canonical,
   "author": {
     "@type": "Person",
     "name": "Al Tareen"
@@ -66,12 +77,12 @@ const publishedDate = datePublished ?? new Date().toISOString();
       "url": "https://dev.altareen.com/logo.png"
     }
   },
-  "datePublished": "{publishedDate}",
+  "datePublished": publishedDate,
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "{canonical}"
+    "@id": canonical
   }
-}
+}, null, 2)}
 </script>
   </head>
 
