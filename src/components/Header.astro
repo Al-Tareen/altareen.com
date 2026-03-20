@@ -86,27 +86,19 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
 
     const isMobile = () => window.innerWidth <= 720;
 
-    function lockScroll() {
-      if (!isMobile()) return;
-      if (document.body.classList.contains("menu-lock")) return;
+function lockScroll() {
+  if (!isMobile()) return;
+  scrollYBeforeLock = window.scrollY;
+  document.body.style.top = `-${scrollYBeforeLock}px`;
+  document.body.classList.add("menu-lock");
+}
 
-      scrollYBeforeLock = window.scrollY || window.pageYOffset || 0;
-      document.body.style.top = `-${scrollYBeforeLock}px`;
-      document.body.classList.add("menu-lock");
-      document.documentElement.classList.add("menu-lock");
-    }
-
-    function unlockScroll() {
-      if (!document.body.classList.contains("menu-lock")) return;
-
-      const top = document.body.style.top;
-      document.body.classList.remove("menu-lock");
-      document.documentElement.classList.remove("menu-lock");
-      document.body.style.top = "";
-
-      const restoreY = top ? Math.abs(parseInt(top, 10)) : scrollYBeforeLock;
-      window.scrollTo(0, restoreY || 0);
-    }
+function unlockScroll() {
+  if (!isMobile()) return;
+  document.body.classList.remove("menu-lock");
+  document.body.style.top = "";
+  window.scrollTo(0, scrollYBeforeLock);
+}
 
     function finishClose({ focusSummary = false } = {}) {
       menu.removeAttribute("open");
@@ -128,46 +120,40 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
       }, 180);
     }
 
-    function openMenu() {
-      if (!menu.hasAttribute("open")) return;
-      menu.classList.remove("isClosing");
-      isClosing = false;
-      window.clearTimeout(closeTimer);
-      lockScroll();
-    }
+function openMenu() {
+  if (!menu.hasAttribute("open")) return;
 
-    menu.addEventListener("toggle", () => {
-      if (menu.hasAttribute("open")) {
-        openMenu();
-      } else {
-        // native close fallback
-        window.clearTimeout(closeTimer);
-        menu.classList.remove("isClosing");
-        isClosing = false;
-        unlockScroll();
-      }
-    });
+  // Store current scroll
+  scrollYBeforeLock = window.scrollY;
 
-    // Intercept summary click ONLY when menu is already open, so we can animate close
-    summary?.addEventListener("click", (e) => {
-      if (!isMobile()) return;
-      if (!menu.hasAttribute("open")) return;
-      e.preventDefault();
-      e.stopPropagation();
-      closeMenu({ focusSummary: true });
-    });
+  menu.classList.remove("isClosing");
+  isClosing = false;
+  window.clearTimeout(closeTimer);
+  lockScroll();
 
-    // Close on nav click
-    links.forEach((link) => {
-      link.addEventListener("click", () => closeMenu());
-    });
+  // Prevent jumping
+  setTimeout(() => {
+    window.scrollTo(0, scrollYBeforeLock);
+  }, 0);
+}
 
-    // Backdrop click (main outside click)
-    backdrop?.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      closeMenu({ focusSummary: true });
-    });
+// Intercept summary click to handle toggle and prevent scroll
+summary?.addEventListener("click", (e) => {
+  if (!isMobile()) return;
+
+  // Prevent default jump behavior
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (menu.hasAttribute("open")) {
+    // Menu is open → close
+    closeMenu({ focusSummary: true });
+  } else {
+    // Menu is closed → open
+    menu.setAttribute("open", "");
+    openMenu();
+  }
+});
 
     // Capture-phase outside click fallback (more reliable than bubble on mobile)
     document.addEventListener(
@@ -519,9 +505,9 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
 }
 
 .mobilePanel {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
+  position: fixed; /* always fixed for mobile */
+  top: var(--siteHeaderH);
+  right: 16px;
   z-index: 2;
   width: min(276px, calc(100vw - 32px));
   padding: 8px;
@@ -558,10 +544,15 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
 }
 
 .mobileMenu[open] .mobilePanel {
+  position: fixed;
+  top: var(--siteHeaderH);
+  right: 16px;
+    width: min(276px, calc(100vw - 32px));
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
   visibility: visible;
+    z-index: 1002; /* above backdrop */
   transition:
     opacity 180ms var(--ease),
     transform 220ms var(--ease),
