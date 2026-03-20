@@ -7,10 +7,10 @@ const {
   datePublished        // optional ISO 8601 date string
 } = Astro.props;
 
-// Make canonical URL absolute (pointing to dev)
+// Make canonical URL absolute (dev environment)
 const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://dev.altareen.com").toString();
 
-// Open Graph / Twitter image absolute URL (pointing to dev)
+// Open Graph / Twitter image absolute URL with fallback
 const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
   ? `https://dev.altareen.com/toolkit-covers/${slug}.png`
   : `https://dev.altareen.com/logo.png`;
@@ -56,14 +56,14 @@ const publishedDate = datePublished
 
     <title>{title}</title>
 
-    <!-- JSON-LD structured data -->
+    <!-- JSON-LD structured data with image fallback -->
     <script type="application/ld+json">
 {JSON.stringify({
   "@context": "https://schema.org",
   "@type": "TechArticle",
   "headline": title,
   "description": description,
-  "image": ogImage,
+  "image": ogImage || "https://dev.altareen.com/logo.png",
   "url": canonical,
   "author": {
     "@type": "Person",
