@@ -91,10 +91,25 @@ const showHeroRail = showQuickActions || hasDownloads;
 
 const category = item.data.primaryCategory || "";
 const title = item.data.title || "";
+const description =
+  item.data.description ||
+  item.data.whenToUseFull ||
+  item.data.whenToUse ||
+  "AI Transformation • Product Management • Strategy";
+const publishedDate = item.data.datePublished || undefined;
 const feedbackKey = `ideas:${item.slug}`;
 ---
 
-<PageShell title={title} subtitle={category} hidePageHead={true}>
+<PageShell
+  title={title}
+  description={description}
+  subtitle={category}
+  hidePageHead={true}
+  slug={item.slug}
+  toolkitType="concepts"
+  datePublished={publishedDate}
+>
+
   <div class="toolkitDetail" data-item-key={feedbackKey}>
     <!-- Top row -->
     <div class="topRow">
