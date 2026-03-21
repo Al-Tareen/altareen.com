@@ -84,9 +84,19 @@ const showHeroRail = showQuickActions || hasDownloads;
 
 const category = item.data.primaryCategory || "";
 const title = item.data.title || "";
+const description = item.data.description || "AI Transformation • Product Management • Strategy";
+const publishedDate = item.data.datePublished || undefined;
 ---
 
-<PageShell title={title} subtitle={category} hidePageHead={true}>
+<PageShell
+  title={title}
+  description={description}
+  subtitle={category}
+  hidePageHead={true}
+  slug={item.slug}
+  toolkitType="pm"
+  datePublished={publishedDate}
+>
   <div class="toolkitDetail" data-framework-slug={item.slug}>
     <!-- Top row -->
     <div class="topRow">
@@ -740,16 +750,15 @@ const title = item.data.title || "";
         margin-bottom: 28px;
       }
 
-.hero:hover .coverFrame {
-  transform: none;
-  border-color: var(--border);
-  box-shadow: var(--shadow-lg);
-}
+      .hero:hover .coverFrame {
+        transform: none;
+        border-color: var(--border);
+        box-shadow: var(--shadow-lg);
+      }
 
-/* keep this too */
-.hero:hover .cover {
-  transform: none;
-}
+      .hero:hover .cover {
+        transform: none;
+      }
 
       .hero::after {
         display: none !important;
@@ -805,18 +814,18 @@ const title = item.data.title || "";
         line-height: 1;
       }
 
-.coverFrame {
-  position: relative;
-  border-radius: var(--radius-xl);
-  padding: 0 0 18px 0; /* no top/left/right padding */
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-  transition:
-    transform 0.28s var(--ease),
-    box-shadow 0.28s var(--ease),
-    border-color 0.28s var(--ease);
-}
+      .coverFrame {
+        position: relative;
+        border-radius: var(--radius-xl);
+        padding: 0 0 18px 0;
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        transition:
+          transform 0.28s var(--ease),
+          box-shadow 0.28s var(--ease),
+          border-color 0.28s var(--ease);
+      }
 
       .coverFrame::before {
         content: "";
@@ -842,13 +851,13 @@ const title = item.data.title || "";
         border-color: var(--border-strong);
       }
 
-.coverWrap {
-  position: relative;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0; /* flush top corners */
-  overflow: hidden;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--border);
-}
+      .coverWrap {
+        position: relative;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        overflow: hidden;
+        background: var(--surface);
+        box-shadow: inset 0 0 0 1px var(--border);
+      }
 
       .cover {
         width: 100%;
@@ -932,10 +941,10 @@ const title = item.data.title || "";
         border-color: rgba(239, 68, 68, 0.6);
       }
 
-.feedbackStats {
-  margin-top: 12px;
-  padding: 4px 18px 0; /* restore left/right spacing below image */
-}
+      .feedbackStats {
+        margin-top: 12px;
+        padding: 4px 18px 0;
+      }
 
       .feedbackBar {
         height: 8px;
@@ -1012,12 +1021,10 @@ const title = item.data.title || "";
         margin-bottom: 18px;
       }
 
-      /* Prevent double spacing inside grid (fixes mobile Inputs/Outputs gap inconsistency) */
       .grid2 > .cardBlock {
         margin: 0;
       }
 
-      /* Homepage-consistent card polish */
       .cardBlock,
       .downloadsCard,
       .sideCard {
@@ -1418,7 +1425,6 @@ const title = item.data.title || "";
         overflow: hidden;
       }
 
-      /* Collapsible section */
       .collapsibleBlock {
         padding: 0;
         overflow: hidden;
@@ -1428,22 +1434,21 @@ const title = item.data.title || "";
         width: 100%;
       }
 
-/* Make summary behave like a normal row (kills native marker gutter) */
-.collapseSummary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  box-sizing: border-box;
-  list-style: none;
-  cursor: pointer;
-  user-select: none;
-  margin: 0;
-  padding: 18px 24px;
-  -webkit-appearance: none;
-  appearance: none;
-}
+      .collapseSummary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+        list-style: none;
+        cursor: pointer;
+        user-select: none;
+        margin: 0;
+        padding: 18px 24px;
+        -webkit-appearance: none;
+        appearance: none;
+      }
 
       .collapseSummary::-webkit-details-marker {
         display: none;
@@ -1454,22 +1459,19 @@ const title = item.data.title || "";
         font-size: 0;
       }
 
-/* Make inner title wrapper span full width too */
-.collapseTitle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  margin: 0;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.28;
-  font-size: 1.05rem;
-  color: var(--ink);
-}
-
-
+      .collapseTitle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        margin: 0;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        line-height: 1.28;
+        font-size: 1.05rem;
+        color: var(--ink);
+      }
 
       .collapseSummary:hover .collapseChevron {
         color: var(--ink);
@@ -1479,26 +1481,26 @@ const title = item.data.title || "";
         transform: translateY(1px) rotate(180deg);
       }
 
-.collapseBody {
-  padding: 0 24px 20px; /* container handles spacing */
-}
+      .collapseBody {
+        padding: 0 24px 20px;
+      }
 
-.collapseBody p {
-  margin: 0;
-  padding: 0;
-  color: var(--ink-secondary);
-  font-size: 0.9rem;
-  line-height: 1.58;
-}
+      .collapseBody p {
+        margin: 0;
+        padding: 0;
+        color: var(--ink-secondary);
+        font-size: 0.9rem;
+        line-height: 1.58;
+      }
 
       @media (max-width: 980px) {
-.toolkitDetail {
-  max-width: none;
-  width: 100%;
-  padding: 0 0 36px;
-  box-sizing: border-box;
-  overflow-x: clip;
-}
+        .toolkitDetail {
+          max-width: none;
+          width: 100%;
+          padding: 0 0 36px;
+          box-sizing: border-box;
+          overflow-x: clip;
+        }
 
         .topRow {
           margin: 8px 0 16px;
@@ -1529,7 +1531,7 @@ const title = item.data.title || "";
 
         .grid2 {
           grid-template-columns: 1fr;
-          gap: 12px; /* consistent vertical spacing on mobile/tablet */
+          gap: 12px;
           margin-bottom: 12px;
         }
 
@@ -1550,29 +1552,27 @@ const title = item.data.title || "";
         }
       }
 
-      /* Remove the white-ish background behind hero and Quick Actions */
-.hero,
-.heroGrid,
-.coverFrame {
-  background: transparent !important;
-  box-shadow: none !important; /* Remove shadow if any */
-  border: none !important;      /* Remove border if any */
-}
+      .hero,
+      .heroGrid,
+      .coverFrame {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
 
-/* Ensure the cover image itself still displays correctly */
-.coverWrap {
-  background: transparent !important;
-}
+      .coverWrap {
+        background: transparent !important;
+      }
 
       @media (max-width: 720px) {
-
         .collapseSummary {
-  padding: 16px 16px;
-}
+          padding: 16px 16px;
+        }
 
-.collapseBody {
-  padding: 0 16px 16px;
-}
+        .collapseBody {
+          padding: 0 16px 16px;
+        }
+
         .modalPanel {
           height: 85vh;
           width: calc(100vw - 24px);
@@ -1582,10 +1582,10 @@ const title = item.data.title || "";
           max-width: 70vw;
         }
 
-.coverFrame {
-  padding: 0 0 12px 0; /* still flush top/left/right on mobile */
-  border-radius: 14px;
-}
+        .coverFrame {
+          padding: 0 0 12px 0;
+          border-radius: 14px;
+        }
 
         .heroRail .sideCard {
           padding: 14px;

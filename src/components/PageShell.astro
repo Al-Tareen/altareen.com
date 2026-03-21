@@ -8,11 +8,19 @@ const {
   description,
   subtitle,
   hidePageHead = false,
+  slug = "",
+  toolkitType = "",
+  datePublished,
 } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description}>
-
+<BaseLayout
+  title={title}
+  description={description}
+  slug={slug}
+  toolkitType={toolkitType}
+  datePublished={datePublished}
+>
   <Header />
   <main class={`wrap ${hidePageHead ? "isHeadHidden" : ""}`}>
     {!hidePageHead && (
@@ -26,17 +34,13 @@ const {
     )}
 
     <section class="content">
-
-
       <slot />
-      
     </section>
   </main>
   <Footer />
 </BaseLayout>
 
 <style>
-
   .wrap {
     max-width: var(--content-width, 980px);
     margin: 0 auto;
@@ -105,8 +109,4 @@ const {
       margin-bottom: 20px;
     }
   }
-
-
-  
 </style>
-

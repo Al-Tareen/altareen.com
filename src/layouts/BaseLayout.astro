@@ -1,44 +1,72 @@
 ---
-const { 
-  title = "Al Tareen", 
-  description = "AI Transformation • Product Management • Strategy", 
-  slug = "",            // slug of the page
-  toolkitType = "",     // "pm", "finance", or "concepts"
-  datePublished
+const {
+  title = "Al Tareen",
+  description = "AI Transformation • Product Management • Strategy",
+  slug = "",
+  toolkitType = "",
+  datePublished,
 } = Astro.props;
 
-const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://dev.altareen.com").toString();
+const siteUrl = Astro.site ?? "https://dev.altareen.com";
+const canonical = new URL(Astro.url.pathname, siteUrl).toString();
 
-const ogImage = (["pm","finance","concepts"].includes(toolkitType) && slug)
-  ? `https://dev.altareen.com/toolkit-covers/${slug}.png`
-  : `https://dev.altareen.com/logo.png`;
+const isToolkitDetail = ["pm", "finance", "concepts"].includes(toolkitType) && Boolean(slug);
 
-const publishedDate = datePublished
-  ? new Date(datePublished).toISOString()
-  : new Date().toISOString();
+const ogImage = isToolkitDetail
+  ? new URL(`/toolkit-covers/${slug}.png`, siteUrl).toString()
+  : new URL("/logo.png", siteUrl).toString();
 
-// JSON-LD object
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "TechArticle",
-  "headline": title,
-  "description": description,
-  "image": {
-    "@type": "ImageObject",
-    "url": ogImage,
-    "width": 1200,
-    "height": 630
-  },
-  "url": canonical,
-  "author": { "@type": "Person", "name": "Al Tareen" },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Al Tareen",
-    "logo": { "@type": "ImageObject", "url": "https://dev.altareen.com/logo.png", "width": 512, "height": 512 }
-  },
-  "datePublished": publishedDate,
-  "mainEntityOfPage": { "@type": "WebPage", "@id": canonical }
-};
+const publishedDate = (() => {
+  if (!datePublished) return undefined;
+  const parsed = new Date(datePublished);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+})();
+
+const authorUrl = new URL("/about/", siteUrl).toString();
+const publisherLogo = new URL("/logo.png", siteUrl).toString();
+
+const jsonLd = isToolkitDetail
+  ? {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": title,
+      "description": description,
+      "image": {
+        "@type": "ImageObject",
+        "url": ogImage,
+        "width": 1200,
+        "height": 630,
+      },
+      "url": canonical,
+      "author": {
+        "@type": "Person",
+        "name": "Al Tareen",
+        "url": authorUrl,
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Al Tareen",
+        "logo": {
+          "@type": "ImageObject",
+          "url": publisherLogo,
+          "width": 512,
+          "height": 512,
+        },
+      },
+      ...(publishedDate ? { "datePublished": publishedDate } : {}),
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": canonical,
+      },
+    }
+  : {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": title,
+      "description": description,
+      "url": canonical,
+      "image": ogImage,
+    };
 ---
 
 <!doctype html>
@@ -52,15 +80,23 @@ const jsonLd = {
   <!-- Open Graph -->
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
-  <meta property="og:type" content="article" />
+  <meta property="og:type" content={isToolkitDetail ? "article" : "website"} />
   <meta property="og:url" content={canonical} />
+  <meta property="og:site_name" content="Al Tareen" />
   <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  {publishedDate && isToolkitDetail && (
+    <meta property="article:published_time" content={publishedDate} />
+  )}
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
+  <meta name="twitter:image:alt" content={title} />
 
   <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -79,158 +115,157 @@ const jsonLd = {
   <!-- JSON-LD structured data -->
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
 </head>
-
-</html>
-
-  <body>
-
+<body>
   <!-- Thin page loader -->
   <div id="pageLoaderBar" class="page-loader-bar" aria-hidden="true"></div>
-  
-    <div class="siteShell">
-      <slot />
 
-      <div id="cookie-overlay" class="cookieOverlay"></div>
-      <div id="cookie-banner" class="cookieBanner" role="dialog" aria-label="Cookie consent">
-        <div class="cookieContent">
-          <p>
-            This website uses cookies to improve your experience and analyze traffic.
-            By clicking “Accept”, you consent to our use of cookies.
-          </p>
-          <div class="cookieActions">
-            <button id="cookie-accept" class="cookieBtn primary">Accept</button>
-            <button id="cookie-decline" class="cookieBtn">Decline</button>
-          </div>
+  <div class="siteShell">
+    <slot />
+
+    <div id="cookie-overlay" class="cookieOverlay"></div>
+    <div id="cookie-banner" class="cookieBanner" role="dialog" aria-label="Cookie consent">
+      <div class="cookieContent">
+        <p>
+          This website uses cookies to improve your experience and analyze traffic.
+          By clicking “Accept”, you consent to our use of cookies.
+        </p>
+        <div class="cookieActions">
+          <button id="cookie-accept" class="cookieBtn primary">Accept</button>
+          <button id="cookie-decline" class="cookieBtn">Decline</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <script is:inline type="module">
-const loader = document.getElementById('pageLoaderBar');
-let progress = 0;
-let interval;
+  <script is:inline type="module">
+    const loader = document.getElementById('pageLoaderBar');
+    let progress = 0;
+    let interval;
 
-const startLoader = () => {
-  loader.classList.add('active');
-  progress = 0;
-  loader.style.width = '0%';
-  interval = setInterval(() => {
-    progress += Math.random() * 4;
-    if (progress < 90) loader.style.width = progress + '%';
-  }, 150);
-};
+    const startLoader = () => {
+      loader.classList.add('active');
+      progress = 0;
+      loader.style.width = '0%';
+      interval = setInterval(() => {
+        progress += Math.random() * 4;
+        if (progress < 90) loader.style.width = progress + '%';
+      }, 150);
+    };
 
-const finishLoader = () => {
-  clearInterval(interval);
-  loader.style.width = '100%';
-  setTimeout(() => {
-    loader.classList.remove('active');
-    loader.style.width = '0%';
-  }, 250);
-};
+    const finishLoader = () => {
+      clearInterval(interval);
+      loader.style.width = '100%';
+      setTimeout(() => {
+        loader.classList.remove('active');
+        loader.style.width = '0%';
+      }, 250);
+    };
 
-document.addEventListener('click', (e) => {
-  const link = e.target.closest('a');
-  if (!link) return;
-  if (link.target === '_blank' || link.href.startsWith('mailto:') || link.href.startsWith('tel:') || !link.href.startsWith(window.location.origin)) return;
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (!link) return;
+      if (
+        link.target === '_blank' ||
+        link.href.startsWith('mailto:') ||
+        link.href.startsWith('tel:') ||
+        !link.href.startsWith(window.location.origin)
+      ) return;
 
-  e.preventDefault();
-  startLoader();
-  setTimeout(() => {
-    window.location.href = link.href;
-  }, 50);
-});
+      e.preventDefault();
+      startLoader();
+      setTimeout(() => {
+        window.location.href = link.href;
+      }, 50);
+    });
 
-window.addEventListener('pageshow', finishLoader);
-window.addEventListener('load', finishLoader);
-</script>
+    window.addEventListener('pageshow', finishLoader);
+    window.addEventListener('load', finishLoader);
+  </script>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const banner = document.getElementById("cookie-banner");
-  const overlay = document.getElementById("cookie-overlay");
-  const acceptBtn = document.getElementById("cookie-accept");
-  const declineBtn = document.getElementById("cookie-decline");
-  const CONSENT_KEY = "cookie_consent";
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const banner = document.getElementById("cookie-banner");
+      const overlay = document.getElementById("cookie-overlay");
+      const acceptBtn = document.getElementById("cookie-accept");
+      const declineBtn = document.getElementById("cookie-decline");
+      const CONSENT_KEY = "cookie_consent";
 
-  function hideBanner() {
-    banner.style.opacity = "0";
-    banner.style.transform = "translate(-50%, -45%)";
-    overlay.style.opacity = "0";
-    setTimeout(() => {
-      banner.style.display = "none";
-      overlay.style.display = "none";
-    }, 250);
-  }
+      function hideBanner() {
+        banner.style.opacity = "0";
+        banner.style.transform = "translate(-50%, -45%)";
+        overlay.style.opacity = "0";
+        setTimeout(() => {
+          banner.style.display = "none";
+          overlay.style.display = "none";
+        }, 250);
+      }
 
-  function showBanner() {
-    overlay.style.display = "block";
-    banner.style.display = "block";
-    setTimeout(() => {
-      overlay.style.opacity = "1";
-      banner.style.opacity = "1";
-      banner.style.transform = "translate(-50%, -50%)";
-    }, 10);
-  }
+      function showBanner() {
+        overlay.style.display = "block";
+        banner.style.display = "block";
+        setTimeout(() => {
+          overlay.style.opacity = "1";
+          banner.style.opacity = "1";
+          banner.style.transform = "translate(-50%, -50%)";
+        }, 10);
+      }
 
-  if (!localStorage.getItem(CONSENT_KEY)) {
-    showBanner();
-  }
+      if (!localStorage.getItem(CONSENT_KEY)) {
+        showBanner();
+      }
 
-  acceptBtn?.addEventListener("click", () => {
-    localStorage.setItem(CONSENT_KEY, "accepted");
-    hideBanner();
-  });
+      acceptBtn?.addEventListener("click", () => {
+        localStorage.setItem(CONSENT_KEY, "accepted");
+        hideBanner();
+      });
 
-  declineBtn?.addEventListener("click", () => {
-    localStorage.setItem(CONSENT_KEY, "declined");
-    hideBanner();
-  });
-});
-</script>
-
-  </body>
+      declineBtn?.addEventListener("click", () => {
+        localStorage.setItem(CONSENT_KEY, "declined");
+        hideBanner();
+      });
+    });
+  </script>
+</body>
 </html>
 
 <style>
+  /* Put at the very top of your PageShell style */
+  :global(:root) {
+    --scrollbar-bg: #fff;
+    --scrollbar-thumb: #333;
+    --scrollbar-thumb-hover: #555;
+  }
 
-/* Put at the very top of your PageShell style */
-:global(:root) {
-  --scrollbar-bg: #fff;
-  --scrollbar-thumb: #333;
-  --scrollbar-thumb-hover: #555;
-}
+  /* Apply to html and body */
+  :global(html),
+  :global(body) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+  }
 
-/* Apply to html and body */
-:global(html),
-:global(body) {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
-}
+  /* WebKit (Chrome, Safari, Edge) */
+  :global(html::-webkit-scrollbar),
+  :global(body::-webkit-scrollbar) {
+    width: 8px;
+    height: 8px;
+  }
 
-/* WebKit (Chrome, Safari, Edge) */
-:global(html::-webkit-scrollbar),
-:global(body::-webkit-scrollbar) {
-  width: 8px;
-  height: 8px;
-}
+  :global(html::-webkit-scrollbar-track),
+  :global(body::-webkit-scrollbar-track) {
+    background: var(--scrollbar-bg);
+  }
 
-:global(html::-webkit-scrollbar-track),
-:global(body::-webkit-scrollbar-track) {
-  background: var(--scrollbar-bg);
-}
+  :global(html::-webkit-scrollbar-thumb),
+  :global(body::-webkit-scrollbar-thumb) {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 999px;
+    border: 2px solid var(--scrollbar-bg);
+  }
 
-:global(html::-webkit-scrollbar-thumb),
-:global(body::-webkit-scrollbar-thumb) {
-  background-color: var(--scrollbar-thumb);
-  border-radius: 999px;
-  border: 2px solid var(--scrollbar-bg);
-}
-
-:global(html::-webkit-scrollbar-thumb:hover),
-:global(body::-webkit-scrollbar-thumb:hover) {
-  background-color: var(--scrollbar-thumb-hover);
-}
+  :global(html::-webkit-scrollbar-thumb:hover),
+  :global(body::-webkit-scrollbar-thumb:hover) {
+    background-color: var(--scrollbar-thumb-hover);
+  }
 
   :global(:root) {
     color-scheme: light;
@@ -262,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
     background: var(--surface-subtle);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden;
+    overflow-x: hidden;
   }
 
   :global(a) {
@@ -277,125 +312,125 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   :global(*),
-:global(*::before),
-:global(*::after) {
-  box-sizing: border-box;
-}
-
-.page-loader-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 3px;
-  width: 0;
-  background: linear-gradient(90deg, rgb(75, 75, 75), rgb(114, 114, 114));
-  z-index: 9999;
-  transition: width 0.2s ease;
-  pointer-events: none;
-}
-
-.page-loader-bar.active {
-  /* width is controlled via JS */
-}
-
-/* Overlay to lock and blur background */
-.cookieOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.25); /* semi-transparent dark overlay */
-  backdrop-filter: blur(6px); /* blur background */
-  -webkit-backdrop-filter: blur(6px); /* Safari support */
-  z-index: 9998; /* below popup */
-  display: none; /* hidden by default */
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-/* Centered cookie popup */
-.cookieBanner {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: calc(100% - 32px);
-  max-width: 400px;
-  z-index: 9999;
-
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
-
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--surface) 98%, white 2%),
-      color-mix(in srgb, var(--surface) 98%, black 2%)
-    );
-
-  box-shadow:
-    0 2px 0 rgba(255,255,255,0.6) inset,
-    0 10px 24px rgba(0,0,0,0.12);
-
-  padding: 20px 18px; /* more comfortable spacing */
-  display: none;
-  opacity: 0;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-
-.cookieContent {
-  display: flex;
-  flex-direction: column;
-  gap: 12px; /* more spacing between text and buttons */
-  text-align: center;
-}
-
-.cookieContent p {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: var(--ink-secondary);
-}
-
-.cookieActions {
-  display: flex;
-  justify-content: center;
-  gap: 10px; /* slightly wider button spacing */
-}
-
-.cookieBtn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-  background: color-mix(in srgb, var(--surface) 98%, black 2%);
-  color: var(--ink);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.cookieBtn:hover {
-  transform: translateY(-1px);
-}
-
-.cookieBtn.primary {
-  background: var(--ink);
-  color: var(--surface);
-  border-color: var(--ink);
-}
-
-.cookieBtn.primary:hover {
-  background: color-mix(in srgb, var(--ink) 92%, black 8%);
-}
-
-@media (max-width: 640px) {
-  .cookieActions {
-    flex-direction: column;
+  :global(*::before),
+  :global(*::after) {
+    box-sizing: border-box;
   }
-  .cookieBtn {
+
+  .page-loader-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background: linear-gradient(90deg, rgb(75, 75, 75), rgb(114, 114, 114));
+    z-index: 9999;
+    transition: width 0.2s ease;
+    pointer-events: none;
+  }
+
+  .page-loader-bar.active {
+    /* width is controlled via JS */
+  }
+
+  /* Overlay to lock and blur background */
+  .cookieOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 9998;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
   }
-}
 
+  /* Centered cookie popup */
+  .cookieBanner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% - 32px);
+    max-width: 400px;
+    z-index: 9999;
+
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--surface) 98%, white 2%),
+        color-mix(in srgb, var(--surface) 98%, black 2%)
+      );
+
+    box-shadow:
+      0 2px 0 rgba(255,255,255,0.6) inset,
+      0 10px 24px rgba(0,0,0,0.12);
+
+    padding: 20px 18px;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .cookieContent {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .cookieContent p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--ink-secondary);
+  }
+
+  .cookieActions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .cookieBtn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    background: color-mix(in srgb, var(--surface) 98%, black 2%);
+    color: var(--ink);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .cookieBtn:hover {
+    transform: translateY(-1px);
+  }
+
+  .cookieBtn.primary {
+    background: var(--ink);
+    color: var(--surface);
+    border-color: var(--ink);
+  }
+
+  .cookieBtn.primary:hover {
+    background: color-mix(in srgb, var(--ink) 92%, black 8%);
+  }
+
+  @media (max-width: 640px) {
+    .cookieActions {
+      flex-direction: column;
+    }
+
+    .cookieBtn {
+      width: 100%;
+    }
+  }
 </style>
