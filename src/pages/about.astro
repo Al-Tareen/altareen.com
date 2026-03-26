@@ -13,6 +13,27 @@ const profile = {
   email: "altareenk@outlook.com",
   location: "Houston, TX",
 };
+
+const aboutSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: profile.name,
+  alternateName: "Al Tareen",
+  url: "https://altareen.com/about/",
+  image: "https://altareen.com/images/about/altareen.jpg",
+  jobTitle: profile.title,
+  email: profile.email,
+  homeLocation: {
+    "@type": "Place",
+    name: profile.location,
+  },
+  sameAs: [profile.linkedin, profile.github],
+};
+
+const aboutBreadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "About", path: "/about/" },
+];
 ---
 
 <PageShell
@@ -20,6 +41,8 @@ const profile = {
   hidePageHead={false}
   description="Who I am and where to find me."
   keywords="About Al Tareen, AI transformation, product management leader, product strategy, Houston"
+  schema={aboutSchema}
+  breadcrumbs={aboutBreadcrumbs}
 >
   <section class="aboutPage" aria-label="About Al-Ebraheem Tareen">
     <div class="aboutSplitGrid">

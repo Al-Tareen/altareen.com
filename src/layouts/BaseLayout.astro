@@ -6,7 +6,11 @@ const {
   slug = "",
   toolkitType = "",
   datePublished,
+  schema = null,
+  breadcrumbs = [],
 } = Astro.props;
+
+const metaKeywords = typeof keywords === "string" ? keywords : "";
 
 const siteUrl = Astro.site ?? "https://dev.altareen.com";
 const canonical = new URL(Astro.url.pathname, siteUrl).toString();
@@ -68,6 +72,30 @@ const jsonLd = isToolkitDetail
       url: canonical,
       image: ogImage,
     };
+
+const breadcrumbJsonLd =
+  Array.isArray(breadcrumbs) && breadcrumbs.length > 0
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: breadcrumbs.map((item, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: item.name,
+          item: new URL(item.path, siteUrl).toString(),
+        })),
+      }
+    : null;
+
+const schemaGraph = [
+  jsonLd,
+  ...(schema
+    ? Array.isArray(schema)
+      ? schema
+      : [schema]
+    : []),
+  ...(breadcrumbJsonLd ? [breadcrumbJsonLd] : []),
+];
 ---
 
 <!doctype html>
@@ -76,7 +104,7 @@ const jsonLd = isToolkitDetail
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content={description} />
-  {keywords && <meta name="keywords" content={keywords} />}
+  <meta name="keywords" content={metaKeywords} />
   <link rel="canonical" href={canonical} />
 
   <meta property="og:title" content={title} />
@@ -110,7 +138,7 @@ const jsonLd = isToolkitDetail
 
   <title>{title}</title>
 
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
+  <script type="application/ld+json" set:html={JSON.stringify(schemaGraph)}></script>
 </head>
 <body>
   <div id="pageLoaderBar" class="page-loader-bar" aria-hidden="true"></div>
@@ -230,17 +258,6 @@ const jsonLd = isToolkitDetail
         if (optionalInput) optionalInput.checked = Boolean(prefs?.optional);
       }
 
-      function collectPreferencesFromUI() {
-        const optional = Boolean(optionalInput?.checked);
-
-        return {
-          essential: true,
-          optional,
-          functional: optional,
-          analytics: optional,
-        };
-      }
-
       function showBanner() {
         if (!banner || !overlay) return;
 
@@ -302,7 +319,6 @@ const jsonLd = isToolkitDetail
         if (window.__analyticsLoaded) return;
         window.__analyticsLoaded = true;
 
-        // Add analytics loader here only when optional preference is true.
         console.log("Optional features enabled.");
       }
 

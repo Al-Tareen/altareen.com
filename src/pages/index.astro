@@ -65,12 +65,44 @@ function chunkItems(items, size) {
 const pmPages = chunkItems(buildPreviewItems(frameworkPool, 12, "pm"), 4);
 const financePages = chunkItems(buildPreviewItems(financePool, 4, "finance"), 2);
 const conceptPages = chunkItems(buildPreviewItems(conceptPool, 2, "concepts"), 2);
+
+const homepageSchema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: "Al-Ebraheem Tareen",
+    alternateName: "Al Tareen",
+    url: "https://altareen.com/",
+    image: "https://altareen.com/images/about/altareen.jpg",
+    jobTitle: "AI Transformation • Product Management • Product Strategy",
+    homeLocation: {
+      "@type": "Place",
+      name: "Houston, TX",
+    },
+    sameAs: [
+      "https://www.linkedin.com/in/California",
+      "https://github.com/Al-Tareen",
+    ],
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Al Tareen",
+    url: "https://altareen.com/",
+  },
+];
+
+const homepageBreadcrumbs = [
+  { name: "Home", path: "/" },
+];
 ---
 
 <BaseLayout
   title="Al Tareen | AI Transformation, Product Management, Product Strategy"
   description="Explore Al Tareen’s work across AI transformation, product management, product strategy, PM frameworks, financial models, concepts, and selected projects."
   keywords="Al Tareen, AI transformation, product management, product strategy, PM toolkit, finance toolkit, concepts, projects"
+  schema={homepageSchema}
+  breadcrumbs={homepageBreadcrumbs}
 >
   <Header />
 

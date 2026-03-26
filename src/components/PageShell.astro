@@ -12,6 +12,8 @@ const {
   slug = "",
   toolkitType = "",
   datePublished,
+  schema = null,
+  breadcrumbs = [],
 } = Astro.props;
 ---
 
@@ -22,6 +24,8 @@ const {
   slug={slug}
   toolkitType={toolkitType}
   datePublished={datePublished}
+  schema={schema}
+  breadcrumbs={breadcrumbs}
 >
   <Header />
   <main class={`wrap ${hidePageHead ? "isHeadHidden" : ""}`}>
