@@ -1,0 +1,61 @@
+name: Deploy to PROD (altareen.com)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
+
+      - name: Deploy via rsync
+        env:
+          HOST: ${{ secrets.PROD_SSH_HOST }}
+          USER: ${{ secrets.PROD_SSH_USER }}
+          DEST: ${{ secrets.PROD_DEPLOY_PATH }}
+        run: |
+          ssh -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p '$DEST'"
+
+          rsync -rz --delete --no-times --no-perms --no-owner --no-group \
+            --exclude 'cgi-bin/' \
+            --exclude 'node_modules/' \
+            --exclude '.feedback-store.json' \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            dist/ "$USER@$HOST:$DEST/"
+
+          rsync -az --no-owner --no-group \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            package.json package-lock.json "$USER@$HOST:$DEST/"
+
+      - name: Install production deps + restart service
+        env:
+          HOST: ${{ secrets.PROD_SSH_HOST }}
+          USER: ${{ secrets.PROD_SSH_USER }}
+          DEST: ${{ secrets.PROD_DEPLOY_PATH }}
+        run: |
+          ssh -o StrictHostKeyChecking=no "$USER@$HOST" "
+            set -e
+            cd '$DEST'
+            npm ci --omit=dev
+            sudo systemctl restart altareen-prod
+          "
