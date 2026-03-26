@@ -2,8 +2,8 @@
 title: "DCF Valuation"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "A step-by-step guide to using a Discounted Cash Flow (DCF) model to value your startup, plus a Excel template for founders, CFOs, and groth-stage teams"
-whenToUseFull: "A step-by-step guide to using a Discounted Cash Flow (DCF) model to value your startup, plus a Excel template for founders, CFOs, and groth-stage teams"
+whenToUse: "Estimate business value using projected cash flows, discount rates, and core valuation assumptions."
+whenToUseFull: "Estimate business value using projected cash flows, discount rates, and core valuation assumptions."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-A step-by-step guide to using a Discounted Cash Flow (DCF) model to value your startup, plus a Excel template for founders, CFOs, and groth-stage teams
+Estimate business value using projected cash flows, discount rates, and core valuation assumptions.

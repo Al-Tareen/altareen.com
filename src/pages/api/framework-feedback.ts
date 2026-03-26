@@ -8,6 +8,7 @@ export const prerender = false;
 type FeedbackValue = "like" | "dislike";
 type StoreRow = { likes: number; dislikes: number };
 type StoreRecord = Record<string, StoreRow>;
+type ConsentValue = "accepted" | "declined" | null;
 
 const STORE_PATH = path.join(process.cwd(), ".feedback-store.json");
 
@@ -25,6 +26,10 @@ function normalizeSlug(slug: string) {
   return String(slug || "").trim().toLowerCase();
 }
 
+function normalizeConsent(value: unknown): ConsentValue {
+  return value === "accepted" || value === "declined" ? value : null;
+}
+
 function cookieNameForSlug(slug: string) {
   // Hash the slug so cookie names are always short + safe
   const hash = crypto.createHash("sha1").update(slug).digest("hex").slice(0, 16);
@@ -36,7 +41,6 @@ async function readStore(): Promise<StoreRecord> {
     const raw = await fs.readFile(STORE_PATH, "utf-8");
     const parsed = JSON.parse(raw);
 
-    // Basic shape guard
     if (!parsed || typeof parsed !== "object") return {};
     return parsed as StoreRecord;
   } catch {
@@ -85,50 +89,54 @@ export const GET: APIRoute = async ({ url, cookies }) => {
 };
 
 // POST /api/framework-feedback
-// body: { slug: string, value: "like" | "dislike" | null }
+// body: { slug: string, value: "like" | "dislike" | null, consent?: "accepted" | "declined" | null }
 export const POST: APIRoute = async ({ request, cookies, url }) => {
   try {
     const body = await request.json();
     const slug = normalizeSlug(body?.slug);
     const incoming = body?.value;
+    const consent = normalizeConsent(body?.consent);
+    const hasCookieConsent = consent === "accepted";
 
     const nextVote: FeedbackValue | null =
-      incoming === "like" || incoming === "dislike" ? incoming : incoming === null ? null : null;
+      incoming === "like" || incoming === "dislike"
+        ? incoming
+        : incoming === null
+          ? null
+          : null;
 
     if (!slug) return json({ error: "Invalid payload" }, 400);
 
     const cookieName = cookieNameForSlug(slug);
-    const prevVote = getUserVoteFromCookie(cookies.get(cookieName)?.value);
 
-    // Load store + ensure row
+    // Only use cookie-backed previous vote when cookie consent was accepted.
+    const prevVote = hasCookieConsent
+      ? getUserVoteFromCookie(cookies.get(cookieName)?.value)
+      : null;
+
     const store = await readStore();
     const row = safeRow(store[slug]);
     store[slug] = row;
 
-    // If vote changes, adjust counts
     if (prevVote !== nextVote) {
-      // remove previous vote
       if (prevVote === "like") row.likes = Math.max(0, row.likes - 1);
       if (prevVote === "dislike") row.dislikes = Math.max(0, row.dislikes - 1);
 
-      // add new vote
       if (nextVote === "like") row.likes += 1;
       if (nextVote === "dislike") row.dislikes += 1;
 
       await writeStoreAtomic(store);
     }
 
-    // Cookie: set or delete
-    // Use secure=true automatically when served over https
     const isHttps = url.protocol === "https:";
 
-    if (nextVote) {
+    if (hasCookieConsent && nextVote) {
       cookies.set(cookieName, nextVote, {
         path: "/",
         sameSite: "lax",
-        httpOnly: true, // frontend doesn't need to read it
+        httpOnly: true,
         secure: isHttps,
-        maxAge: 60 * 60 * 24 * 365, // 1 year
+        maxAge: 60 * 60 * 24 * 365,
       });
     } else {
       cookies.delete(cookieName, { path: "/" });
@@ -141,7 +149,7 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
       likes: row.likes,
       dislikes: row.dislikes,
       total,
-      userVote: nextVote, // server truth
+      userVote: hasCookieConsent ? nextVote : null,
     });
   } catch (err) {
     console.error(err);

@@ -35,6 +35,55 @@ const fallbackDownload = item.data.cover
 
 const downloads = hasFiles ? files : fallbackDownload ? [fallbackDownload] : [];
 const hasDownloads = downloads.length > 0;
+const hasMultipleDownloads = downloads.length > 1;
+const hasSingleDownload = downloads.length === 1;
+
+const normalizeUrl = (f) => f?.path || f?.url || "";
+
+const getExtension = (name = "", url = "") => {
+  const source = String(name || url || "").trim().toLowerCase();
+  const clean = source.split("?")[0].split("#")[0];
+  const ext = clean.includes(".") ? clean.split(".").pop() : "";
+  return ext || "";
+};
+
+const getFileTypeLabel = (name = "", url = "") => {
+  const ext = getExtension(name, url);
+
+  const map = {
+    pdf: "PDF",
+    doc: "DOC",
+    docx: "DOCX",
+    ppt: "PPT",
+    pptx: "PPTX",
+    xls: "XLS",
+    xlsx: "XLSX",
+    csv: "CSV",
+    txt: "TXT",
+    zip: "ZIP",
+  };
+
+  return map[ext] || (ext ? ext.toUpperCase() : "FILE");
+};
+
+const stripExtension = (name = "") => {
+  const trimmed = String(name || "").trim();
+  return trimmed.replace(/\.[^./\\]+$/, "");
+};
+
+const formatDownload = (f, i) => {
+  const url = normalizeUrl(f);
+  const rawName = f?.name || `Attachment ${i + 1}`;
+  return {
+    ...f,
+    href: url,
+    rawName,
+    displayName: stripExtension(rawName),
+    typeLabel: getFileTypeLabel(rawName, url),
+  };
+};
+
+const normalizedDownloads = downloads.map(formatDownload);
 
 const sectionIds = {
   when: "when",
@@ -54,33 +103,44 @@ const sections = [
   item.data.outputArtifact ? { id: sectionIds.output, label: "Output" } : null,
   item.data.commonMistakes ? { id: sectionIds.mistakes, label: "Mistakes" } : null,
   item.data.link ? { id: sectionIds.link, label: "Related" } : null,
-  hasDownloads ? { id: sectionIds.downloads, label: "Downloads" } : null,
+  hasMultipleDownloads ? { id: sectionIds.downloads, label: "Downloads" } : null,
 ].filter(Boolean);
 
-const primaryDownload = hasDownloads ? downloads[0] : null;
-const primaryDownloadUrl = primaryDownload ? (primaryDownload.path || primaryDownload.url || "") : "";
+const primaryDownload = hasDownloads ? normalizedDownloads[0] : null;
+const primaryDownloadUrl = primaryDownload ? primaryDownload.href : "";
 
-const normalizeUrl = (f) => f?.path || f?.url || "";
-const isPdf = (f) => String(f?.name || "").toLowerCase().endsWith(".pdf");
+const isPdf = (f) =>
+  getFileTypeLabel(
+    f?.rawName || f?.name || "",
+    f?.href || f?.url || f?.path || ""
+  ) === "PDF";
 
 const primaryAsset =
-  (hasDownloads ? downloads.find(isPdf) : null) ||
-  (hasDownloads ? downloads[0] : null);
+  (hasDownloads ? normalizedDownloads.find(isPdf) : null) ||
+  (hasDownloads ? normalizedDownloads[0] : null);
 
-const primaryAssetUrl = primaryAsset ? normalizeUrl(primaryAsset) : "";
+const primaryAssetUrl = primaryAsset ? primaryAsset.href : "";
 const hasPrimaryAsset = Boolean(primaryAssetUrl);
 const canPreview = hasPrimaryAsset && isPdf(primaryAsset);
 
 // cleaner glyphs (more consistent across platforms than emoji)
 const quickActions = [
-  primaryDownloadUrl ? { kind: "download", label: "Download", icon: "↓", href: primaryDownloadUrl } : null,
+  primaryDownloadUrl
+    ? {
+        kind: "download",
+        label: hasSingleDownload ? primaryDownload.displayName : "Download",
+        fileType: hasSingleDownload ? primaryDownload.typeLabel : "",
+        icon: "↓",
+        href: primaryDownloadUrl,
+      }
+    : null,
   canPreview ? { kind: "preview", label: "Preview", icon: "◦" } : null,
   { kind: "share", label: "Share", icon: "↗" },
   item.data.link ? { kind: "related", label: "Related", icon: "↗", href: item.data.link } : null,
 ].filter(Boolean);
 
 const showQuickActions = quickActions.length > 0;
-const showHeroRail = showQuickActions || hasDownloads;
+const showHeroRail = showQuickActions || hasMultipleDownloads;
 
 const category = item.data.primaryCategory || "";
 const title = item.data.title || "";
@@ -174,84 +234,83 @@ const publishedDate = item.data.datePublished || undefined;
 
         {showHeroRail && (
           <aside class="heroRail" aria-label="Quick actions and downloads">
-            {showQuickActions && (
-              <div class="sideCard" aria-label="Quick Actions">
-                <div class="sideTop">
-                  <div class="sideTitle">Quick Actions</div>
-                </div>
+      {showQuickActions && (
+  <div class="sideCard" aria-label="Quick Actions">
+    <div class="sideTop">
+      <div class="sideTitle">Quick Actions</div>
+    </div>
 
-                <div class="sideMeta">
-                  {quickActions.map((a) => {
-                    if (a.kind === "download") {
-                      return (
-                        <a class="qaRow primary" href={a.href} download target="_blank" rel="noopener">
-                          <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-                          <span class="qaText">{a.label}</span>
-                        </a>
-                      );
-                    }
+    <div class="sideMeta">
+      {quickActions.map((a) => {
+        if (a.kind === "download") {
+          return (
+            <a class="qaRow primary qaDownloadRow" href={a.href} download target="_blank" rel="noopener">
+              <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+              <span class="qaText">{a.label}</span>
+              {a.fileType && <span class="qaFileType">{a.fileType}</span>}
+            </a>
+          );
+        }
 
-                    if (a.kind === "preview") {
-                      return (
-                        <button class="qaRow" type="button" data-preview>
-                          <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-                          <span class="qaText">{a.label}</span>
-                        </button>
-                      );
-                    }
+        if (a.kind === "preview") {
+          return (
+            <button class="qaRow" type="button" data-preview>
+              <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+              <span class="qaText">{a.label}</span>
+            </button>
+          );
+        }
 
-                    if (a.kind === "share") {
-                      return (
-                        <button class="qaRow" type="button" data-share>
-                          <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-                          <span class="qaText">{a.label}</span>
-                        </button>
-                      );
-                    }
+        if (a.kind === "share") {
+          return (
+            <button class="qaRow" type="button" data-share>
+              <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+              <span class="qaText">{a.label}</span>
+            </button>
+          );
+        }
 
-                    return (
-                      <a class="qaRow" href={a.href} target="_blank" rel="noopener">
-                        <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-                        <span class="qaText">{a.label}</span>
-                        <span class="qaEnd" aria-hidden="true">↗</span>
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+        return (
+          <a class="qaRow" href={a.href} target="_blank" rel="noopener">
+            <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+            <span class="qaText">{a.label}</span>
+            <span class="qaEnd" aria-hidden="true">↗</span>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+)}
 
-            {hasDownloads && (
-              <div
-                class="sideCard downloadsSideCard"
-                id={sectionIds.downloads}
-                data-section
-                aria-label="Downloads"
-              >
-                <div class="sideTop">
-                  <div class="sideTitle">Downloads</div>
-                  <span class="downloadsCount">{downloads.length}</span>
-                </div>
+{hasMultipleDownloads && (
+  <div
+    class="sideCard downloadsSideCard"
+    id={sectionIds.downloads}
+    data-section
+    aria-label="Downloads"
+  >
+    <div class="sideTop">
+      <div class="sideTitle">Downloads</div>
+      <span class="downloadsCount">{normalizedDownloads.length}</span>
+    </div>
 
-                <div class="downloadList">
-                  {downloads.map((f, i) => (
-                    <a
-                      class="fileRow"
-                      href={f.path || f.url}
-                      download
-                      target="_blank"
-                      rel="noopener"
-                      aria-label={`Download ${f.name || `Attachment ${i + 1}`}`}
-                    >
-                      <span class="fileType" aria-hidden="true">
-                        {(f.name || "").toLowerCase().endsWith(".pdf") ? "PDF" : "FILE"}
-                      </span>
-                      <span class="fileName">{f.name || `Attachment ${i + 1}`}</span>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
+    <div class="downloadList">
+      {normalizedDownloads.map((f, i) => (
+        <a
+          class="fileRow"
+          href={f.href}
+          download
+          target="_blank"
+          rel="noopener"
+          aria-label={`Download ${f.displayName || `Attachment ${i + 1}`}`}
+        >
+          <span class="fileType" aria-hidden="true">{f.typeLabel}</span>
+          <span class="fileName">{f.displayName || `Attachment ${i + 1}`}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+)}
           </aside>
         )}
       </div>
@@ -471,33 +530,50 @@ const publishedDate = item.data.datePublished || undefined;
             }
           }
 
-          async function submitFeedback(value) {
-            if (!frameworkSlug) throw new Error("Missing framework slug");
-            if (feedbackBusy) throw new Error("Feedback request already in progress");
+async function submitFeedback(value) {
+  if (!frameworkSlug) throw new Error("Missing framework slug");
+  if (feedbackBusy) throw new Error("Feedback request already in progress");
 
-            try {
-              setFeedbackBusy(true);
+  try {
+    setFeedbackBusy(true);
 
-              const res = await fetch("/api/framework-feedback", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Accept: "application/json",
-                },
-                body: JSON.stringify({
-                  slug: frameworkSlug,
-                  value: value ?? null,
-                }),
-              });
+    let consent = "declined";
 
-              if (!res.ok) throw new Error(`Failed to save feedback (${res.status})`);
+    if (typeof window !== "undefined") {
+      try {
+        const rawPrefs = localStorage.getItem("cookie_preferences");
+        const prefs = rawPrefs ? JSON.parse(rawPrefs) : null;
+        const optionalEnabled = Boolean(
+          prefs?.optional ?? prefs?.functional ?? prefs?.analytics
+        );
 
-              const data = await res.json();
-              return data;
-            } finally {
-              setFeedbackBusy(false);
-            }
-          }
+        consent = optionalEnabled ? "accepted" : "declined";
+      } catch {
+        consent = "declined";
+      }
+    }
+
+    const res = await fetch("/api/framework-feedback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        slug: frameworkSlug,
+        value: value ?? null,
+        consent,
+      }),
+    });
+
+    if (!res.ok) throw new Error(`Failed to save feedback (${res.status})`);
+
+    const data = await res.json();
+    return data;
+  } finally {
+    setFeedbackBusy(false);
+  }
+}
 
           async function handleFeedbackClick(type) {
             if (feedbackBusy) return;
@@ -1246,6 +1322,28 @@ const publishedDate = item.data.datePublished || undefined;
           border-color 0.2s var(--ease),
           background 0.2s var(--ease);
       }
+
+.qaDownloadRow {
+  gap: 10px;
+}
+
+.qaFileType {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+}
 
       .qaRow:hover {
         transform: translateY(-1px);

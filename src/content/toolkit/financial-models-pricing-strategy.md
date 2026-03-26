@@ -2,8 +2,8 @@
 title: "Pricing Strategy"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "A practical guide to choosing the right pricing model, avoiding rookie mistakes, and boosting early revenue."
-whenToUseFull: "A practical guide to choosing the right pricing model, avoiding rookie mistakes, and boosting early revenue."
+whenToUse: "Compare pricing approaches, evaluate tradeoffs, and structure a model that supports revenue and positioning."
+whenToUseFull: "Compare pricing approaches, evaluate tradeoffs, and structure a model that supports revenue and positioning."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-A practical guide to choosing the right pricing model, avoiding rookie mistakes, and boosting early revenue.
+Compare pricing approaches, evaluate tradeoffs, and structure a model that supports revenue and positioning.

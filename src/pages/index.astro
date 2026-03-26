@@ -2,146 +2,459 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import { getCollection } from "astro:content";
+
+const HIDDEN_FRAMEWORK_CATEGORIES = new Set(["Business Plans", "TBA", "Financial Models"]);
+const CONCEPT_CATEGORIES = new Set(["Concepts", "Business Plans"]);
+
+const all = await getCollection("toolkit");
+
+const hasCover = (item) => Boolean(item?.data?.cover);
+
+const frameworkPool = all
+  .filter((item) => (item.data.dbTitle || "").trim() === "Frameworks")
+  .filter((item) => !HIDDEN_FRAMEWORK_CATEGORIES.has((item.data.primaryCategory || "Uncategorized").trim()))
+  .filter(hasCover);
+
+const financePool = all
+  .filter((item) => (item.data.primaryCategory || "").trim() === "Financial Models")
+  .filter(hasCover);
+
+const conceptPool = all
+  .filter((item) => CONCEPT_CATEGORIES.has((item.data.primaryCategory || "Uncategorized").trim()))
+  .filter(hasCover);
+
+function hashString(value) {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function pickPreviewItems(items, count, seed) {
+  return [...items]
+    .map((item) => ({
+      item,
+      score: hashString(`${seed}:${item.slug}`),
+    }))
+    .sort((a, b) => {
+      if (a.score !== b.score) return a.score - b.score;
+      return String(a.item.data.title || "").localeCompare(String(b.item.data.title || ""));
+    })
+    .slice(0, count)
+    .map(({ item }) => item);
+}
+
+function buildPreviewItems(items, count, seed) {
+  return pickPreviewItems(items, count, seed).map((item) => ({
+    slug: item.slug,
+    cover: item.data.cover,
+  }));
+}
+
+function chunkItems(items, size) {
+  const chunks = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks.filter((chunk) => chunk.length > 0);
+}
+
+const pmPages = chunkItems(buildPreviewItems(frameworkPool, 12, "pm"), 4);
+const financePages = chunkItems(buildPreviewItems(financePool, 4, "finance"), 2);
+const conceptPages = chunkItems(buildPreviewItems(conceptPool, 2, "concepts"), 2);
 ---
 
 <BaseLayout
   title="Al Tareen — AI Transformation, Product Management, Product Strategy"
-  description="Personal site: projects, PM toolkit, finance toolkit, concepts, resume, and ways to connect."
+  description="Personal site: projects, PM toolkit, finance toolkit, concepts, and ways to connect."
 >
   <Header />
 
   <main class="wrap">
-    <section class="hero" aria-labelledby="home-title">
+    <section class="hero">
       <p class="eyebrow">AI Transformation • Product Management • Product Strategy</p>
 
-      <h1 id="home-title">Turning AI and Product Strategy into Execution.</h1>
+      <h1 id="home-title">Al Tareen</h1>
 
       <p class="lead">
-Welcome to my website. Explore selected Projects, a PM Toolkit for effective decision-making, a Finance Toolkit containing various models, Concepts that reflect how I think through new opportunities, and more.
+        Welcome to my website. Explore selected Projects, a PM Toolkit for effective decision-making, a Finance Toolkit containing various models, Concepts that reflect how I think through new opportunities, and more.
       </p>
 
-      <div class="cta">
-        <div class="cta-row cta-row-main">
-          <a class="btn primary" href="/projects">View Projects</a>
-          <a class="btn" href="/files/Al-Tareen-Resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
-        </div>
 
-
-      </div>
     </section>
 
     <section class="grid" aria-label="Homepage sections">
-      <a class="card card-feature" href="/projects">
-        <div class="card-label">Featured Work</div>
-        <h2>Projects</h2>
-        <p>Selected projects with measurable outcomes.</p>
+      <a class="card card-premium card-pm" href="/toolkit">
+        <div class="card-ambience" aria-hidden="true">
+          <img
+            class="card-ambience-media"
+            src="/homepage/pm.png"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        <div class="card-premium-overlay" aria-hidden="true"></div>
+
+        <div class="card-copy">
+          <h2>PM Toolkit</h2>
+          <p>Frameworks that help product managers make better decisions.</p>
+        </div>
+
+        {pmPages.length > 0 && (
+          <div class="previewDeck previewDeckPm" data-rotator data-interval="5600">
+            <div class="previewWindow previewWindowPm">
+              <div class="previewTrack" data-preview-track>
+                {pmPages.map((page) => (
+                  <div class="previewPage previewPagePm" data-preview-page>
+                    {page.map((entry) => (
+                      <div class="previewCard previewCardPm">
+                        <div class="previewCoverShell">
+                          <img
+                            class="previewCover"
+                            src={entry.cover}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {pmPages.length > 1 && (
+              <div class="previewIndicators">
+                {pmPages.map((_, index) => (
+                  <span class={`previewDot ${index === 0 ? "isActive" : ""}`} data-preview-dot></span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
 
-      <!-- PM Toolkit now uses the same standard card style -->
-      <a class="card" href="/toolkit">
-        <div class="card-label">Frameworks</div>
-        <h2>PM Toolkit</h2>
-        <p>Frameworks that help product managers make better decisions.</p>
+      <a class="card card-premium card-finance" href="/finance-toolkit">
+        <div class="card-ambience" aria-hidden="true">
+          <img
+            class="card-ambience-media"
+            src="/homepage/finance.png"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        <div class="card-premium-overlay" aria-hidden="true"></div>
+
+        <div class="card-copy">
+          <h2>Finance Toolkit</h2>
+          <p>Financial models for founders and finance professionals.</p>
+        </div>
+
+        {financePages.length > 0 && (
+          <div class="previewDeck" data-rotator data-interval="6200">
+            <div class="previewWindow">
+              <div class="previewTrack" data-preview-track>
+                {financePages.map((page) => (
+                  <div class="previewPage" data-preview-page>
+                    {page.map((entry) => (
+                      <div class="previewCard">
+                        <div class="previewCoverShell">
+                          <img
+                            class="previewCover"
+                            src={entry.cover}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {financePages.length > 1 && (
+              <div class="previewIndicators">
+                {financePages.map((_, index) => (
+                  <span class={`previewDot ${index === 0 ? "isActive" : ""}`} data-preview-dot></span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
 
-      <a class="card" href="/finance-toolkit">
-        <div class="card-label">Models</div>
-        <h2>Finance Toolkit</h2>
-        <p>Financial models for founders and finance professionals.</p>
+      <a class="card card-premium card-concepts" href="/concepts">
+        <div class="card-ambience" aria-hidden="true">
+          <img
+            class="card-ambience-media"
+            src="/homepage/concepts.png"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        <div class="card-premium-overlay" aria-hidden="true"></div>
+
+        <div class="card-copy">
+          <h2>Concepts</h2>
+          <p>Early-stage concepts and strategic business ideas.</p>
+        </div>
+
+        {conceptPages.length > 0 && (
+          <div class="previewDeck" data-rotator data-interval="7000">
+            <div class="previewWindow">
+              <div class="previewTrack" data-preview-track>
+                {conceptPages.map((page) => (
+                  <div class="previewPage" data-preview-page>
+                    {page.map((entry) => (
+                      <div class="previewCard">
+                        <div class="previewCoverShell">
+                          <img
+                            class="previewCover"
+                            src={entry.cover}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {conceptPages.length > 1 && (
+              <div class="previewIndicators">
+                {conceptPages.map((_, index) => (
+                  <span class={`previewDot ${index === 0 ? "isActive" : ""}`} data-preview-dot></span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
 
-      <a class="card" href="/concepts">
-        <div class="card-label">Concepts</div>
-        <h2>Concepts</h2>
-        <p>Early-stage concepts and strategic business ideas.</p>
-        <span class="card-arrow" aria-hidden="true">↗</span>
-      </a>
+      <a class="card card-premium card-projects" href="/projects">
+  <div class="card-ambience" aria-hidden="true">
+    <img
+      class="card-ambience-media"
+      src="/homepage/projects.png"
+      alt=""
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
 
-      <a class="card" href="/about">
-        <div class="card-label">Profile</div>
-        <h2>About</h2>
-        <p>Who I am and where to find me.</p>
-        <span class="card-arrow" aria-hidden="true">↗</span>
-      </a>
+  <div class="card-premium-overlay" aria-hidden="true"></div>
 
-      <!-- Mobile-only Contact tile (appears under About on mobile) -->
-      <a class="card mobile-only-card" href="/contact">
-        <div class="card-label">Connect</div>
-        <h2>Contact</h2>
-        <p>Ways to get in touch for collaboration, work, or inquiries.</p>
-        <span class="card-arrow" aria-hidden="true">↗</span>
-      </a>
+  <div class="card-copy">
+    <h2>Projects</h2>
+    <p>Selected work across AI transformation, product management, and execution.</p>
+  </div>
+
+  <span class="card-arrow" aria-hidden="true">↗</span>
+</a>
+
+<a class="card card-premium card-about" href="/about">
+  <div class="card-ambience" aria-hidden="true">
+    <img
+      class="card-ambience-media"
+      src="/homepage/about.png"
+      alt=""
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
+
+  <div class="card-premium-overlay" aria-hidden="true"></div>
+
+  <div class="card-copy">
+    <h2>About</h2>
+    <p>Background, experience, and the thinking behind my work.</p>
+  </div>
+
+  <span class="card-arrow" aria-hidden="true">↗</span>
+</a>
+
     </section>
   </main>
 
   <Footer />
+
+  <script is:inline>
+    window.addEventListener("DOMContentLoaded", () => {
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const rotators = Array.from(document.querySelectorAll("[data-rotator]"));
+      const controls = [];
+
+      function render(track, dots, activeIndex) {
+        track.style.setProperty("--active-page", String(activeIndex));
+
+        dots.forEach((dot, index) => {
+          dot.classList.toggle("isActive", index === activeIndex);
+        });
+      }
+
+      rotators.forEach((rotator, rotatorIndex) => {
+        const track = rotator.querySelector("[data-preview-track]");
+        const pages = Array.from(rotator.querySelectorAll("[data-preview-page]"));
+        const dots = Array.from(rotator.querySelectorAll("[data-preview-dot]"));
+        const card = rotator.closest(".card");
+
+        if (!track || !pages.length) return;
+
+        let activeIndex = 0;
+        let timer = null;
+        const interval = Number(rotator.dataset.interval || 5000) + rotatorIndex * 220;
+
+        function stop() {
+          if (timer) {
+            window.clearInterval(timer);
+            timer = null;
+          }
+        }
+
+        function start() {
+          if (prefersReducedMotion || pages.length < 2 || document.hidden) return;
+          stop();
+          timer = window.setInterval(() => {
+            activeIndex = (activeIndex + 1) % pages.length;
+            render(track, dots, activeIndex);
+          }, interval);
+        }
+
+        render(track, dots, activeIndex);
+        start();
+
+        card?.addEventListener("mouseenter", stop);
+        card?.addEventListener("mouseleave", start);
+        card?.addEventListener("focusin", stop);
+        card?.addEventListener("focusout", start);
+
+        controls.push({ start, stop });
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        controls.forEach(({ start, stop }) => {
+          if (document.hidden) stop();
+          else start();
+        });
+      });
+    });
+  </script>
 </BaseLayout>
 
 <style>
-  /* Reinforce sticky header on mobile from this page too */
   :global(header.wrap) {
     position: sticky;
     top: 0;
     z-index: 100;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
   .wrap {
-    max-width: var(--content-width, 980px);
+    position: relative;
+    width: 100%;
+    max-width: var(--content-width, 1140px);
     margin: 0 auto;
-    padding: 56px 28px 112px;
+    padding: 68px 28px 124px;
     box-sizing: border-box;
+    isolation: isolate;
+  }
+
+  .wrap::before {
+    content: "";
+    position: absolute;
+    top: -28px;
+    left: -28px;
+    width: min(760px, 80vw);
+    height: 440px;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(
+        72% 72% at 18% 22%,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(255, 255, 255, 0.72) 28%,
+        rgba(255, 255, 255, 0.18) 56%,
+        rgba(255, 255, 255, 0) 100%
+      );
+    opacity: 0.9;
+    filter: blur(2px);
+  }
+
+  .wrap::after {
+    content: "";
+    position: absolute;
+    top: 132px;
+    right: -88px;
+    width: min(440px, 42vw);
+    height: 320px;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(
+        64% 64% at 50% 50%,
+        rgba(17, 24, 39, 0.08) 0%,
+        rgba(17, 24, 39, 0.03) 38%,
+        rgba(17, 24, 39, 0) 100%
+      );
+    filter: blur(18px);
+    opacity: 0.54;
+  }
+
+  .hero,
+  .grid {
+    position: relative;
+    z-index: 1;
   }
 
   .hero {
-    padding: 20px 0 42px;
-    max-width: 52rem;
-    position: relative;
+    padding: 6px 0 44px;
+    max-width: 64rem;
     isolation: isolate;
-    overflow: clip;
-  }
-
-  .hero::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: -18px;
-    width: 100%;
-    height: 300px;
-    z-index: -1;
-    pointer-events: none;
-    background:
-      radial-gradient(
-        70% 70% at 18% 20%,
-        rgba(255, 255, 255, 0.72) 0%,
-        rgba(255, 255, 255, 0.42) 38%,
-        rgba(255, 255, 255, 0) 100%
-      );
-    opacity: 0.55;
   }
 
   .hero::after {
     content: "";
     display: block;
-    margin-top: 28px;
+    margin-top: 34px;
     height: 1px;
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--border) 74%, transparent) 0%,
-      color-mix(in srgb, var(--border) 54%, transparent) 44%,
-      transparent 100%
-    );
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--border) 88%, transparent) 0%,
+        color-mix(in srgb, var(--border) 54%, transparent) 42%,
+        transparent 100%
+      );
   }
 
   .eyebrow {
-    margin: 0 0 12px;
-    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
+    margin: 0 0 14px;
+    color: color-mix(in srgb, var(--ink-muted) 80%, var(--ink) 20%);
     font-size: 11px;
     line-height: 1.2;
     font-weight: 700;
-    letter-spacing: 0.09em;
+    letter-spacing: 0.11em;
     text-transform: uppercase;
     text-wrap: balance;
   }
@@ -149,191 +462,382 @@ Welcome to my website. Explore selected Projects, a PM Toolkit for effective dec
   .hero h1 {
     margin: 0 0 16px;
     color: var(--ink);
-    font-size: clamp(1.95rem, 5vw, 2.95rem);
-    font-weight: 650;
-    line-height: 1.04;
-    letter-spacing: -0.038em;
+    font-size: clamp(2.6rem, 5.8vw, 5.15rem);
+    font-weight: 680;
+    line-height: 0.93;
+    letter-spacing: -0.062em;
     text-wrap: balance;
-    max-width: 20ch;
+    max-width: 8.15ch;
   }
 
   .lead {
     margin: 0;
     color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 90%, var(--ink) 10%);
-    font-size: 0.98rem;
-    line-height: 1.68;
-    max-width: 58ch;
+    font-size: 1rem;
+    line-height: 1.72;
+    max-width: 62ch;
   }
 
-  .cta {
-    margin-top: 22px;
-    display: grid;
-    gap: 8px;
-  }
-
-  .cta-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 40px;
-    padding: 0 14px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 550;
-    font-size: 14px;
-    line-height: 1;
-    letter-spacing: 0.003em;
-    border: 1px solid transparent;
-    box-sizing: border-box;
-    transition:
-      background-color 0.18s var(--ease),
-      border-color 0.18s var(--ease),
-      color 0.18s var(--ease),
-      box-shadow 0.18s var(--ease),
-      transform 0.18s var(--ease);
-  }
-
-  .btn.primary {
-    background: var(--ink);
-    color: var(--surface);
-    border-color: var(--ink);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
-  }
-
-  .btn.primary:hover {
-    background: color-mix(in srgb, var(--ink) 92%, black 8%);
-    border-color: color-mix(in srgb, var(--ink) 92%, black 8%);
-    transform: translateY(-1px);
-  }
-
-  .btn:not(.primary) {
-    background: color-mix(in srgb, var(--surface) 98%, black 2%);
-    color: var(--ink);
-    border-color: color-mix(in srgb, var(--border) 78%, transparent);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.60) inset;
-  }
-
-  .btn:not(.primary):hover {
-    background: color-mix(in srgb, var(--surface) 95%, black 2%);
-    border-color: color-mix(in srgb, var(--border) 92%, transparent);
-    transform: translateY(-1px);
-  }
-
-  .text-link {
-    color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 560;
-    line-height: 1;
-    padding: 0 2px;
-    transition: color 0.18s var(--ease), opacity 0.18s var(--ease);
-    opacity: 0.96;
-  }
-
-  .text-link:hover {
-    color: var(--ink);
-    opacity: 1;
-  }
-
-  .cta-row-secondary .text-link {
-    opacity: 0.88;
-  }
-
-  .mobile-only,
-  .mobile-only-card {
-    display: none;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-    padding: 2px 0 6px;
-  }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-areas:
+    "projects projects projects projects pm pm pm pm pm pm pm pm"
+    "finance finance finance finance concepts concepts concepts concepts about about about about";
+  gap: 14px;
+  align-items: stretch;
+}
 
   .card {
     position: relative;
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-height: 132px;
-    padding: 18px;
-    padding-right: 34px;
     text-decoration: none;
-    border-radius: 16px;
-    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
-    background:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--surface) 98%, white 2%),
-        color-mix(in srgb, var(--surface) 98%, black 2%)
-      );
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.62) inset,
-      0 8px 20px rgba(0,0,0,0.018);
-    transition:
-      border-color 0.2s var(--ease),
-      box-shadow 0.2s var(--ease),
-      transform 0.2s var(--ease);
+    border-radius: 18px;
+    border: 1px solid rgba(22, 30, 42, 0.92);
     box-sizing: border-box;
+    overflow: clip;
+    transition:
+      border-color 0.28s var(--ease),
+      box-shadow 0.28s var(--ease),
+      transform 0.28s var(--ease),
+      background 0.28s var(--ease);
   }
 
   .card:hover {
-    border-color: color-mix(in srgb, var(--border) 92%, transparent);
+    transform: translateY(-2px);
+  }
+
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
     box-shadow:
-      0 1px 0 rgba(255,255,255,0.72) inset,
-      0 12px 24px rgba(0,0,0,0.035);
-    transform: translateY(-1px);
+      0 1px 0 rgba(255,255,255,0.32) inset,
+      0 0 0 1px rgba(255,255,255,0.02) inset;
   }
 
-  .card-feature {
-    grid-column: span 2;
-    min-height: 142px;
+  .card-premium {
+    --card-accent: rgba(89, 158, 255, 0.12);
+    min-height: 320px;
+    padding: 24px;
+    display: grid;
+    grid-template-rows: auto auto;
+    gap: 14px;
+    align-items: start;
+    justify-content: stretch;
+    background:
+      linear-gradient(180deg, rgba(16, 22, 31, 0.985) 0%, rgba(9, 13, 19, 0.985) 100%);
+    border-color: rgba(22, 30, 42, 0.92);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 18px 44px rgba(4, 8, 14, 0.16);
+    isolation: isolate;
   }
 
-  .card-label {
-    margin: 0 0 1px;
-    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
-    font-size: 10px;
-    line-height: 1.1;
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
+  .card-premium::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255,255,255,0.055) 0%,
+        rgba(255,255,255,0.012) 18%,
+        rgba(255,255,255,0) 36%
+      );
+  }
+
+  .card-premium:hover {
+    border-color: rgba(34, 47, 66, 0.96);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.08) inset,
+      0 24px 56px rgba(5, 8, 14, 0.18);
+  }
+
+.card-pm {
+  --card-accent: rgba(84, 150, 255, 0.12);
+  grid-area: pm;
+  min-height: 360px;
+}
+
+.card-finance {
+  --card-accent: rgba(104, 214, 136, 0.11);
+  grid-area: finance;
+  min-height: 290px;
+}
+
+.card-concepts {
+  --card-accent: rgba(110, 176, 255, 0.1);
+  grid-area: concepts;
+  min-height: 290px;
+}
+
+.card-projects {
+  --card-accent: rgba(255, 184, 77, 0.1);
+  grid-area: projects;
+  min-height: 360px;
+}
+
+.card-about {
+  --card-accent: rgba(180, 180, 255, 0.1);
+  grid-area: about;
+  min-height: 290px;
+}
+
+  .card-copy {
+    position: relative;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 6px;
+    max-width: 34ch;
+  }
+
+  .card-pm .card-copy {
+    max-width: 34ch;
+  }
+
+  .card-finance .card-copy {
+    max-width: 24ch;
+  }
+
+  .card-concepts .card-copy,
+  .card-projects .card-copy,
+  .card-about .card-copy {
+    max-width: 22ch;
   }
 
   .card h2 {
     margin: 0;
-    color: var(--ink);
-    font-size: 1.04rem;
-    font-weight: 650;
-    line-height: 1.15;
-    letter-spacing: -0.015em;
+    color: rgba(255,255,255,0.985);
+    font-size: 1.14rem;
+    font-weight: 660;
+    line-height: 1.06;
+    letter-spacing: -0.024em;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.14);
+  }
+
+  .card-pm h2,
+  .card-finance h2 {
+    font-size: 1.28rem;
+    letter-spacing: -0.028em;
   }
 
   .card p {
     margin: 0;
-    color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
+    color: rgba(255,255,255,0.78);
     font-size: 0.92rem;
-    line-height: 1.52;
-    max-width: 34ch;
+    line-height: 1.5;
+    max-width: 28ch;
   }
 
-  .card-feature p {
-    max-width: 52ch;
+  .card-ambience {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .card-ambience::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 28%),
+      radial-gradient(56% 56% at 78% 26%, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+  }
+
+  .card-ambience-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+    pointer-events: none;
+    opacity: 0.72;
+    filter: saturate(0.94) contrast(1.02) brightness(0.56);
+    transform-origin: center;
+    transition:
+      transform 0.6s var(--ease),
+      filter 0.6s var(--ease),
+      opacity 0.6s var(--ease);
+  }
+
+  .card-pm .card-ambience-media {
+    object-position: 52% 48%;
+    transform: scale(1.05);
+  }
+
+  .card-finance .card-ambience-media {
+    object-position: 52% 50%;
+    transform: scale(1.06);
+  }
+
+  .card-concepts .card-ambience-media,
+  .card-projects .card-ambience-media,
+  .card-about .card-ambience-media {
+    object-position: 50% 50%;
+    transform: scale(1.06);
+  }
+
+  .card-premium:hover .card-ambience-media {
+    opacity: 0.76;
+    filter: saturate(0.98) contrast(1.04) brightness(0.6);
+  }
+
+  .card-premium-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(8, 12, 18, 0.08) 0%, rgba(8, 12, 18, 0.04) 30%, rgba(8, 12, 18, 0.16) 100%),
+      linear-gradient(90deg, rgba(6, 10, 16, 0.74) 0%, rgba(6, 10, 16, 0.46) 28%, rgba(6, 10, 16, 0.16) 62%, rgba(6, 10, 16, 0.1) 100%),
+      radial-gradient(74% 86% at 84% 54%, var(--card-accent) 0%, rgba(0,0,0,0) 60%);
+  }
+
+  .previewDeck {
+    position: relative;
+    z-index: 4;
+    display: grid;
+    gap: 10px;
+    margin-top: 0px;
+    padding-top: 0;
+  }
+
+  .previewDeckPm {
+    max-width: none;
+  }
+
+  .previewWindow {
+    overflow: hidden;
+    padding: 1px;
+  }
+
+  .previewWindowPm {
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 88%, rgba(0,0,0,0.66) 94%, transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0%, #000 88%, rgba(0,0,0,0.66) 94%, transparent 100%);
+  }
+
+  .previewTrack {
+    --active-page: 0;
+    display: flex;
+    width: 100%;
+    transform: translateX(calc(var(--active-page) * -100%));
+    transition: transform 980ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .previewPage {
+    min-width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    align-content: start;
+  }
+
+  .previewPagePm {
+    grid-template-columns: repeat(4, 29.5%);
+    gap: 12px;
+  }
+
+  .previewCard {
+    min-width: 0;
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255,255,255,0.035) 0%,
+        rgba(255,255,255,0.012) 100%
+      );
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.04) inset,
+      0 8px 18px rgba(0,0,0,0.12);
+    transition:
+      transform 0.28s var(--ease),
+      border-color 0.28s var(--ease),
+      box-shadow 0.28s var(--ease);
+  }
+
+  .previewCardPm {
+    border-radius: 10px;
+  }
+
+  .previewCoverShell {
+    position: relative;
+    aspect-ratio: 1400 / 930;
+    overflow: hidden;
+    border-radius: 7px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.02);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 6px 14px rgba(0,0,0,0.08);
+  }
+
+  .previewCover {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+    user-select: none;
+    transition:
+      transform 0.42s var(--ease),
+      filter 0.42s var(--ease);
+  }
+
+  .card-premium:hover .previewCard {
+    border-color: rgba(255,255,255,0.12);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 12px 24px rgba(0,0,0,0.15);
+  }
+
+  .card-premium:hover .previewCover {
+    transform: scale(1.015);
+    filter: saturate(1.02) contrast(1.02);
+  }
+
+  .previewIndicators {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 1px;
+  }
+
+  .previewDot {
+    width: 14px;
+    height: 2px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.18);
+    transition:
+      width 0.28s var(--ease),
+      background-color 0.28s var(--ease),
+      opacity 0.28s var(--ease);
+    opacity: 0.9;
+  }
+
+  .previewDot.isActive {
+    width: 24px;
+    background: rgba(255,255,255,0.78);
+    opacity: 1;
   }
 
   .card-arrow {
     position: absolute;
-    right: 14px;
-    top: 14px;
-    color: color-mix(in srgb, var(--ink-muted) 74%, var(--ink) 26%);
+    right: 16px;
+    top: 16px;
+    color: rgba(255,255,255,0.82);
     font-size: 12px;
     line-height: 1;
     opacity: 0;
@@ -343,66 +847,92 @@ Welcome to my website. Explore selected Projects, a PM Toolkit for effective dec
       transform 0.18s var(--ease),
       color 0.18s var(--ease);
     pointer-events: none;
+    z-index: 5;
   }
 
   .card:hover .card-arrow {
     opacity: 0.95;
     transform: translate(0, 0);
-    color: var(--ink);
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 980px) {
     .wrap {
-      padding: 44px 20px 112px;
+      padding: 54px 22px 112px;
     }
 
     .hero {
-      padding: 18px 0 36px;
+      padding-bottom: 38px;
     }
 
-    .hero::before {
-      left: -10%;
-      top: -12px;
-      height: 260px;
-      opacity: 0.48;
+    .hero h1 {
+      font-size: clamp(2.3rem, 6.2vw, 4.05rem);
+      max-width: 9ch;
     }
 
-    .grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+.grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "projects pm"
+    "finance concepts"
+    "about about";
+  gap: 12px;
+}
+
+    .card {
+      border-radius: 16px;
+    }
+
+    .card-premium {
+      padding: 20px;
       gap: 12px;
     }
 
-    .card-feature {
-      grid-column: span 2;
+    .card-pm,
+    .card-finance {
+      min-height: 340px;
     }
 
-    .card {
-      padding: 16px;
-      padding-right: 30px;
+    .card-concepts,
+    .card-projects,
+    .card-about {
+      min-height: 280px;
     }
 
-    .card-arrow {
-      right: 12px;
-      top: 12px;
+    .previewPagePm {
+      grid-template-columns: repeat(4, 43%);
+      gap: 10px;
+    }
+
+    .previewWindowPm {
+      -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 86%, rgba(0,0,0,0.62) 94%, transparent 100%);
+      mask-image: linear-gradient(90deg, #000 0%, #000 86%, rgba(0,0,0,0.62) 94%, transparent 100%);
     }
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 640px) {
     .wrap {
-      padding: 34px 16px 112px;
+      padding: 38px 16px 104px;
+    }
+
+    .wrap::before {
+      width: 138%;
+      height: 320px;
+      left: -14%;
+      top: -18px;
+      opacity: 0.74;
+    }
+
+    .wrap::after {
+      right: -32%;
+      top: 126px;
+      width: 86%;
+      height: 260px;
+      opacity: 0.42;
     }
 
     .hero {
-      padding: 18px 0 30px;
+      padding: 4px 0 28px;
       max-width: none;
-    }
-
-    .hero::before {
-      left: -14%;
-      top: -6px;
-      width: 132%;
-      height: 240px;
-      opacity: 0.34;
     }
 
     .hero::after {
@@ -410,101 +940,101 @@ Welcome to my website. Explore selected Projects, a PM Toolkit for effective dec
     }
 
     .eyebrow {
-      margin-bottom: 14px;
-      font-size: 10.25px;
+      margin-bottom: 12px;
+      font-size: 10px;
       line-height: 1.35;
-      letter-spacing: 0.085em;
+      letter-spacing: 0.09em;
       max-width: 32ch;
-      opacity: 0.9;
     }
 
     .hero h1 {
-      font-size: clamp(1.9rem, 8.2vw, 2.35rem);
-      line-height: 1.03;
-      letter-spacing: -0.032em;
-      margin-bottom: 14px;
-      max-width: 12.5ch;
-      text-wrap: balance;
+      font-size: clamp(2.1rem, 10vw, 3rem);
+      line-height: 0.96;
+      letter-spacing: -0.045em;
+      max-width: 9.2ch;
+      margin-bottom: 12px;
     }
 
     .lead {
       max-width: 34ch;
-      font-size: 0.97rem;
+      font-size: 0.98rem;
       line-height: 1.62;
-      color: color-mix(in srgb, var(--ink-muted) 92%, var(--ink) 8%);
     }
 
-    .cta {
-      margin-top: 20px;
-      gap: 10px;
-    }
-
-    .cta-row-main {
-      gap: 8px;
-    }
-
-    .cta-row-secondary {
-      margin-top: 2px;
-    }
-
-    .mobile-only {
-      display: flex;
-    }
-
-    .btn {
-      min-height: 40px;
-      padding: 0 13px;
-      font-size: 13px;
-      border-radius: 11px;
-    }
-
-    .btn.primary {
-      min-width: 116px;
-    }
-
-    .text-link {
-      font-size: 13px;
-      min-height: 40px;
-      display: inline-flex;
-      align-items: center;
-      padding: 0 4px;
-    }
-
-    .grid {
-      grid-template-columns: 1fr;
-      gap: 12px;
-      padding-bottom: 2px;
-    }
+.grid {
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "projects"
+    "pm"
+    "finance"
+    "concepts"
+    "about";
+  gap: 10px;
+}
 
     .card,
-    .card-feature {
-      grid-column: auto;
+    .card-premium {
       min-height: 0;
-      padding: 14px;
-      padding-right: 28px;
-      border-radius: 14px;
+      border-radius: 16px;
     }
 
-    .mobile-only-card {
-      display: flex;
+    .card-premium {
+      padding: 16px 14px;
+      gap: 12px;
     }
 
-    .card-label {
-      font-size: 10px;
+    .card-pm,
+    .card-finance {
+      min-height: 304px;
+    }
+
+    .card-concepts,
+    .card-projects,
+    .card-about {
+      min-height: 252px;
     }
 
     .card h2 {
-      font-size: 1rem;
+      font-size: 1.02rem;
+    }
+
+    .card-pm h2,
+    .card-finance h2 {
+      font-size: 1.16rem;
     }
 
     .card p {
       font-size: 0.88rem;
-      max-width: none;
+      max-width: 29ch;
+    }
+
+    .previewPage {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .previewPagePm {
+      grid-template-columns: repeat(4, 72%);
+      gap: 9px;
+    }
+
+    .previewWindowPm {
+      -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 82%, rgba(0,0,0,0.56) 92%, transparent 100%);
+      mask-image: linear-gradient(90deg, #000 0%, #000 82%, rgba(0,0,0,0.56) 92%, transparent 100%);
+    }
+
+    .previewCard {
+      padding: 3px;
+      border-radius: 9px;
+    }
+
+    .previewCoverShell {
+      border-radius: 6px;
     }
 
     .card-arrow {
-      right: 11px;
-      top: 11px;
+      right: 12px;
+      top: 12px;
       font-size: 11px;
       opacity: 0.72;
       transform: none;
@@ -513,26 +1043,35 @@ Welcome to my website. Explore selected Projects, a PM Toolkit for effective dec
 
   @media (max-width: 420px) {
     .hero h1 {
-      max-width: 11.8ch;
+      max-width: 8.8ch;
     }
 
     .lead {
-      max-width: 32ch;
       font-size: 0.95rem;
-      line-height: 1.6;
+      line-height: 1.58;
     }
 
-    .btn.primary {
-      min-width: 110px;
+    .card-pm,
+    .card-finance {
+      min-height: 290px;
+    }
+
+    .card-concepts,
+    .card-projects,
+    .card-about {
+      min-height: 240px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .btn,
     .card,
-    .text-link,
-    .card-arrow {
-      transition: none;
+    .card-ambience-media,
+    .card-arrow,
+    .previewTrack,
+    .previewDot,
+    .previewCard,
+    .previewCover {
+      transition: none !important;
     }
   }
 </style>

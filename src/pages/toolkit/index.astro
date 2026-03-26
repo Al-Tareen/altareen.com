@@ -51,108 +51,97 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
   title="Product Manager Toolkit"
   description="Frameworks that help product managers make better decisions."
 >
-  <div class="toolkit" data-view="grid">
-    <!-- Sticky controls -->
-    <div class="controlsBar" role="search" aria-label="Search and filter frameworks">
-      <div class="field">
-        <span class="icon" aria-hidden="true">⌕</span>
-        <input id="q" class="input" type="search" placeholder="Search frameworks…" />
-      </div>
 
-      <select id="cat" class="select" aria-label="Filter by category">
-        <option value="">All categories</option>
-        {categories.map((c) => <option value={c}>{c}</option>)}
-      </select>
-
-      <div class="rightActions">
-        <div class="resultsInline" id="resultsText">Showing {items.length} frameworks</div>
-
-        <div class="viewToggle" role="group" aria-label="View toggle">
-          <button id="viewGrid" class="toggleBtn isActive" type="button" aria-pressed="true">
-            Grid
-          </button>
-          <button id="viewCompact" class="toggleBtn" type="button" aria-pressed="false">
-            Compact
-          </button>
-        </div>
-
-        <button id="clear" class="ghost" type="button">Clear</button>
-      </div>
+<div class="toolkit" data-view="grid">
+  <div class="controlsBar" role="search" aria-label="Search and filter frameworks">
+    <div class="field">
+      <span class="icon" aria-hidden="true">⌕</span>
+      <input id="q" class="input" type="search" placeholder="Search frameworks…" />
     </div>
 
-    <!-- Sections nav -->
-    <nav class="sections" aria-label="Sections">
-      <!-- ✅ removed the “Sections” text -->
-      <div class="sectionsLabel" aria-hidden="true"></div>
+    <select id="cat" class="select" aria-label="Filter by category">
+      <option value="">All categories</option>
+      {categories.map((c) => <option value={c}>{c}</option>)}
+    </select>
 
-      <div class="sectionsRail" aria-hidden="true">
-        <button class="railBtn railLeft" type="button" id="railLeft" aria-label="Scroll sections left">
-          ‹
+    <div class="rightActions">
+      <div class="resultsInline" id="resultsText">Showing {items.length} frameworks</div>
+
+      <div class="viewToggle" role="group" aria-label="View toggle">
+        <button id="viewGrid" class="toggleBtn isActive" type="button" aria-pressed="true">
+          Grid
         </button>
-        <button class="railBtn railRight" type="button" id="railRight" aria-label="Scroll sections right">
-          ›
+        <button id="viewCompact" class="toggleBtn" type="button" aria-pressed="false">
+          Compact
         </button>
       </div>
 
-      <div class="sectionsWrap">
-        <div class="sectionsList" id="jumpChips">
-          {featured.length > 0 && (
-            <button class="sectionBtn" type="button" data-jump="__featured" data-cat="__featured">
-              Featured
-            </button>
-          )}
-          {categories.map((c) => (
-            <button class="sectionBtn" type="button" data-jump={catId(c)} data-cat={c}>
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-    </nav>
+      <button id="clear" class="ghost" type="button">Clear</button>
+    </div>
+  </div> 
 
-    <!-- Featured -->
+           <!-- Featured -->
     {featured.length > 0 && (
-      <section class="featuredBlock" id="__featured" data-group="__featured">
+      <section class="featuredBlock" id="__featured" data-group="__featured" data-expanded="false">
         <div class="groupHead">
-          <h2 class="groupTitle">
-            Featured <span class="count">({featured.length})</span>
-          </h2>
-          <div class="groupRule" aria-hidden="true"></div>
+          <div class="groupTitleWrap">
+            <h2 class="groupTitle">
+              Featured <span class="count">({featured.length})</span>
+            </h2>
+            <div class="groupRule" aria-hidden="true"></div>
+          </div>
         </div>
 
-        <div class="grid">
-          {featured.map((item) => (
-            <a
-              class="card"
-              href={`/toolkit/${item.slug}/`}
-              data-title={item.data.title}
-              data-category={item.data.primaryCategory || "Uncategorized"}
-              data-when={item.data.whenToUse || ""}
-              data-featured="true"
-            >
-              {item.data.cover ? (
-                <div class="thumb" aria-hidden="true">
-                  <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
-                </div>
-              ) : (
-                <div class="thumb thumbEmpty" aria-hidden="true">
-                  <span class="thumbMark">AL</span>
-                </div>
-              )}
+        <div class="groupReveal" data-expand-wrap>
+          <div class="grid" data-expand-grid>
+            {featured.map((item) => (
+              <a
+                class="card"
+                href={`/toolkit/${item.slug}/`}
+                data-title={item.data.title}
+                data-category={item.data.primaryCategory || "Uncategorized"}
+                data-when={item.data.whenToUse || ""}
+                data-featured="true"
+              >
+                {item.data.cover ? (
+                  <div class="thumb" aria-hidden="true">
+                    <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
+                  </div>
+                ) : (
+                  <div class="thumb thumbEmpty" aria-hidden="true">
+                    <span class="thumbMark">AL</span>
+                  </div>
+                )}
 
-              <div class="meta">
-                <div class="cardTitle">{item.data.title}</div>
+                <div class="meta">
+                  <div class="cardTitle">{item.data.title}</div>
 
-                <div class="excerpt">
-                  <div class="excerptLabel">When to use</div>
-                  <div class="whenToUse">
-                    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
+                  <div class="excerpt">
+                    <div class="excerptLabel">When to use</div>
+                    <div class="whenToUse">
+                      {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </a>
-          ))}
+              </a>
+            ))}
+          </div>
         </div>
+
+<div class="groupFooter">
+  <button
+    class="groupToggle"
+    type="button"
+    data-expand-toggle
+    hidden
+    aria-expanded="false"
+    aria-label="View all frameworks in this section"
+  >
+<span class="groupTogglePill" aria-hidden="true">
+  <img class="groupToggleIcon" src="/homepage/downarrow.png" alt="" />
+</span>
+  </button>
+</div>
       </section>
     )}
 
@@ -163,367 +152,370 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
       <button id="emptyClear" class="primary" type="button">Clear filters</button>
     </div>
 
-    <!-- Groups -->
+       <!-- Groups -->
     {groups.map((g) => (
-      <section class="group" id={catId(g.category)} data-group={g.category}>
+      <section class="group" id={catId(g.category)} data-group={g.category} data-expanded="false">
         <div class="groupHead">
-          <h2 class="groupTitle">
-            {g.category} <span class="count">({g.items.length})</span>
-          </h2>
-          <div class="groupRule" aria-hidden="true"></div>
+          <div class="groupTitleWrap">
+            <h2 class="groupTitle">
+              {g.category} <span class="count">({g.items.length})</span>
+            </h2>
+            <div class="groupRule" aria-hidden="true"></div>
+          </div>
         </div>
 
-        <div class="grid">
-          {g.items.map((item) => (
-            <a
-              class="card"
-              href={`/toolkit/${item.slug}/`}
-              data-title={item.data.title}
-              data-category={item.data.primaryCategory || "Uncategorized"}
-              data-when={item.data.whenToUse || ""}
-            >
-              {item.data.cover ? (
-                <div class="thumb" aria-hidden="true">
-                  <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
-                </div>
-              ) : (
-                <div class="thumb thumbEmpty" aria-hidden="true">
-                  <span class="thumbMark">AL</span>
-                </div>
-              )}
+        <div class="groupReveal" data-expand-wrap>
+          <div class="grid" data-expand-grid>
+            {g.items.map((item) => (
+              <a
+                class="card"
+                href={`/toolkit/${item.slug}/`}
+                data-title={item.data.title}
+                data-category={item.data.primaryCategory || "Uncategorized"}
+                data-when={item.data.whenToUse || ""}
+              >
+                {item.data.cover ? (
+                  <div class="thumb" aria-hidden="true">
+                    <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
+                  </div>
+                ) : (
+                  <div class="thumb thumbEmpty" aria-hidden="true">
+                    <span class="thumbMark">AL</span>
+                  </div>
+                )}
 
-              <div class="meta">
-                <div class="cardTitle">{item.data.title}</div>
+                <div class="meta">
+                  <div class="cardTitle">{item.data.title}</div>
 
-                <div class="excerpt">
-                  <div class="excerptLabel">When to use</div>
-                  <div class="whenToUse">
-                    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
+                  <div class="excerpt">
+                    <div class="excerptLabel">When to use</div>
+                    <div class="whenToUse">
+                      {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </a>
-          ))}
+              </a>
+            ))}
+          </div>
         </div>
+
+<div class="groupFooter">
+  <button
+    class="groupToggle"
+    type="button"
+    data-expand-toggle
+    hidden
+    aria-expanded="false"
+    aria-label="View all frameworks in this section"
+  >
+<span class="groupTogglePill" aria-hidden="true">
+  <img class="groupToggleIcon" src="/homepage/downarrow.png" alt="" />
+</span>
+  </button>
+</div>
       </section>
     ))}
 
     <!-- Back to top -->
     <button id="toTop" class="toTop" type="button" aria-label="Back to top">↑ Top</button>
 
-    <script is:inline>
-      window.addEventListener("DOMContentLoaded", () => {
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", () => {
+    try {
+      const root = document.querySelector(".toolkit");
+      const q = document.getElementById("q");
+      const cat = document.getElementById("cat");
+      const clear = document.getElementById("clear");
+      const empty = document.getElementById("empty");
+      const emptyClear = document.getElementById("emptyClear");
+      const resultsText = document.getElementById("resultsText");
+
+      const viewGrid = document.getElementById("viewGrid");
+      const viewCompact = document.getElementById("viewCompact");
+      const toTop = document.getElementById("toTop");
+
+      const expandableSections = Array.from(
+        document.querySelectorAll("section.group, section.featuredBlock")
+      );
+
+      if (!root) throw new Error("Toolkit root not found (.toolkit).");
+
+      function normalize(s) {
+        return (s || "").toLowerCase().trim();
+      }
+
+      function getHasActiveFilter() {
+        return Boolean(normalize(q?.value) || (cat?.value || ""));
+      }
+
+      function setView(view) {
+        root.dataset.view = view;
+
+        const isGrid = view === "grid";
+        viewGrid?.classList.toggle("isActive", isGrid);
+        viewCompact?.classList.toggle("isActive", !isGrid);
+
+        viewGrid?.setAttribute("aria-pressed", String(isGrid));
+        viewCompact?.setAttribute("aria-pressed", String(!isGrid));
+
         try {
-          const root = document.querySelector(".toolkit");
-          const q = document.getElementById("q");
-          const cat = document.getElementById("cat");
-          const clear = document.getElementById("clear");
-          const empty = document.getElementById("empty");
-          const emptyClear = document.getElementById("emptyClear");
-          const resultsText = document.getElementById("resultsText");
+          localStorage.setItem("toolkitView", view);
+        } catch {}
 
-          const viewGrid = document.getElementById("viewGrid");
-          const viewCompact = document.getElementById("viewCompact");
+        requestAnimationFrame(() => refreshExpandableSections(getHasActiveFilter()));
+      }
 
-          const toTop = document.getElementById("toTop");
+      function countVisibleCards() {
+        return document.querySelectorAll("a.card:not(.isHidden)").length;
+      }
 
-          const jumpChips = document.getElementById("jumpChips");
-          const railLeft = document.getElementById("railLeft");
-          const railRight = document.getElementById("railRight");
-          const sectionsNav = document.querySelector(".sections"); // ✅ used for hasLeft/hasRight
+      function getVisibleCardsInSection(section) {
+        return Array.from(section.querySelectorAll("a.card")).filter(
+          (card) => !card.classList.contains("isHidden")
+        );
+      }
 
-          if (!root) throw new Error("Toolkit root not found (.toolkit). Script not attaching.");
+      function refreshExpandableSections(forceExpand = false) {
+        const isCompact = root?.dataset.view === "compact";
 
-          function normalize(s) {
-            return (s || "").toLowerCase().trim();
+        expandableSections.forEach((section) => {
+          const wrap = section.querySelector("[data-expand-wrap]");
+          const toggle = section.querySelector("[data-expand-toggle]");
+          const footer = section.querySelector(".groupFooter");
+
+          if (!wrap || !toggle || !footer) return;
+
+          if (section.classList.contains("isHidden")) {
+            toggle.hidden = true;
+            footer.classList.remove("isVisible");
+            toggle.setAttribute("aria-expanded", "false");
+            section.classList.remove("isCollapsible", "isCollapsed", "isExpanded");
+            wrap.style.removeProperty("--collapsed-h");
+            return;
           }
 
-          // Minimal attribute-escape for querySelector attribute match
-          function escAttr(s) {
-            return String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+          const cards = getVisibleCardsInSection(section);
+
+          if (!cards.length) {
+            toggle.hidden = true;
+            footer.classList.remove("isVisible");
+            toggle.setAttribute("aria-expanded", "false");
+            section.classList.remove("isCollapsible", "isCollapsed", "isExpanded");
+            wrap.style.removeProperty("--collapsed-h");
+            return;
           }
 
-          function setView(view) {
-            root.dataset.view = view;
-
-            const isGrid = view === "grid";
-            viewGrid?.classList.toggle("isActive", isGrid);
-            viewCompact?.classList.toggle("isActive", !isGrid);
-
-            viewGrid?.setAttribute("aria-pressed", String(isGrid));
-            viewCompact?.setAttribute("aria-pressed", String(!isGrid));
-
-            try {
-              localStorage.setItem("toolkitView", view);
-            } catch {}
-          }
-
-          function clearSectionsActive() {
-            jumpChips?.querySelectorAll(".sectionBtn.isActive").forEach((b) => b.classList.remove("isActive"));
-          }
-
-          function setSectionsActiveByCategory(category) {
-            clearSectionsActive();
-            if (!category) return;
-            const sel = `.sectionBtn[data-cat="${escAttr(category)}"]`;
-            const btn = jumpChips?.querySelector(sel);
-            if (btn) btn.classList.add("isActive");
-          }
-
-let isManualNav = false; // prevents scrollspy from fighting right after a click
-
-function temporarilyPauseScrollSpy() {
-  isManualNav = true;
-  window.setTimeout(() => (isManualNav = false), 700);
-}
-
-          function countVisibleCards() {
-            return document.querySelectorAll("a.card:not(.isHidden)").length;
-          }
-
-          function applyFilter() {
-            const query = normalize(q?.value);
-            const selected = cat?.value || "";
-
-            const sections = document.querySelectorAll("section.group, section.featuredBlock");
-
-            sections.forEach((section) => {
-              const cards = section.querySelectorAll("a.card");
-              let visibleCount = 0;
-
-              cards.forEach((card) => {
-                const title = normalize(card.dataset.title);
-                const c = card.dataset.category || "";
-                const when = normalize(card.dataset.when || "");
-
-                const catText = normalize(c);
-                const matchText = !query || title.includes(query) || catText.includes(query) || when.includes(query);
-                const matchCat = !selected || c === selected;
-
-                const show = matchText && matchCat;
-                card.classList.toggle("isHidden", !show);
-                if (show) visibleCount++;
-              });
-
-              section.classList.toggle("isHidden", visibleCount === 0);
-            });
-
-            const totalVisible = countVisibleCards();
-            if (empty) empty.hidden = totalVisible !== 0;
-
-            if (resultsText) {
-              const suffix = totalVisible === 1 ? "framework" : "frameworks";
-              resultsText.textContent = `Showing ${totalVisible} ${suffix}`;
-            }
-
-if (selected) {
-  // Dropdown-filter mode: highlight the matching capsule
-  setSectionsActiveByCategory(selected);
-} else {
-  // Navigation mode: do NOT force a capsule active here
-  // Let scrollspy decide as you scroll naturally
-  clearSectionsActive();
-  computeActiveSection?.(); // safe if defined below
-}
-          }
-          function clearFilters() {
-            if (q) q.value = "";
-            if (cat) cat.value = "";
-            applyFilter();
-            q?.focus();
-          }
-
-          // ✅ Arrow visibility: left arrow only appears after scrolling right.
-          function updateRails() {
-            if (!jumpChips || !sectionsNav) return;
-
-            const maxScroll = jumpChips.scrollWidth - jumpChips.clientWidth;
-
-            const hasLeft = jumpChips.scrollLeft > 2;
-            const hasRight = jumpChips.scrollLeft < maxScroll - 2;
-
-            sectionsNav.classList.toggle("hasLeft", hasLeft);
-            sectionsNav.classList.toggle("hasRight", hasRight);
-
-            // Always keep right arrow available if there is more content to the right
-            if (railRight) {
-              railRight.style.opacity = hasRight ? "0.85" : "0.35";
-              railRight.style.pointerEvents = hasRight ? "auto" : "none";
-            }
-          }
-
-          // Init saved view
-          try {
-            const saved = localStorage.getItem("toolkitView");
-            if (saved === "compact" || saved === "grid") setView(saved);
-          } catch {}
-
-          // Attach listeners
-          viewGrid?.addEventListener("click", () => setView("grid"));
-          viewCompact?.addEventListener("click", () => setView("compact"));
-
-          q?.addEventListener("input", applyFilter);
-          cat?.addEventListener("change", applyFilter);
-          clear?.addEventListener("click", clearFilters);
-          emptyClear?.addEventListener("click", clearFilters);
-
-          // Jump buttons
-document.querySelectorAll("[data-jump]").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const id = btn.getAttribute("data-jump");
-    const el = id && document.getElementById(id);
-    if (!el) return;
-
-    // Clear filters so navigation shows full page
-    if (q) q.value = "";
-    if (cat) cat.value = "";
-    applyFilter();
-
-    temporarilyPauseScrollSpy();
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-});
-          // Section arrows — scroll the ACTUAL scroller
-          function scrollSections(dir) {
-            if (!jumpChips) return;
-            const step = Math.min(360, jumpChips.clientWidth * 0.7);
-            jumpChips.scrollBy({ left: dir * step, behavior: "smooth" });
-            setTimeout(updateRails, 250); // ✅ update after smooth scroll starts
-          }
-          railLeft?.addEventListener("click", () => scrollSections(-1));
-          railRight?.addEventListener("click", () => scrollSections(1));
-
-          // ✅ update rails on manual scroll/resize
-          jumpChips?.addEventListener("scroll", updateRails, { passive: true });
-          window.addEventListener("resize", updateRails);
-
-          // Back to top
-          function updateToTop() {
-            if (!toTop) return;
-            const show = window.scrollY > 420;
-            toTop.classList.toggle("isVisible", show);
-          }
-          window.addEventListener("scroll", updateToTop, { passive: true });
-          toTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-          updateToTop();
-
-          // Scrollspy (only when not category-filtered)
-          const observedSections = Array.from(document.querySelectorAll("section.group, section.featuredBlock"));
-          let ticking = false;
-
-          function computeActiveSection() {
-            if (isManualNav) return;
-            ticking = false;
-            if (!observedSections.length || !jumpChips) return;
-
-            const selected = cat?.value || "";
-            if (selected) return;
-
-            const y = window.scrollY + 120;
-            let currentId = "";
-
-            for (const s of observedSections) {
-              if (s.classList.contains("isHidden")) continue;
-              const top = s.offsetTop;
-              if (top <= y) currentId = s.id || "";
-            }
-            if (!currentId) return;
-
-            clearSectionsActive();
-            const btn = jumpChips.querySelector(`.sectionBtn[data-jump="${escAttr(currentId)}"]`);
-            if (btn) btn.classList.add("isActive");
-          }
-
-          window.addEventListener(
-            "scroll",
-            () => {
-              if (!ticking) {
-                ticking = true;
-                requestAnimationFrame(computeActiveSection);
-              }
-            },
-            { passive: true }
+          const firstTop = cards[0].offsetTop;
+          const firstRow = cards.filter((card) => Math.abs(card.offsetTop - firstTop) < 2);
+          const firstRowHeight = Math.max(
+            ...firstRow.map((card) => card.offsetHeight + (card.offsetTop - firstTop))
           );
 
-          // First run
-          applyFilter();
-          computeActiveSection();
-          updateRails(); // ✅ initial arrow state
-setTimeout(updateRails, 50);  // ✅ after layout settles
-setTimeout(updateRails, 250); // ✅ after any late paint/font swap
-          console.log("[toolkit] controls initialized");
-        } catch (e) {
-          console.error("[toolkit] init failed:", e);
+          const hasMoreThanOneRow = cards.length > firstRow.length;
+          const peek = window.innerWidth <= 720 ? 14 : 18;
+          const collapsedHeight = firstRowHeight + peek;
+
+          const expanded = section.dataset.expanded === "true";
+          const shouldForceExpand = forceExpand || isCompact;
+
+          if (!hasMoreThanOneRow) {
+            toggle.hidden = true;
+            footer.classList.remove("isVisible");
+            toggle.setAttribute("aria-expanded", "false");
+            section.classList.remove("isCollapsible", "isCollapsed", "isExpanded");
+            wrap.style.removeProperty("--collapsed-h");
+            return;
+          }
+
+          if (shouldForceExpand) {
+            toggle.hidden = true;
+            footer.classList.remove("isVisible");
+            toggle.setAttribute("aria-expanded", "true");
+            section.classList.add("isCollapsible", "isExpanded");
+            section.classList.remove("isCollapsed");
+            wrap.style.removeProperty("--collapsed-h");
+            return;
+          }
+
+          wrap.style.setProperty("--collapsed-h", `${Math.ceil(collapsedHeight)}px`);
+          section.classList.add("isCollapsible");
+          section.classList.toggle("isExpanded", expanded);
+          section.classList.toggle("isCollapsed", !expanded);
+
+          toggle.hidden = false;
+          footer.classList.add("isVisible");
+          toggle.setAttribute("aria-expanded", String(expanded));
+          toggle.setAttribute(
+            "aria-label",
+            expanded ? "Show less frameworks in this section" : "View all frameworks in this section"
+          );
+        });
+      }
+
+      function applyFilter() {
+        const query = normalize(q?.value);
+        const selected = cat?.value || "";
+
+        const sections = document.querySelectorAll("section.group, section.featuredBlock");
+
+        sections.forEach((section) => {
+          const cards = section.querySelectorAll("a.card");
+          let visibleCount = 0;
+
+          cards.forEach((card) => {
+            const title = normalize(card.dataset.title);
+            const c = card.dataset.category || "";
+            const when = normalize(card.dataset.when || "");
+
+            const catText = normalize(c);
+            const matchText = !query || title.includes(query) || catText.includes(query) || when.includes(query);
+            const matchCat = !selected || c === selected;
+
+            const show = matchText && matchCat;
+            card.classList.toggle("isHidden", !show);
+            if (show) visibleCount++;
+          });
+
+          section.classList.toggle("isHidden", visibleCount === 0);
+        });
+
+        const totalVisible = countVisibleCards();
+        if (empty) empty.hidden = totalVisible !== 0;
+
+        if (resultsText) {
+          const suffix = totalVisible === 1 ? "framework" : "frameworks";
+          resultsText.textContent = `Showing ${totalVisible} ${suffix}`;
         }
+
+        refreshExpandableSections(Boolean(query || selected));
+      }
+
+      function clearFilters() {
+        if (q) q.value = "";
+        if (cat) cat.value = "";
+        applyFilter();
+        q?.focus();
+      }
+
+      function updateToTop() {
+        if (!toTop) return;
+        const show = window.scrollY > 420;
+        toTop.classList.toggle("isVisible", show);
+      }
+
+      try {
+        const saved = localStorage.getItem("toolkitView");
+        if (saved === "compact" || saved === "grid") setView(saved);
+      } catch {}
+
+      viewGrid?.addEventListener("click", () => setView("grid"));
+      viewCompact?.addEventListener("click", () => setView("compact"));
+
+      q?.addEventListener("input", applyFilter);
+      cat?.addEventListener("change", applyFilter);
+      clear?.addEventListener("click", clearFilters);
+      emptyClear?.addEventListener("click", clearFilters);
+
+      document.querySelectorAll("[data-expand-toggle]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const section = btn.closest("section.group, section.featuredBlock");
+          if (!section) return;
+
+          const expanded = section.dataset.expanded === "true";
+          section.dataset.expanded = expanded ? "false" : "true";
+          refreshExpandableSections(false);
+        });
       });
-    </script>
+
+      window.addEventListener("resize", () => {
+        refreshExpandableSections(getHasActiveFilter());
+      });
+
+      window.addEventListener("scroll", updateToTop, { passive: true });
+      toTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+      updateToTop();
+
+      applyFilter();
+
+      requestAnimationFrame(() => refreshExpandableSections(getHasActiveFilter()));
+      setTimeout(() => refreshExpandableSections(getHasActiveFilter()), 80);
+      setTimeout(() => refreshExpandableSections(getHasActiveFilter()), 260);
+
+      window.addEventListener("load", () => {
+        refreshExpandableSections(getHasActiveFilter());
+      });
+    } catch (e) {
+      console.error("[toolkit] init failed:", e);
+    }
+  });
+</script>
 
 <style>
   .toolkit {
-    padding-top: 8px;
-    padding-bottom: 72px; /* homepage-style footer breathing room */
+    width: 100%;
+    padding-top: 10px;
+    padding-bottom: 76px;
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    --tk-radius: 18px;
+    --tk-radius-sm: 12px;
   }
 
   .group,
   .featuredBlock {
-    scroll-margin-top: 96px;
+    scroll-margin-top: 102px;
   }
 
   .isHidden {
     display: none !important;
   }
 
-  /* Controls bar */
   .controlsBar {
     position: sticky;
-    top: calc(var(--siteHeaderH) + 12px);
+    top: calc(var(--siteHeaderH) + 0px);
     z-index: 90;
     display: flex;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
     align-items: center;
-    padding: 12px 14px;
-    min-height: 52px;
-    box-sizing: border-box;
-    border-radius: 14px;
-    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
-    backdrop-filter: blur(10px);
--webkit-backdrop-filter: blur(10px);
-background:
-  linear-gradient(
-    180deg,
-    rgb(from var(--surface) r g b / 0.6),
-    rgb(from var(--surface) r g b / 0.6)
-  );
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.62) inset,
-      0 8px 20px rgba(0,0,0,0.02);
-    margin-bottom: 18px;
-    transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+    padding: 14px 16px;
+    min-height: 56px;
     width: 100%;
-    margin-left: 0;
-    margin-right: 0;
+    box-sizing: border-box;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        rgb(from var(--surface) r g b / 0.72),
+        rgb(from var(--surface) r g b / 0.64)
+      );
+    backdrop-filter: blur(14px) saturate(118%);
+    -webkit-backdrop-filter: blur(14px) saturate(118%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.7) inset,
+      0 16px 34px rgba(0,0,0,0.035);
+    margin: 0 0 14px;
+    transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
   }
 
   .controlsBar:focus-within {
-    border-color: color-mix(in srgb, var(--border) 88%, transparent);
+    border-color: color-mix(in srgb, var(--border) 90%, transparent);
     box-shadow:
-      0 1px 0 rgba(255,255,255,0.7) inset,
-      0 10px 22px rgba(0,0,0,0.03);
+      0 1px 0 rgba(255,255,255,0.78) inset,
+      0 20px 40px rgba(0,0,0,0.045);
   }
 
   .field {
     flex: 1;
-    min-width: 240px;
+    min-width: 260px;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+    padding: 11px 13px;
+    border-radius: 13px;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
     background: color-mix(in srgb, var(--surface) 99%, black 1%);
     transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
   }
@@ -533,12 +525,12 @@ background:
   }
 
   .field:focus-within {
-    border-color: color-mix(in srgb, var(--border) 92%, transparent);
+    border-color: color-mix(in srgb, var(--border) 94%, transparent);
     background: var(--surface);
   }
 
   .icon {
-    opacity: 0.6;
+    opacity: 0.58;
     font-size: 14px;
     user-select: none;
     color: var(--ink-muted);
@@ -559,23 +551,30 @@ background:
     color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
   }
 
-  .select {
-    min-width: 180px;
-    max-width: 240px;
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
-    background: color-mix(in srgb, var(--surface) 99%, black 1%);
-    color: var(--ink);
-    font-size: 14px;
-    font-family: var(--font-sans);
-    font-weight: 500;
-    cursor: pointer;
-    transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.select {
+  min-width: 214px;
+  max-width: 248px;
+  width: 100%;
+  padding: 11px 40px 11px 13px;
+  border-radius: 13px;
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  background-color: color-mix(in srgb, var(--surface) 99%, black 1%);
+  background-image: url("/homepage/downarrow.png");
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+  background-position: right 14px center;
+  color: var(--ink);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.18s var(--ease), background-color 0.18s var(--ease);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
 
   .select:hover {
     border-color: color-mix(in srgb, var(--border) 88%, transparent);
@@ -585,7 +584,7 @@ background:
     margin-left: auto;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
 
   .resultsInline {
@@ -599,14 +598,14 @@ background:
   .ghost {
     min-height: 38px;
     padding: 0 12px;
-    border-radius: 10px;
-    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+    border-radius: 11px;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
     background: color-mix(in srgb, var(--surface) 98%, black 2%);
     color: var(--ink);
     font-size: 13px;
     font-weight: 550;
     cursor: pointer;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.62) inset;
     transition:
       background-color 0.18s var(--ease),
       border-color 0.18s var(--ease),
@@ -621,11 +620,11 @@ background:
 
   .viewToggle {
     display: flex;
-    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
-    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    border-radius: 11px;
     overflow: hidden;
     background: color-mix(in srgb, var(--surface) 98%, black 2%);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.55) inset;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.56) inset;
   }
 
   .toggleBtn {
@@ -650,141 +649,10 @@ background:
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
   }
 
-  /* Section chips (keep PM-only nav, but styled consistently) */
-  .sections {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 8px 12px;
-    align-items: center;
-    margin: 0 2px 22px;
-    position: relative;
-  }
-
-  .sectionsLabel {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    overflow: hidden;
-  }
-
-  .sectionsRail {
-    position: absolute;
-    right: 0;
-    top: -2px;
-    display: flex;
-    gap: 6px;
-    z-index: 6;
-    padding-left: 10px;
-    background: linear-gradient(to left, var(--surface) 0%, transparent);
-  }
-
-  .railBtn {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-    background: color-mix(in srgb, var(--surface) 98%, black 2%);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    font-size: 16px;
-    color: color-mix(in srgb, var(--ink-muted) 80%, var(--ink) 20%);
-    transition: color 0.18s var(--ease), border-color 0.18s var(--ease), transform 0.18s var(--ease);
-  }
-
-  .railBtn:hover {
-    color: var(--ink);
-    border-color: color-mix(in srgb, var(--border) 92%, transparent);
-    transform: translateY(-1px);
-  }
-
-  .railLeft {
-    display: none;
-  }
-
-  .sections.hasLeft .railLeft {
-    display: flex;
-  }
-
-  .sectionsWrap {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .sectionsWrap::before,
-  .sectionsWrap::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 24px;
-    pointer-events: none;
-    z-index: 2;
-  }
-
-  .sectionsWrap::before {
-    left: 0;
-    background: linear-gradient(to right, var(--surface), transparent);
-  }
-
-  .sectionsWrap::after {
-    right: 0;
-    background: linear-gradient(to left, var(--surface), transparent);
-  }
-
-  .sectionsList {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    padding: 6px 24px;
-    scroll-behavior: smooth;
-    white-space: nowrap;
-  }
-
-  .sectionsList::-webkit-scrollbar {
-    display: none;
-  }
-
-  .sectionBtn {
-    border: 1px solid transparent;
-    border-radius: 999px;
-    background: transparent;
-    cursor: pointer;
-    padding: 7px 12px;
-    font-size: 12px;
-    font-weight: 550;
-    color: color-mix(in srgb, var(--ink-muted) 82%, var(--ink) 18%);
-    flex: 0 0 auto;
-    transition:
-      color 0.18s var(--ease),
-      background 0.18s var(--ease),
-      border-color 0.18s var(--ease);
-  }
-
-  .sectionBtn:hover {
-    color: var(--ink);
-    background: rgba(0, 0, 0, 0.03);
-    border-color: color-mix(in srgb, var(--border) 72%, transparent);
-  }
-
-  .sectionBtn.isActive {
-    color: var(--ink);
-    background: color-mix(in srgb, var(--surface) 98%, black 2%);
-    border-color: color-mix(in srgb, var(--border) 82%, transparent);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.55) inset;
-  }
-
-  /* Featured block */
   .featuredBlock {
-    margin-top: 12px;
-    padding: 18px;
-    border-radius: 16px;
+    margin-top: 10px;
+    padding: 16px;
+    border-radius: var(--tk-radius);
     border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
     background:
       linear-gradient(
@@ -793,13 +661,12 @@ background:
         color-mix(in srgb, var(--surface) 98%, black 2%)
       );
     box-shadow:
-      0 1px 0 rgba(255,255,255,0.62) inset,
-      0 8px 20px rgba(0,0,0,0.018);
+      0 1px 0 rgba(255,255,255,0.66) inset,
+      0 12px 28px rgba(0,0,0,0.022);
   }
 
-  /* Groups */
   .group {
-    margin-top: 0;
+    margin-top: 25px;
   }
 
   .group + .group {
@@ -808,14 +675,24 @@ background:
 
   .groupHead {
     display: flex;
-    align-items: baseline;
-    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
     margin-bottom: 12px;
+  }
+
+  .groupTitleWrap {
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
   .groupTitle {
     margin: 0;
     color: var(--ink);
+        color:rgb(5, 35, 80);
     font-size: 1rem;
     font-weight: 650;
     letter-spacing: -0.02em;
@@ -832,11 +709,135 @@ background:
     display: none;
   }
 
-  /* Grid + cards */
+  .groupReveal {
+    position: relative;
+    overflow: clip;
+    transition: max-height 560ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: max-height;
+  }
+
+  .groupReveal::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 96px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.22s var(--ease);
+    background: linear-gradient(
+      180deg,
+      rgba(247, 247, 248, 0) 0%,
+      rgba(247, 247, 248, 0.74) 56%,
+      rgba(247, 247, 248, 0.98) 100%
+    );
+  }
+
+  .isCollapsible.isCollapsed .groupReveal {
+    max-height: var(--collapsed-h);
+  }
+
+  .isCollapsible.isCollapsed .groupReveal::after {
+    opacity: 1;
+  }
+
+ .groupFooter {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  margin-top: -12px;
+  position: relative;
+  z-index: 3;
+  padding-bottom: 4px;
+}
+
+.groupFooter.isVisible {
+  display: flex;
+}
+
+.groupToggle {
+  margin: 0 auto;
+  width: 126px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.groupToggle::before,
+.groupToggle::after {
+  content: "";
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--border) 72%, transparent) 50%,
+    transparent 100%
+  );
+  opacity: 0.9;
+}
+
+.groupToggle[hidden] {
+  display: none !important;
+}
+
+.groupTogglePill {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  filter: none;
+  transform: none;
+}
+
+.groupTogglePill::before {
+  display: none;
+}
+
+.groupToggle:hover .groupTogglePill {
+  transform: translateY(-1px);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  filter: none;
+}
+
+.groupToggleIcon {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+  opacity: 0.98;
+  transform: rotate(0deg);
+  transition:
+    transform 0.28s var(--ease),
+    opacity 0.2s var(--ease);
+}
+
+.groupToggle:hover .groupToggleIcon {
+  opacity: 1;
+}
+
+.isExpanded .groupToggleIcon {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
   .grid {
     display: grid;
-    gap: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+    column-gap: 12px;
+    row-gap: 16px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     align-items: stretch;
   }
 
@@ -850,12 +851,12 @@ background:
     background:
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--surface) 98%, white 2%),
+        color-mix(in srgb, var(--surface) 99%, white 1%),
         color-mix(in srgb, var(--surface) 98%, black 2%)
       );
     box-shadow:
-      0 1px 0 rgba(255,255,255,0.62) inset,
-      0 8px 20px rgba(0,0,0,0.018);
+      0 1px 0 rgba(255,255,255,0.68) inset,
+      0 10px 24px rgba(15, 23, 42, 0.026);
     height: 100%;
     color: inherit;
     transition:
@@ -866,48 +867,49 @@ background:
   }
 
   .card:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
     border-color: color-mix(in srgb, var(--border) 92%, transparent);
     box-shadow:
-      0 1px 0 rgba(255,255,255,0.72) inset,
-      0 12px 24px rgba(0,0,0,0.035);
+      0 1px 0 rgba(255,255,255,0.78) inset,
+      0 16px 32px rgba(15, 23, 42, 0.04);
   }
 
   .thumb {
     width: 100%;
-    aspect-ratio: 16/9;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.015) 0%, transparent 100%);
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    aspect-ratio: 16 / 9;
+    padding: 4px;
+    box-sizing: border-box;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.02) 100%);
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    justify-content: stretch;
     position: relative;
   }
 
   .thumb::after {
     content: "";
     position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, 0.025));
+    inset: 4px;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
     pointer-events: none;
   }
 
   .cover {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     object-position: center;
     display: block;
-    padding: 5px;
-    box-sizing: border-box;
     transition: transform 0.22s var(--ease);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.86);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 68%, transparent);
+    border-radius: 12px;
+    background: #0b1018;
+    box-shadow: none;
   }
 
   .card:hover .cover {
-    transform: scale(1.01);
+    transform: scale(1.012);
   }
 
   .thumbEmpty {
@@ -923,14 +925,15 @@ background:
     padding: 8px 12px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.75);
+    margin: auto;
   }
 
   .meta {
-    padding: 16px 16px 18px;
+    padding: 14px 14px 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    min-height: 132px;
+    gap: 8px;
+    min-height: 124px;
     height: 100%;
     box-sizing: border-box;
   }
@@ -939,8 +942,8 @@ background:
     margin: 0;
     color: var(--ink);
     font-weight: 650;
-    letter-spacing: -0.015em;
-    line-height: 1.22;
+    letter-spacing: -0.018em;
+    line-height: 1.18;
     font-size: 1rem;
   }
 
@@ -973,54 +976,24 @@ background:
 
   .whenToUse {
     color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
-    font-size: 0.88rem;
-    line-height: 1.52;
+    font-size: 0.875rem;
+    line-height: 1.48;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: calc(1.52em * 3);
-    max-height: calc(1.52em * 3);
+    min-height: calc(1.48em * 3);
+    max-height: calc(1.48em * 3);
   }
 
   .muted {
     color: var(--ink-muted);
   }
 
-  /* Compact view */
-  .toolkit[data-view="compact"] .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .toolkit[data-view="compact"] .card {
-    flex-direction: row;
-    height: auto;
-  }
-
-  .toolkit[data-view="compact"] .thumb {
-    width: 188px;
-    aspect-ratio: 16/10;
-    border-bottom: 0;
-    border-right: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-    flex: 0 0 auto;
-  }
-
-  .toolkit[data-view="compact"] .meta {
-    min-height: unset;
-    width: 100%;
-  }
-
-  .toolkit[data-view="compact"] .whenToUse {
-    -webkit-line-clamp: 2;
-    min-height: calc(1.52em * 2);
-    max-height: calc(1.52em * 2);
-  }
-
-  /* Empty state */
   .empty {
-    margin: 24px 0 12px;
+    margin: 22px 0 12px;
     padding: 24px 18px;
-    border-radius: 16px;
+    border-radius: var(--tk-radius);
     border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
     background:
       linear-gradient(
@@ -1050,7 +1023,7 @@ background:
   .empty .primary {
     min-height: 38px;
     padding: 0 12px;
-    border-radius: 10px;
+    border-radius: 11px;
     border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
     background: color-mix(in srgb, var(--surface) 98%, black 2%);
     color: var(--ink);
@@ -1066,7 +1039,6 @@ background:
     transform: translateY(-1px);
   }
 
-  /* Back to top */
   .toTop {
     position: fixed;
     right: 20px;
@@ -1104,27 +1076,50 @@ background:
   }
 
   .ghost:active,
-  .toggleBtn:active,
-  .railBtn:active {
+  .toggleBtn:active {
     transform: translateY(0);
   }
 
-  @media (max-width: 720px) {
-    .toolkit {
-      padding-bottom: 52px;
+  @media (max-width: 1180px) {
+    .grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      column-gap: 12px;
+      row-gap: 16px;
+    }
+  }
+
+  @media (max-width: 1040px) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 12px;
+      row-gap: 16px;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 12px;
+      row-gap: 16px;
     }
 
+    .group + .group {
+      margin-top: 28px;
+    }
+  }
+
+  @media (max-width: 720px) {
     .controlsBar {
       top: calc(var(--siteHeaderH) + 10px);
-      padding: 10px;
-      border-radius: 12px;
+      padding: 12px;
+      border-radius: 16px;
       gap: 8px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .field {
       min-width: 100%;
-      padding: 9px 10px;
+      padding: 10px 11px;
     }
 
     .select {
@@ -1141,21 +1136,36 @@ background:
 
     .featuredBlock {
       padding: 12px;
-      border-radius: 14px;
+      border-radius: 16px;
     }
 
-    .grid {
-      gap: 10px;
-      grid-template-columns: 1fr;
+    .groupHead {
+      margin-bottom: 10px;
+    }
+
+    .groupFooter {
+      margin-top: -9px;
+      padding-bottom: 2px;
+    }
+
+    .groupToggle {
+      width: 116px;
+      gap: 8px;
+    }
+
+    .groupTogglePill {
+      width: 38px;
+      height: 28px;
     }
 
     .card {
-      border-radius: 14px;
+      border-radius: 16px;
     }
 
     .meta {
-      padding: 14px;
+      padding: 13px 13px 14px;
       gap: 8px;
+      min-height: 118px;
     }
 
     .cardTitle {
@@ -1163,14 +1173,14 @@ background:
     }
 
     .whenToUse {
-      font-size: 0.86rem;
-      line-height: 1.48;
-      min-height: calc(1.48em * 3);
-      max-height: calc(1.48em * 3);
+      font-size: 0.85rem;
+      line-height: 1.46;
+      min-height: calc(1.46em * 3);
+      max-height: calc(1.46em * 3);
     }
 
     .toolkit[data-view="compact"] .thumb {
-      width: 136px;
+      width: 138px;
     }
 
     .toTop {
@@ -1179,35 +1189,59 @@ background:
     }
   }
 
+  @media (max-width: 640px) {
+    .toolkit {
+      padding-bottom: 54px;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+      row-gap: 12px;
+    }
+  }
+
+  .toolkit[data-view="compact"] .grid {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+  }
+
+  .toolkit[data-view="compact"] .card {
+    flex-direction: row;
+    height: auto;
+  }
+
+  .toolkit[data-view="compact"] .thumb {
+    width: 188px;
+    aspect-ratio: 16 / 10;
+    border-right: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    flex: 0 0 auto;
+  }
+
+  .toolkit[data-view="compact"] .meta {
+    min-height: unset;
+    width: 100%;
+  }
+
+  .toolkit[data-view="compact"] .whenToUse {
+    -webkit-line-clamp: 2;
+    min-height: calc(1.48em * 2);
+    max-height: calc(1.48em * 2);
+  }
+
   @media (max-width: 520px) {
     .resultsInline {
       display: none;
     }
 
     .viewToggle,
-#clear {
-  display: none !important;
-}
-
-    .sectionsRail {
-      display: none;
-    }
-
-    .sectionsList {
-      padding: 6px 12px;
-    }
-
-    .sections {
+    #clear {
       display: none !important;
     }
 
     .controlsBar {
-      padding: 12px 14px;
-      top: calc(var(--siteHeaderH) + -6px + env(safe-area-inset-top, 0px));
-      width: 100vw;
-      margin-left: calc(50% - 50vw);
-      margin-right: calc(50% - 50vw);
-      border-radius: 0;
+      padding: 12px;
+      top: calc(var(--siteHeaderH) + 6px + env(safe-area-inset-top, 0px));
+      border-radius: 16px;
     }
 
     .grid {
@@ -1220,7 +1254,7 @@ background:
 
     .toolkit[data-view="compact"] .thumb {
       width: 100%;
-      aspect-ratio: 16/9;
+      aspect-ratio: 16 / 9;
       border-right: 0;
       border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
     }
@@ -1234,15 +1268,17 @@ background:
     .card,
     .cover,
     .ghost,
-    .railBtn,
-    .toTop {
+    .toTop,
+    .groupTogglePill,
+    .groupToggleIcon,
+    .groupReveal {
       transition: none !important;
     }
 
     .card:hover,
     .ghost:hover,
-    .railBtn:hover,
-    .empty .primary:hover {
+    .empty .primary:hover,
+    .groupToggle:hover .groupTogglePill {
       transform: none !important;
     }
   }

@@ -2,8 +2,8 @@
 title: "Financial Modeling Examples"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "Master Startup Financial Modeling with Real Examples and Free Templates"
-whenToUseFull: "Master Startup Financial Modeling with Real Examples and Free Templates"
+whenToUse: "Explore practical financial modeling examples and templates for forecasting, planning, and decision-making."
+whenToUseFull: "Explore practical financial modeling examples and templates for forecasting, planning, and decision-making."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-Master Startup Financial Modeling with Real Examples and Free Templates
+Explore practical financial modeling examples and templates for forecasting, planning, and decision-making.

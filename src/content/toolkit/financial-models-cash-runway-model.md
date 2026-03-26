@@ -2,8 +2,8 @@
 title: "Cash Runway Model"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "We built the model every founder wishes they had before the bank balance hit zero."
-whenToUseFull: "We built the model every founder wishes they had before the bank balance hit zero."
+whenToUse: "Track burn, cash balance, and runway to understand how long capital can last and when funding decisions become urgent."
+whenToUseFull: "Track burn, cash balance, and runway to understand how long capital can last and when funding decisions become urgent."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-We built the model every founder wishes they had before the bank balance hit zero.
+Track burn, cash balance, and runway to understand how long capital can last and when funding decisions become urgent.

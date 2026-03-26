@@ -2,8 +2,8 @@
 title: "VC Valuation Framework"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "A founder’s guide to startup valuation, dilution, and investor returns using the same framework VCs rely on in the US and Europe"
-whenToUseFull: "A founder’s guide to startup valuation, dilution, and investor returns using the same framework VCs rely on in the US and Europe"
+whenToUse: "Evaluate startup valuation, dilution, and investor return scenarios through a venture capital lens."
+whenToUseFull: "Evaluate startup valuation, dilution, and investor return scenarios through a venture capital lens."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-A founder’s guide to startup valuation, dilution, and investor returns using the same framework VCs rely on in the US and Europe
+Evaluate startup valuation, dilution, and investor return scenarios through a venture capital lens.

@@ -2,8 +2,8 @@
 title: "SaaS Cohort Analysis"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "How to track retention, revenue durability, and payback without drowning in pointless metrics."
-whenToUseFull: "How to track retention, revenue durability, and payback without drowning in pointless metrics."
+whenToUse: "Measure retention, expansion, and revenue durability across customer cohorts over time."
+whenToUseFull: "Measure retention, expansion, and revenue durability across customer cohorts over time."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-How to track retention, revenue durability, and payback without drowning in pointless metrics.
+Measure retention, expansion, and revenue durability across customer cohorts over time.

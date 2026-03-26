@@ -2,8 +2,8 @@
 title: "SAFE Note Dilution"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "Avoid Hidden Founder Dilution—Learn How SAFE Notes Work, Model Equity Impact, and Download a Cap Table Template to Stay in Control."
-whenToUseFull: "Avoid Hidden Founder Dilution—Learn How SAFE Notes Work, Model Equity Impact, and Download a Cap Table Template to Stay in Control."
+whenToUse: "Model dilution scenarios from SAFE notes to understand ownership impact across future financing rounds."
+whenToUseFull: "Model dilution scenarios from SAFE notes to understand ownership impact across future financing rounds."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-Avoid Hidden Founder Dilution—Learn How SAFE Notes Work, Model Equity Impact, and Download a Cap Table Template to Stay in Control.
+Model dilution scenarios from SAFE notes to understand ownership impact across future financing rounds.

@@ -2,8 +2,8 @@
 title: "Headcount Planning"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "The Excel template used by top founders and VCs to track every hire, salary, and fully-loaded cost"
-whenToUseFull: "The Excel template used by top founders and VCs to track every hire, salary, and fully-loaded cost"
+whenToUse: "Plan hires, salaries, and fully loaded team costs to support budgeting and growth decisions."
+whenToUseFull: "Plan hires, salaries, and fully loaded team costs to support budgeting and growth decisions."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-The Excel template used by top founders and VCs to track every hire, salary, and fully-loaded cost
+Plan hires, salaries, and fully loaded team costs to support budgeting and growth decisions.

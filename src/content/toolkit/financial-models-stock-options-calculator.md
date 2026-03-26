@@ -2,8 +2,8 @@
 title: "Stock Options Calculator"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "Use this Option Grant Calculator to understand your equity compensation, exit scenarios, and real-world upside—no guesswork required"
-whenToUseFull: "Use this Option Grant Calculator to understand your equity compensation, exit scenarios, and real-world upside—no guesswork required"
+whenToUse: "Estimate equity outcomes, dilution, and potential payout scenarios for option grants."
+whenToUseFull: "Estimate equity outcomes, dilution, and potential payout scenarios for option grants."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-Use this Option Grant Calculator to understand your equity compensation, exit scenarios, and real-world upside—no guesswork required
+Estimate equity outcomes, dilution, and potential payout scenarios for option grants.

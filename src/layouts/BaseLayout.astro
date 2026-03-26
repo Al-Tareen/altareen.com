@@ -29,32 +29,32 @@ const jsonLd = isToolkitDetail
   ? {
       "@context": "https://schema.org",
       "@type": "TechArticle",
-      "headline": title,
-      "description": description,
-      "image": {
+      headline: title,
+      description,
+      image: {
         "@type": "ImageObject",
-        "url": ogImage,
-        "width": 1200,
-        "height": 630,
+        url: ogImage,
+        width: 1200,
+        height: 630,
       },
-      "url": canonical,
-      "author": {
+      url: canonical,
+      author: {
         "@type": "Person",
-        "name": "Al Tareen",
-        "url": authorUrl,
+        name: "Al Tareen",
+        url: authorUrl,
       },
-      "publisher": {
+      publisher: {
         "@type": "Organization",
-        "name": "Al Tareen",
-        "logo": {
+        name: "Al Tareen",
+        logo: {
           "@type": "ImageObject",
-          "url": publisherLogo,
-          "width": 512,
-          "height": 512,
+          url: publisherLogo,
+          width: 512,
+          height: 512,
         },
       },
-      ...(publishedDate ? { "datePublished": publishedDate } : {}),
-      "mainEntityOfPage": {
+      ...(publishedDate ? { datePublished: publishedDate } : {}),
+      mainEntityOfPage: {
         "@type": "WebPage",
         "@id": canonical,
       },
@@ -62,10 +62,10 @@ const jsonLd = isToolkitDetail
   : {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": title,
-      "description": description,
-      "url": canonical,
-      "image": ogImage,
+      name: title,
+      description,
+      url: canonical,
+      image: ogImage,
     };
 ---
 
@@ -77,7 +77,6 @@ const jsonLd = isToolkitDetail
   <meta name="description" content={description} />
   <link rel="canonical" href={canonical} />
 
-  <!-- Open Graph -->
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:type" content={isToolkitDetail ? "article" : "website"} />
@@ -91,18 +90,15 @@ const jsonLd = isToolkitDetail
     <meta property="article:published_time" content={publishedDate} />
   )}
 
-  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
   <meta name="twitter:image:alt" content={title} />
 
-  <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -112,116 +108,257 @@ const jsonLd = isToolkitDetail
 
   <title>{title}</title>
 
-  <!-- JSON-LD structured data -->
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
 </head>
 <body>
-  <!-- Thin page loader -->
   <div id="pageLoaderBar" class="page-loader-bar" aria-hidden="true"></div>
 
   <div class="siteShell">
     <slot />
 
     <div id="cookie-overlay" class="cookieOverlay"></div>
-    <div id="cookie-banner" class="cookieBanner" role="dialog" aria-label="Cookie consent">
+
+    <div
+      id="cookie-banner"
+      class="cookieBanner"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cookie-title"
+      aria-describedby="cookie-copy"
+    >
       <div class="cookieContent">
-        <p>
-          This website uses cookies to improve your experience and analyze traffic.
-          By clicking “Accept”, you consent to our use of cookies.
-        </p>
+        <div class="cookieHeader">
+          <div class="cookieEyebrow">Privacy</div>
+          <h2 id="cookie-title" class="cookieTitle">Cookie Preferences</h2>
+          <p id="cookie-copy" class="cookieBody">
+            We use essential storage to keep the site functional and remember your privacy choice.
+            You can also allow optional features that improve experience and help us understand site performance.
+          </p>
+        </div>
+
+        <div class="cookiePrefs">
+          <div class="cookiePrefItem cookiePrefLocked">
+            <div class="cookiePrefMeta">
+              <div class="cookiePrefTitle">Essential</div>
+              <div class="cookiePrefDesc">
+                Required for core functionality and storing your privacy preferences.
+              </div>
+            </div>
+            <div class="cookiePill cookiePillLocked">Always On</div>
+          </div>
+
+          <label class="cookiePrefItem" for="cookie-optional">
+            <div class="cookiePrefMeta">
+              <div class="cookiePrefTitle">Optional Features</div>
+              <div class="cookiePrefDesc">
+                Includes preference-based features and analytics, such as remembering framework votes and understanding site usage.
+              </div>
+            </div>
+            <span class="cookieSwitchWrap">
+              <input id="cookie-optional" class="cookieSwitchInput" type="checkbox" />
+              <span class="cookieSwitch" aria-hidden="true"></span>
+            </span>
+          </label>
+        </div>
+
         <div class="cookieActions">
-          <button id="cookie-accept" class="cookieBtn primary">Accept</button>
-          <button id="cookie-decline" class="cookieBtn">Decline</button>
+          <button id="cookie-essential-only" class="cookieBtn">Essential Only</button>
+          <button id="cookie-allow-optional" class="cookieBtn primary">Allow Optional</button>
         </div>
       </div>
     </div>
   </div>
 
-  <script is:inline type="module">
-    const loader = document.getElementById('pageLoaderBar');
-    let progress = 0;
-    let interval;
-
-    const startLoader = () => {
-      loader.classList.add('active');
-      progress = 0;
-      loader.style.width = '0%';
-      interval = setInterval(() => {
-        progress += Math.random() * 4;
-        if (progress < 90) loader.style.width = progress + '%';
-      }, 150);
-    };
-
-    const finishLoader = () => {
-      clearInterval(interval);
-      loader.style.width = '100%';
-      setTimeout(() => {
-        loader.classList.remove('active');
-        loader.style.width = '0%';
-      }, 250);
-    };
-
-    document.addEventListener('click', (e) => {
-      const link = e.target.closest('a');
-      if (!link) return;
-      if (
-        link.target === '_blank' ||
-        link.href.startsWith('mailto:') ||
-        link.href.startsWith('tel:') ||
-        !link.href.startsWith(window.location.origin)
-      ) return;
-
-      e.preventDefault();
-      startLoader();
-      setTimeout(() => {
-        window.location.href = link.href;
-      }, 50);
-    });
-
-    window.addEventListener('pageshow', finishLoader);
-    window.addEventListener('load', finishLoader);
-  </script>
-
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const banner = document.getElementById("cookie-banner");
       const overlay = document.getElementById("cookie-overlay");
-      const acceptBtn = document.getElementById("cookie-accept");
-      const declineBtn = document.getElementById("cookie-decline");
-      const CONSENT_KEY = "cookie_consent";
+      const essentialOnlyBtn = document.getElementById("cookie-essential-only");
+      const allowOptionalBtn = document.getElementById("cookie-allow-optional");
+      const optionalInput = document.getElementById("cookie-optional");
 
-      function hideBanner() {
-        banner.style.opacity = "0";
-        banner.style.transform = "translate(-50%, -45%)";
-        overlay.style.opacity = "0";
-        setTimeout(() => {
-          banner.style.display = "none";
-          overlay.style.display = "none";
-        }, 250);
+      const PREFERENCES_KEY = "cookie_preferences";
+      const LEGACY_CONSENT_KEY = "cookie_consent";
+
+      function getDefaultPreferences() {
+        return {
+          essential: true,
+          optional: false,
+          functional: false,
+          analytics: false,
+        };
+      }
+
+      function normalizePreferences(raw) {
+        const optional =
+          typeof raw?.optional === "boolean"
+            ? raw.optional
+            : Boolean(raw?.functional) || Boolean(raw?.analytics);
+
+        return {
+          essential: true,
+          optional,
+          functional: optional,
+          analytics: optional,
+        };
+      }
+
+      function readPreferences() {
+        try {
+          const raw = localStorage.getItem(PREFERENCES_KEY);
+          if (!raw) return null;
+
+          return normalizePreferences(JSON.parse(raw));
+        } catch {
+          return null;
+        }
+      }
+
+      function writePreferences(prefs) {
+        const normalized = normalizePreferences(prefs);
+
+        localStorage.setItem(PREFERENCES_KEY, JSON.stringify(normalized));
+        localStorage.setItem(
+          LEGACY_CONSENT_KEY,
+          normalized.optional ? "accepted" : "declined"
+        );
+      }
+
+      function hydrateInputs(prefs) {
+        if (optionalInput) optionalInput.checked = Boolean(prefs?.optional);
+      }
+
+      function collectPreferencesFromUI() {
+        const optional = Boolean(optionalInput?.checked);
+
+        return {
+          essential: true,
+          optional,
+          functional: optional,
+          analytics: optional,
+        };
       }
 
       function showBanner() {
+        if (!banner || !overlay) return;
+
         overlay.style.display = "block";
         banner.style.display = "block";
-        setTimeout(() => {
+
+        requestAnimationFrame(() => {
           overlay.style.opacity = "1";
           banner.style.opacity = "1";
-          banner.style.transform = "translate(-50%, -50%)";
-        }, 10);
+          banner.style.transform = "translate(-50%, -50%) scale(1)";
+        });
       }
 
-      if (!localStorage.getItem(CONSENT_KEY)) {
-        showBanner();
+      function hideBanner() {
+        if (!banner || !overlay) return;
+
+        banner.style.opacity = "0";
+        banner.style.transform = "translate(-50%, -47%) scale(0.985)";
+        overlay.style.opacity = "0";
+
+        setTimeout(() => {
+          banner.style.display = "none";
+          overlay.style.display = "none";
+        }, 220);
       }
 
-      acceptBtn?.addEventListener("click", () => {
-        localStorage.setItem(CONSENT_KEY, "accepted");
+      function deleteCookie(name) {
+        const hostname = window.location.hostname;
+
+        document.cookie = `${name}=; Max-Age=0; path=/`;
+        document.cookie = `${name}=; Max-Age=0; path=/; domain=${hostname}`;
+        document.cookie = `${name}=; Max-Age=0; path=/; domain=.${hostname}`;
+      }
+
+      function clearAnalyticsCookies() {
+        [
+          "_ga",
+          "_gid",
+          "_gat",
+          "_clck",
+          "_clsk",
+          "_fbp",
+          "_gcl_au",
+        ].forEach(deleteCookie);
+      }
+
+      function clearAnalyticsStorage() {
+        [
+          "clarity",
+          "ga_client_id",
+          "analytics_session",
+        ].forEach((key) => {
+          localStorage.removeItem(key);
+          sessionStorage.removeItem(key);
+        });
+      }
+
+      function loadAnalytics() {
+        if (window.__analyticsLoaded) return;
+        window.__analyticsLoaded = true;
+
+        // Add analytics loader here only when optional preference is true.
+        console.log("Optional features enabled.");
+      }
+
+      function applyPreferences(prefs) {
+        if (prefs.optional) {
+          loadAnalytics();
+        } else {
+          clearAnalyticsCookies();
+          clearAnalyticsStorage();
+        }
+      }
+
+      function saveAndApply(prefs) {
+        const normalized = normalizePreferences(prefs);
+        writePreferences(normalized);
+        applyPreferences(normalized);
+        hydrateInputs(normalized);
         hideBanner();
+      }
+
+      window.openCookiePreferences = function () {
+        const prefs = readPreferences() || getDefaultPreferences();
+        hydrateInputs(prefs);
+        showBanner();
+      };
+
+      const existingPrefs = readPreferences();
+
+      if (!existingPrefs) {
+        const defaults = getDefaultPreferences();
+        hydrateInputs(defaults);
+        showBanner();
+      } else {
+        hydrateInputs(existingPrefs);
+        applyPreferences(existingPrefs);
+      }
+
+      essentialOnlyBtn?.addEventListener("click", () => {
+        saveAndApply({
+          essential: true,
+          optional: false,
+          functional: false,
+          analytics: false,
+        });
       });
 
-      declineBtn?.addEventListener("click", () => {
-        localStorage.setItem(CONSENT_KEY, "declined");
-        hideBanner();
+      allowOptionalBtn?.addEventListener("click", () => {
+        saveAndApply({
+          essential: true,
+          optional: true,
+          functional: true,
+          analytics: true,
+        });
+      });
+
+      overlay?.addEventListener("click", () => {
+        const prefs = readPreferences();
+        if (prefs) hideBanner();
       });
     });
   </script>
@@ -229,21 +366,18 @@ const jsonLd = isToolkitDetail
 </html>
 
 <style>
-  /* Put at the very top of your PageShell style */
   :global(:root) {
     --scrollbar-bg: #fff;
     --scrollbar-thumb: #333;
     --scrollbar-thumb-hover: #555;
   }
 
-  /* Apply to html and body */
   :global(html),
   :global(body) {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
   }
 
-  /* WebKit (Chrome, Safari, Edge) */
   :global(html::-webkit-scrollbar),
   :global(body::-webkit-scrollbar) {
     width: 8px;
@@ -304,7 +438,6 @@ const jsonLd = isToolkitDetail
     color: inherit;
   }
 
-  /* ✅ This is what makes the footer stick on short pages */
   :global(.siteShell) {
     min-height: 100vh;
     display: flex;
@@ -329,89 +462,210 @@ const jsonLd = isToolkitDetail
     pointer-events: none;
   }
 
-  .page-loader-bar.active {
-    /* width is controlled via JS */
-  }
+  .page-loader-bar.active {}
 
-  /* Overlay to lock and blur background */
   .cookieOverlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.25);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    inset: 0;
+    background: rgba(0,0,0,0.24);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 9998;
     display: none;
     opacity: 0;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.22s ease;
   }
 
-  /* Centered cookie popup */
   .cookieBanner {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -47%) scale(0.985);
     width: calc(100% - 32px);
-    max-width: 400px;
+    max-width: 520px;
     z-index: 9999;
-
-    border-radius: 14px;
+    border-radius: 18px;
     border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
-
     background:
       linear-gradient(
         180deg,
         color-mix(in srgb, var(--surface) 98%, white 2%),
         color-mix(in srgb, var(--surface) 98%, black 2%)
       );
-
     box-shadow:
       0 2px 0 rgba(255,255,255,0.6) inset,
-      0 10px 24px rgba(0,0,0,0.12);
-
-    padding: 20px 18px;
+      0 18px 40px rgba(0,0,0,0.12);
+    padding: 22px 20px 18px;
     display: none;
     opacity: 0;
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition: opacity 0.22s ease, transform 0.22s ease;
   }
 
   .cookieContent {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    text-align: center;
+    gap: 16px;
   }
 
-  .cookieContent p {
+  .cookieHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cookieEyebrow {
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .cookieTitle {
     margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.5;
+    font-size: 1.25rem;
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+
+  .cookieBody {
+    margin: 0;
+    font-size: 0.94rem;
+    line-height: 1.55;
     color: var(--ink-secondary);
   }
 
-  .cookieActions {
-    display: flex;
+  .cookiePrefs {
+    display: grid;
+    gap: 10px;
+  }
+
+  .cookiePrefItem {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+    background: rgba(255,255,255,0.72);
+  }
+
+  .cookiePrefLocked {
+    opacity: 0.96;
+  }
+
+  .cookiePrefMeta {
+    min-width: 0;
+  }
+
+  .cookiePrefTitle {
+    font-size: 0.96rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .cookiePrefDesc {
+    margin-top: 4px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: var(--ink-secondary);
+  }
+
+  .cookiePill {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    background: rgba(0,0,0,0.04);
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .cookieSwitchWrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cookieSwitchInput {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .cookieSwitch {
+    width: 48px;
+    height: 30px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.12);
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .cookieSwitch::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+    transition: transform 0.2s ease;
+  }
+
+  .cookieSwitchInput:checked + .cookieSwitch {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .cookieSwitchInput:checked + .cookieSwitch::after {
+    transform: translateX(18px);
+  }
+
+  .cookieActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
   .cookieBtn {
-    padding: 8px 16px;
-    border-radius: 6px;
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 12px;
     border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
     background: color-mix(in srgb, var(--surface) 98%, black 2%);
     color: var(--ink);
     font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition:
+      transform 0.18s ease,
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      background 0.18s ease;
   }
 
   .cookieBtn:hover {
     transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--border) 92%, transparent);
+    box-shadow: 0 10px 18px rgba(0,0,0,0.04);
   }
 
   .cookieBtn.primary {
@@ -425,12 +679,19 @@ const jsonLd = isToolkitDetail
   }
 
   @media (max-width: 640px) {
-    .cookieActions {
-      flex-direction: column;
+    .cookieBanner {
+      max-width: 100%;
+      padding: 18px 16px 16px;
+      border-radius: 16px;
     }
 
-    .cookieBtn {
-      width: 100%;
+    .cookieActions {
+      grid-template-columns: 1fr;
+    }
+
+    .cookiePrefItem {
+      grid-template-columns: 1fr;
+      align-items: start;
     }
   }
 </style>

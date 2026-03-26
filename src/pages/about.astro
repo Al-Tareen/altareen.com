@@ -1,29 +1,30 @@
 ﻿---
 import PageShell from "../components/PageShell.astro";
 
-/**
- * Replace these with your real links/assets
- */
+const web3formsKey = "a662d525-6081-49f0-b6d7-6102e3bf1ec2";
+
 const profile = {
   name: "Al-Ebraheem Tareen",
   title: "AI Transformation • Product Management • Product Strategy",
-  photo: "/images/about/al-tareen.jpeg",
-  resumeUrl: "/files/Al-Tareen-Resume.pdf",
+  photo: "/images/about/altareen.jpg",
   linkedin: "https://www.linkedin.com/in/California",
   github: "https://github.com/Al-Tareen",
+  resumeUrl: "/files/Al-Tareen-Resume.pdf",
+  email: "altareenk@outlook.com",
+  location: "Houston, TX",
 };
 ---
 
-<PageShell title="About" hidePageHead={false}
-description="Who I am and where to find me.">
-
+<PageShell
+  title="About"
+  hidePageHead={false}
+  description="Who I am and where to find me."
+>
   <section class="aboutPage" aria-label="About Al-Ebraheem Tareen">
-    <div class="heroCard">
-      <div class="heroGrid">
-        <!-- Left column -->
-        <div class="heroContent">
+    <div class="aboutSplitGrid">
+      <article class="aboutPanel aboutPanelCopy">
+        <div class="aboutCopy">
           <div class="nameBlock">
-            <h1 class="heroTitle">{profile.name}</h1>
             <p class="heroSubtitle">{profile.title}</p>
             <div class="heroDivider" aria-hidden="true"></div>
           </div>
@@ -31,152 +32,454 @@ description="Who I am and where to find me.">
           <div class="copyStack">
             <p class="heroSummary">
               Visionary professional and strategic leader with a multi-year track record of driving
-              revenue growth through AI, IT, and strategy. Experienced in project and
-              product management, I break down complex challenges and lead global teams that
-              accelerate digital transformation with scalable, efficient solutions and measurable ROI.
+              revenue growth through AI, IT, and strategy. Experienced in project and product
+              management, I break down complex challenges and lead global teams that accelerate
+              digital transformation with scalable, efficient solutions and measurable ROI.
             </p>
 
             <p class="heroSummary heroSummarySecondary">
-Leveraging critical thinking while deploying various mental models, I create long-term, difficult-to-replicate competitive advantage. Driven by execution, I preempt risks, tackle roadblocks, and devise strategic solutions viewing business as relentless value creation for teams and stakeholders, delivering innovative products while achieving transformative business outcomes.
+              Leveraging critical thinking while deploying various mental models, I create long-term,
+              difficult-to-replicate competitive advantage. Driven by execution, I preempt risks,
+              tackle roadblocks, and devise strategic solutions while viewing business as relentless
+              value creation for teams and stakeholders, delivering innovative products while
+              achieving transformative business outcomes.
             </p>
           </div>
 
           <div class="signatureLine" aria-hidden="true"></div>
 
-          <p class="microNote">"An hour of planning can save you 10 hours of doing." — Unknown</p>
+          <p class="microNote">“An hour of planning can save you 10 hours of doing.” — Unknown</p>
+        </div>
+      </article>
+
+      <aside class="aboutPanel aboutPanelRail" aria-label="Profile and actions">
+        <div class="profileRail">
+          <div class="portraitShell">
+            <div class="profileFrame">
+              <img
+                class="profileImg"
+                src={profile.photo}
+                alt={`Portrait of ${profile.name}`}
+                loading="lazy"
+              />
+            </div>
+          </div>
+
+          <div class="profileInfo">
+            <div class="profileName">{profile.name}</div>
+            <div class="profileRole">{profile.location}</div>
+          </div>
+
+          <div class="railActions" role="group" aria-label="Primary actions">
+            <button class="actionBtn primary js-open-contact" type="button">
+              <span class="actionBtnIcon" aria-hidden="true">✉</span>
+              <span class="actionBtnText">Contact</span>
+            </button>
+
+            <a class="actionBtn" href={profile.linkedin} target="_blank" rel="noopener">
+              <span class="actionBtnIcon actionBtnIconText" aria-hidden="true">in</span>
+              <span class="actionBtnText">LinkedIn</span>
+            </a>
+
+            <a class="actionBtn" href={profile.github} target="_blank" rel="noopener">
+              <span class="actionBtnIcon" aria-hidden="true">⌘</span>
+              <span class="actionBtnText">GitHub</span>
+            </a>
+
+            <a class="actionBtn" href={profile.resumeUrl} download target="_blank" rel="noopener">
+              <span class="actionBtnIcon" aria-hidden="true">↓</span>
+              <span class="actionBtnText">Resume</span>
+            </a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <div class="contactModalShell" id="contact-modal" hidden aria-hidden="true">
+    <div class="contactBackdrop" data-contact-close></div>
+
+    <div
+      class="contactDialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="contact-modal-title"
+      aria-describedby="contact-modal-copy"
+    >
+      <div class="contactDialogHeader">
+        <div class="dialogTitleBlock">
+          <div class="dialogLabel">Connect</div>
+          <h2 id="contact-modal-title" class="dialogTitle">Contact</h2>
+          <p id="contact-modal-copy" class="dialogIntro">
+            Send a message directly or reach me by email.
+          </p>
         </div>
 
-        <!-- Right column -->
-        <aside class="heroRail" aria-label="Profile and actions">
-          <div class="profileCard">
-            <div class="portraitShell">
-              <div class="profileFrame">
-                <img
-                  class="profileImg"
-                  src={profile.photo}
-                  alt={`Portrait of ${profile.name}`}
-                  loading="lazy"
-                />
+        <button
+          class="dialogClose"
+          type="button"
+          aria-label="Close contact dialog"
+          data-contact-close
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+
+      <div class="contactDialogBody">
+        <div class="dialogFormPane">
+          <div class="formCard">
+            <form
+              id="about-contact-form"
+              class="form"
+              action="https://api.web3forms.com/submit"
+              method="POST"
+              aria-label="Contact form"
+            >
+              <input type="hidden" name="access_key" value={web3formsKey} />
+              <input type="hidden" name="subject" value="Contact from altareen.com" />
+              <input type="hidden" name="from_name" value="altareen.com Contact Form" />
+
+              <input
+                type="checkbox"
+                name="botcheck"
+                class="gotcha"
+                tabindex="-1"
+                autocomplete="off"
+                aria-hidden="true"
+              />
+
+              <div class="fieldRow">
+                <div class="field">
+                  <label for="contact-name">Name</label>
+                  <input
+                    type="text"
+                    id="contact-name"
+                    name="name"
+                    required
+                    autocomplete="name"
+                    placeholder="Your name"
+                  />
+                </div>
+
+                <div class="field">
+                  <label for="contact-email">Email</label>
+                  <input
+                    type="email"
+                    id="contact-email"
+                    name="email"
+                    required
+                    autocomplete="email"
+                    placeholder="you@example.com"
+                  />
+                </div>
               </div>
+
+              <div class="field">
+                <label for="contact-message">Message</label>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  required
+                  rows="6"
+                  placeholder="Feel free to share what’s on your mind, what you need help with, and any additional details."
+                ></textarea>
+              </div>
+
+              <div class="actions">
+                <button type="submit" class="actionBtn primary actionBtnSubmit" id="about-submit-btn">
+                  <span class="actionBtnIcon" aria-hidden="true">→</span>
+                  <span class="actionBtnText">Send message</span>
+                </button>
+              </div>
+            </form>
+
+            <div id="form-success" class="success" hidden>
+              <p class="successTitle">Message sent.</p>
+              <p class="successText">Thanks — I’ll get back to you as soon as I can.</p>
             </div>
 
-            <div class="profileInfo">
-              <div class="profileName">{profile.name}</div>
-              <div class="profileRole">Houston, TX</div>
+            <div id="form-error" class="error" hidden>
+              <p class="errorText">Something went wrong. Please email me directly instead.</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="dialogSidePane" aria-label="Direct contact">
+          <div class="sideCard">
+            <div class="miniLabel">Direct contact</div>
+
+            <div class="emailBlock">
+              <div class="emailLabel">Email</div>
+              <a class="emailLink" href={`mailto:${profile.email}`}>{profile.email}</a>
             </div>
 
-            <div class="railActions" role="group" aria-label="Primary actions">
-              <a class="railBtn primary" href={profile.resumeUrl} download target="_blank" rel="noopener">
-                <span class="railIcon" aria-hidden="true">↓</span>
-                <span class="railText">Resume</span>
+            <div class="sideActions">
+              <a class="actionBtn primary" href={`mailto:${profile.email}`}>
+                <span class="actionBtnIcon" aria-hidden="true">✉</span>
+                <span class="actionBtnText">Email me</span>
               </a>
 
-              <a class="railBtn" href={profile.linkedin} target="_blank" rel="noopener">
-                <span class="railIcon railIconText" aria-hidden="true">in</span>
-                <span class="railText">LinkedIn</span>
-              </a>
-
-              <a class="railBtn" href={profile.github} target="_blank" rel="noopener">
-                <span class="railIcon" aria-hidden="true">⌘</span>
-                <span class="railText">GitHub</span>
-              </a>
+              <button
+                class="actionBtn"
+                type="button"
+                id="copy-email-btn"
+                data-email={profile.email}
+              >
+                <span class="actionBtnIcon" aria-hidden="true">⧉</span>
+                <span class="actionBtnText" id="copy-email-text">Copy email</span>
+              </button>
             </div>
           </div>
         </aside>
       </div>
     </div>
-  </section>
+  </div>
+
+  <script>
+    const modal = document.getElementById("contact-modal");
+    const dialog = modal?.querySelector(".contactDialog");
+    const openButtons = document.querySelectorAll(".js-open-contact");
+    const closeButtons = modal?.querySelectorAll("[data-contact-close]");
+    const firstField = document.getElementById("contact-name");
+
+    let lastFocusedEl = null;
+    let closeTimer = null;
+
+    function getFocusableEls() {
+      if (!dialog) return [];
+      return Array.from(
+        dialog.querySelectorAll(
+          'a[href], button:not([disabled]), textarea, input:not([type="hidden"]), select, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.hasAttribute("hidden"));
+    }
+
+    function openModal() {
+      if (!modal) return;
+
+      if (closeTimer) {
+        window.clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+
+      lastFocusedEl = document.activeElement;
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("contact-modal-open");
+
+      requestAnimationFrame(() => {
+        modal.dataset.open = "true";
+      });
+
+      window.setTimeout(() => {
+        firstField?.focus();
+      }, 80);
+    }
+
+    function closeModal() {
+      if (!modal) return;
+
+      modal.dataset.open = "false";
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("contact-modal-open");
+
+      closeTimer = window.setTimeout(() => {
+        modal.hidden = true;
+        if (lastFocusedEl && typeof lastFocusedEl.focus === "function") {
+          lastFocusedEl.focus();
+        }
+      }, 220);
+    }
+
+    openButtons.forEach((btn) => {
+      btn.addEventListener("click", openModal);
+    });
+
+    closeButtons?.forEach((btn) => {
+      btn.addEventListener("click", closeModal);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (!modal || modal.hidden) return;
+
+      if (event.key === "Escape") {
+        closeModal();
+        return;
+      }
+
+      if (event.key === "Tab") {
+        const focusable = getFocusableEls();
+        if (!focusable.length) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    const form = document.getElementById("about-contact-form");
+    const submitBtn = document.getElementById("about-submit-btn");
+    const successEl = document.getElementById("form-success");
+    const errorEl = document.getElementById("form-error");
+    const useAjax = form?.action && form.action.includes("web3forms");
+
+    if (form && useAjax && submitBtn && successEl && errorEl) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending...";
+        successEl.setAttribute("hidden", "");
+        errorEl.setAttribute("hidden", "");
+
+        const formData = new FormData(form);
+
+        try {
+          const res = await fetch(form.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+              Accept: "application/json",
+            },
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            form.reset();
+            successEl.removeAttribute("hidden");
+          } else {
+            errorEl.removeAttribute("hidden");
+            console.error("Web3Forms error:", data);
+          }
+        } catch (err) {
+          errorEl.removeAttribute("hidden");
+          console.error("Contact form submit failed:", err);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML =
+            '<span class="actionBtnIcon" aria-hidden="true">→</span><span class="actionBtnText">Send message</span>';
+        }
+      });
+    }
+
+    const copyEmailBtn = document.getElementById("copy-email-btn");
+    const copyEmailText = document.getElementById("copy-email-text");
+
+    if (copyEmailBtn && copyEmailText) {
+      copyEmailBtn.addEventListener("click", async () => {
+        const email = copyEmailBtn.getAttribute("data-email");
+        if (!email) return;
+
+        try {
+          await navigator.clipboard.writeText(email);
+          copyEmailText.textContent = "Copied";
+          setTimeout(() => {
+            copyEmailText.textContent = "Copy email";
+          }, 1400);
+        } catch {
+          copyEmailText.textContent = "Copy failed";
+          setTimeout(() => {
+            copyEmailText.textContent = "Copy email";
+          }, 1400);
+        }
+      });
+    }
+  </script>
 
   <style>
+    :global(body.contact-modal-open) {
+      overflow: hidden;
+    }
+
     .aboutPage {
       width: 100%;
       max-width: var(--content-width);
       margin: 0 auto;
-      padding: 10px 0 72px; /* more breathing room before footer */
+      padding: 10px 0 76px;
       position: relative;
+      box-sizing: border-box;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      box-sizing: border-box;
-      background: transparent;
+      isolation: isolate;
     }
 
-    .aboutPage::before,
-    .aboutPage::after {
-      display: none !important;
-      content: none !important;
-    }
-
-    /* Outer shell aligns with homepage card language */
-    .heroCard {
-      margin-top: 6px;
-      padding: 12px;
-      border-radius: 20px;
-      border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    .aboutPage::before {
+      content: "";
+      position: absolute;
+      top: -24px;
+      left: -34px;
+      width: min(560px, 64vw);
+      height: 300px;
+      pointer-events: none;
       background:
-        linear-gradient(
-          180deg,
-          color-mix(in srgb, var(--surface) 98%, white 2%),
-          color-mix(in srgb, var(--surface) 98%, black 2%)
+        radial-gradient(
+          72% 72% at 18% 18%,
+          rgba(255, 255, 255, 0.98) 0%,
+          rgba(255, 255, 255, 0.7) 34%,
+          rgba(255, 255, 255, 0.14) 62%,
+          rgba(255, 255, 255, 0) 100%
         );
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.62) inset,
-        0 8px 20px rgba(0,0,0,0.02);
-      position: relative;
-      overflow: hidden;
-      box-sizing: border-box;
+      opacity: 0.9;
+      filter: blur(2px);
+      z-index: 0;
     }
 
-    .heroGrid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 332px;
-      gap: 16px;
-      align-items: stretch;
-      position: relative;
-      z-index: 1;
+    .aboutPage::after {
+      content: "";
+      position: absolute;
+      top: 86px;
+      right: -74px;
+      width: min(360px, 40vw);
+      height: 246px;
+      pointer-events: none;
+      background:
+        radial-gradient(
+          64% 64% at 50% 50%,
+          rgba(17, 24, 39, 0.08) 0%,
+          rgba(17, 24, 39, 0.03) 42%,
+          rgba(17, 24, 39, 0) 100%
+        );
+      filter: blur(16px);
+      opacity: 0.46;
+      z-index: 0;
     }
 
-    /* Left content panel */
-    .heroContent {
+    .aboutCopy {
       min-width: 0;
-      border-radius: 16px;
-      padding: 22px 22px 20px;
-      border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-      background: rgba(255, 255, 255, 0.74);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+      padding: 30px 34px 28px;
       box-sizing: border-box;
     }
 
     .nameBlock {
-      margin-bottom: 14px;
-    }
-
-    .heroTitle {
-      margin: 0;
-      color: var(--ink);
-      font-size: clamp(1.95rem, 4vw, 3rem);
-      font-weight: 650; /* match homepage */
-      line-height: 1.02;
-      letter-spacing: -0.038em;
-      text-wrap: balance;
+      margin-bottom: 16px;
     }
 
     .heroSubtitle {
-      margin: 10px 0 0;
-      color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 90%, var(--ink) 10%);
-      font-size: 0.93rem;
-      line-height: 1.45;
-      font-weight: 500;
-      letter-spacing: -0.01em;
+      margin: 0;
+      color: var(--ink);
+      font-size: 0.98rem;
+      line-height: 1.46;
+      font-weight: 560;
+      letter-spacing: -0.012em;
       text-wrap: balance;
+      max-width: 48ch;
     }
 
     .heroDivider {
       width: 100%;
       height: 1px;
-      margin: 14px 0 0;
+      margin: 16px 0 0;
       background: linear-gradient(
         90deg,
-        color-mix(in srgb, var(--border) 78%, transparent) 0%,
+        color-mix(in srgb, var(--border) 82%, transparent) 0%,
         color-mix(in srgb, var(--border) 54%, transparent) 48%,
         transparent 100%
       );
@@ -184,67 +487,106 @@ Leveraging critical thinking while deploying various mental models, I create lon
 
     .copyStack {
       display: grid;
-      gap: 10px;
+      gap: 12px;
     }
 
     .heroSummary {
       margin: 0;
-      color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 90%, var(--ink) 10%);
-      font-size: 0.93rem;
-      line-height: 1.64;
-      max-width: 64ch;
+      color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
+      font-size: 0.92rem;
+      line-height: 1.56;
+      max-width: 63ch;
       letter-spacing: -0.005em;
     }
 
     .heroSummarySecondary {
-      color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
+      color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 86%, var(--ink) 14%);
     }
 
     .signatureLine {
-      margin-top: 14px;
-      width: 72px;
-      height: 2px;
+      margin-top: 16px;
+      width: 76px;
+      height: 1px;
       border-radius: 999px;
       background: linear-gradient(
         90deg,
-        color-mix(in srgb, var(--ink) 32%, transparent),
-        color-mix(in srgb, var(--ink) 10%, transparent)
+        color-mix(in srgb, var(--ink) 26%, transparent),
+        color-mix(in srgb, var(--ink) 8%, transparent)
       );
     }
 
     .microNote {
-      margin: 10px 0 0;
+      margin: 12px 0 0;
       color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
-      font-size: 0.84rem;
+      font-size: 0.8rem;
       line-height: 1.35;
       letter-spacing: -0.01em;
     }
 
-    /* Right rail */
-    .heroRail {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
+    .aboutSplitGrid {
+      position: relative;
+      z-index: 1;
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 14px;
+      align-items: stretch;
     }
 
-    .profileCard {
-      min-width: 0;
-      height: 100%;
-      border-radius: 16px;
+    .aboutPanel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
       border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
       background:
         linear-gradient(
           180deg,
-          color-mix(in srgb, var(--surface) 98%, white 2%),
+          color-mix(in srgb, var(--surface) 99%, white 1%),
           color-mix(in srgb, var(--surface) 98%, black 2%)
         );
       box-shadow:
-        0 1px 0 rgba(255,255,255,0.62) inset,
-        0 8px 20px rgba(0,0,0,0.018);
-      padding: 16px;
+        0 1px 0 rgba(255,255,255,0.66) inset,
+        0 12px 28px rgba(0,0,0,0.022);
+      box-sizing: border-box;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      isolation: isolate;
+    }
+
+    .aboutPanel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 22%),
+        radial-gradient(56% 44% at 100% 0%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0) 74%);
+    }
+
+    .aboutPanelCopy {
+      min-width: 0;
+    }
+
+    .aboutPanelRail {
+      min-width: 0;
+    }
+
+    .aboutCopy {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+      padding: 30px 34px 28px;
+      box-sizing: border-box;
+    }
+
+    .profileRail {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+      padding: 24px 22px 22px;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      justify-content: flex-start;
       box-sizing: border-box;
     }
 
@@ -252,30 +594,30 @@ Leveraging critical thinking while deploying various mental models, I create lon
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 2px 0 0;
+      padding-top: 2px;
     }
 
     .profileFrame {
-      width: min(224px, 100%);
-      aspect-ratio: 1 / 1;
-      border-radius: 999px;
+      width: min(280px, 100%);
+      aspect-ratio: 5 / 6;
+      border-radius: 16px;
       padding: 4px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.78));
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.82));
       border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
       box-shadow:
-        0 10px 24px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255,255,255,0.95);
+        0 14px 30px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255,255,255,0.92);
       position: relative;
       margin: 0 auto;
-      flex: 0 0 auto;
       box-sizing: border-box;
+      isolation: isolate;
     }
 
     .profileFrame::after {
       content: "";
       position: absolute;
       inset: 4px;
-      border-radius: 999px;
+      border-radius: 12px;
       pointer-events: none;
       background: linear-gradient(
         180deg,
@@ -288,15 +630,14 @@ Leveraging critical thinking while deploying various mental models, I create lon
       display: block;
       width: 100%;
       height: 100%;
-      border-radius: 999px;
+      border-radius: 12px;
       object-fit: cover;
-      object-position: center 22%;
-      transform: scale(1.02);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.26);
+      object-position: center 18%;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.24);
     }
 
     .profileInfo {
-      margin-top: 12px;
+      margin-top: 16px;
       text-align: center;
       padding: 0 2px;
     }
@@ -320,213 +661,595 @@ Leveraging critical thinking while deploying various mental models, I create lon
     .railActions {
       width: 100%;
       min-width: 0;
-      margin-top: 14px;
-      padding-top: 12px;
+      margin-top: 16px;
+      padding-top: 14px;
       border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
       display: grid;
-      gap: 8px;
+      gap: 9px;
+      box-sizing: border-box;
     }
 
-    /* Button system aligned with homepage/Contact page */
-    .railBtn {
-      width: 100%;
-      min-width: 0;
-      box-sizing: border-box;
-      display: inline-flex;
+    .sideActions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .actions {
+      margin-top: 2px;
+      display: flex;
       align-items: center;
       gap: 10px;
-      min-height: 40px;
-      padding: 0 12px;
-      border-radius: 10px;
-      text-decoration: none;
-      border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-      background: color-mix(in srgb, var(--surface) 98%, black 2%);
-      color: var(--ink);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.60) inset;
-      transition:
-        background-color 0.18s var(--ease),
-        border-color 0.18s var(--ease),
-        color 0.18s var(--ease),
-        box-shadow 0.18s var(--ease),
-        transform 0.18s var(--ease);
     }
 
-    .railBtn:hover {
-      background: color-mix(in srgb, var(--surface) 95%, black 2%);
-      border-color: color-mix(in srgb, var(--border) 92%, transparent);
-      transform: translateY(-1px);
-    }
+.actionBtn {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.62) inset;
+  transition:
+    transform 0.2s var(--ease),
+    box-shadow 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    background 0.2s var(--ease);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  appearance: none;
+}
 
-    .railBtn.primary {
-      background: var(--ink);
-      color: var(--surface);
-      border-color: var(--ink);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset;
-    }
+.actionBtn:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
+  background: #fff;
+}
 
-    .railBtn.primary:hover {
-      background: color-mix(in srgb, var(--ink) 92%, black 8%);
-      border-color: color-mix(in srgb, var(--ink) 92%, black 8%);
-    }
+.actionBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
 
-    .railIcon {
-      width: 16px;
-      height: 16px;
-      flex: 0 0 16px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 600;
-      line-height: 1;
-      letter-spacing: 0;
-      opacity: 0.9;
-      color: currentColor;
-      transform: translateY(-0.5px);
-    }
+.actionBtn.primary {
+  background: var(--ink);
+  color: var(--surface);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+  font-weight: 600;
+}
 
-    .railIconText {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
+.actionBtn.primary:hover {
+  background: #202024;
+  border-color: rgba(0, 0, 0, 0.14);
+}
 
-    .railText {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      text-align: left;
-      font-size: 14px;
-      font-weight: 550;
-      line-height: 1;
-      letter-spacing: -0.01em;
-      color: inherit;
-    }
+.actionBtn:disabled {
+  opacity: 0.78;
+  cursor: not-allowed;
+}
 
-    :where(.railBtn):focus-visible {
+.actionBtnIcon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  color: currentColor;
+}
+
+.actionBtnIconText {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.actionBtnText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+
+.actionBtnSubmit {
+  width: auto;
+  min-width: 160px;
+  justify-content: center;
+  padding: 10px 16px;
+}
+
+.actionBtnSubmit .actionBtnText {
+  flex: 0 1 auto;
+  text-align: center;
+}
+
+    :where(.actionBtn, .emailLink, .dialogClose):focus-visible {
       outline: none;
       border-color: color-mix(in srgb, var(--border) 92%, transparent);
       box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
     }
 
+    .contactModalShell {
+      position: fixed;
+      inset: 0;
+      z-index: 260;
+      padding: 24px;
+      display: grid;
+      place-items: center;
+    }
+
+    .contactModalShell[hidden] {
+      display: none !important;
+    }
+
+    .contactBackdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 14, 22, 0.42);
+      backdrop-filter: blur(18px) saturate(115%);
+      -webkit-backdrop-filter: blur(18px) saturate(115%);
+    }
+
+    .contactDialog {
+      position: relative;
+      width: min(1040px, calc(100vw - 32px));
+      max-height: min(90vh, 860px);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255,255,255,0.94) 0%,
+          rgba(248,248,250,0.9) 100%
+        );
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.72) inset,
+        0 42px 120px rgba(0,0,0,0.22);
+      overflow: hidden;
+      box-sizing: border-box;
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      transform: translateY(12px) scale(0.985);
+      opacity: 0;
+      transition:
+        transform 0.22s var(--ease),
+        opacity 0.22s var(--ease);
+    }
+
+    .contactDialog::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0) 24%),
+        radial-gradient(60% 48% at 100% 0%, rgba(255,255,255,0.56) 0%, rgba(255,255,255,0) 74%);
+    }
+
+    .contactModalShell[data-open="true"] .contactDialog {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    .contactDialogHeader {
+      position: relative;
+      z-index: 1;
+      padding: 24px 24px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+    }
+
+    .dialogTitleBlock {
+      min-width: 0;
+    }
+
+    .dialogLabel,
+    .miniLabel {
+      margin: 0 0 8px;
+      color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
+      font-size: 10px;
+      line-height: 1.1;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .dialogTitle {
+      margin: 0;
+      color: var(--ink);
+      font-size: 1.35rem;
+      line-height: 1.08;
+      font-weight: 660;
+      letter-spacing: -0.03em;
+    }
+
+    .dialogIntro {
+      margin: 8px 0 0;
+      color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
+      font-size: 0.94rem;
+      line-height: 1.55;
+      max-width: 46ch;
+    }
+
+    .dialogClose {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+      background: rgba(255,255,255,0.78);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.72) inset;
+      transition:
+        transform 0.18s var(--ease),
+        background-color 0.18s var(--ease),
+        border-color 0.18s var(--ease);
+    }
+
+    .dialogClose:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.9);
+      border-color: color-mix(in srgb, var(--border) 92%, transparent);
+    }
+
+    .contactDialogBody {
+      position: relative;
+      z-index: 1;
+      padding: 22px 24px 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      align-items: start;
+      overflow: auto;
+      max-height: calc(min(90vh, 860px) - 110px);
+    }
+
+    .dialogFormPane,
+    .dialogSidePane {
+      min-width: 0;
+    }
+
+    .formCard,
+    .sideCard {
+      border-radius: 18px;
+      border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255,255,255,0.82) 0%,
+          rgba(250,250,251,0.74) 100%
+        );
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.7) inset,
+        0 14px 30px rgba(0,0,0,0.025);
+      box-sizing: border-box;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .formCard {
+      padding: 18px;
+      transition:
+        border-color 0.2s var(--ease),
+        box-shadow 0.2s var(--ease);
+    }
+
+    .formCard:focus-within {
+      border-color: color-mix(in srgb, var(--border) 92%, transparent);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.76) inset,
+        0 18px 36px rgba(0,0,0,0.04);
+    }
+
+    .gotcha {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .fieldRow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field label {
+      color: var(--ink);
+      font-size: 0.84rem;
+      line-height: 1.2;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 13px;
+      border-radius: 14px;
+      border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+      background: rgba(255,255,255,0.88);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.45;
+      transition:
+        border-color 0.18s var(--ease),
+        box-shadow 0.18s var(--ease),
+        background-color 0.18s var(--ease);
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: color-mix(in srgb, var(--ink-muted) 92%, var(--ink) 8%);
+    }
+
+    .field input:hover,
+    .field textarea:hover {
+      border-color: color-mix(in srgb, var(--border) 92%, transparent);
+      background: #fff;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--border) 78%, var(--ink) 16%);
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+      background: #fff;
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 168px;
+    }
+
+    .success,
+    .error {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+    }
+
+    .successTitle {
+      margin: 0 0 4px;
+      color: var(--ink);
+      font-size: 0.95rem;
+      line-height: 1.2;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    .successText,
+    .errorText {
+      margin: 0;
+      color: var(--ink-secondary);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .sideCard {
+      padding: 18px;
+      position: sticky;
+      top: 0;
+    }
+
+    .emailBlock {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+      background: rgba(255,255,255,0.72);
+    }
+
+    .emailLabel {
+      margin-bottom: 6px;
+      color: color-mix(in srgb, var(--ink-muted) 92%, var(--ink) 8%);
+      font-size: 0.72rem;
+      line-height: 1.1;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .emailLink {
+      display: inline-block;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 560;
+      font-size: 0.94rem;
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+      border-bottom: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+      word-break: break-word;
+      transition: border-color 0.18s var(--ease), color 0.18s var(--ease);
+    }
+
+    .emailLink:hover {
+      color: var(--ink);
+      border-bottom-color: color-mix(in srgb, var(--ink) 36%, transparent);
+    }
+
     @media (max-width: 1080px) {
-      .heroGrid {
+      .aboutSplitGrid {
         grid-template-columns: 1fr;
-        gap: 12px;
       }
 
-      .profileCard {
-        height: auto;
+      .contactDialogBody {
+        grid-template-columns: 1fr;
       }
 
-      .profileFrame {
-        width: min(208px, 100%);
+      .sideCard {
+        position: static;
       }
     }
 
     @media (max-width: 720px) {
       .aboutPage {
-        max-width: none;
-        width: 100%;
-        padding: 0 0 52px;
-        overflow-x: clip;
-        box-sizing: border-box;
+        padding: 0 0 56px;
       }
 
-  /* Hide only the name, keep tagline visible */
-  .heroContent .nameBlock .heroTitle {
-    display: none;
-  }
-
-  /* Ensure the tagline remains visible */
-  .heroContent .nameBlock .heroSubtitle {
-    display: block;
-  }
-
-
-      .heroCard {
+      .aboutSplitGrid {
         margin-top: 0;
-        padding: 10px;
+        gap: 10px;
+      }
+
+      .aboutPanel {
         border-radius: 16px;
       }
 
-      .heroGrid,
-      .heroContent,
-      .profileCard {
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
+      .aboutPanelRail {
+  order: -1;
+}
+
+.aboutPanelCopy {
+  order: 1;
+}
+
+      .aboutCopy {
+        padding: 20px 18px 18px;
       }
 
-      
-
-      .heroRail { order: 1; }
-      .heroContent { order: 2; }
-
-      .heroContent {
-        padding: 14px;
-        border-radius: 14px;
-      }
-
-      .heroTitle {
-        font-size: clamp(1.7rem, 8vw, 2.2rem);
+      .profileRail {
+        padding: 18px 16px 16px;
       }
 
       .heroSubtitle {
         font-size: 0.9rem;
+        line-height: 1.42;
       }
 
       .heroSummary {
-        font-size: 0.9rem;
-        line-height: 1.58;
-      }
-
-      .signatureLine {
-        margin-top: 12px;
+        font-size: 0.88rem;
+        line-height: 1.54;
       }
 
       .microNote {
-        margin-top: 8px;
-        font-size: 0.82rem;
-      }
-
-      .profileCard {
-        padding: 14px;
-        border-radius: 14px;
+        margin-top: 10px;
+        font-size: 0.8rem;
       }
 
       .profileFrame {
-        width: min(190px, 100%);
-      }
-
-      .profileInfo {
-        margin-top: 10px;
+        width: min(240px, 100%);
       }
 
       .railActions {
-        margin-top: 12px;
-        padding-top: 10px;
-        gap: 8px;
+        margin-top: 14px;
+        padding-top: 12px;
       }
 
-      .railBtn {
-        min-height: 38px;
-        padding: 0 11px;
+      .actionBtn {
+        min-height: 40px;
+        padding: 0 12px;
       }
 
-      .railText {
+      .actionBtnText {
         font-size: 13px;
+      }
+
+      .actionBtnSubmit {
+        width: 100%;
+      }
+
+      .contactModalShell {
+        padding: 10px;
+      }
+
+      .contactDialog {
+        width: 100%;
+        max-height: calc(100vh - 20px);
+        border-radius: 22px;
+      }
+
+      .contactDialogHeader {
+        padding: 18px 18px 14px;
+      }
+
+      .dialogTitle {
+        font-size: 1.16rem;
+      }
+
+      .dialogIntro {
+        font-size: 0.9rem;
+      }
+
+      .contactDialogBody {
+        padding: 16px 18px 18px;
+        gap: 12px;
+        max-height: calc(100vh - 104px);
+      }
+
+      .formCard,
+      .sideCard {
+        padding: 14px;
+        border-radius: 16px;
+      }
+
+      .fieldRow {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .field textarea {
+        min-height: 144px;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .railBtn {
+      .actionBtn,
+      .dialogClose,
+      .field input,
+      .field textarea,
+      .emailLink,
+      .contactDialog {
         transition: none !important;
       }
 
-      .railBtn:hover {
+      .actionBtn:hover,
+      .dialogClose:hover {
         transform: none !important;
       }
     }

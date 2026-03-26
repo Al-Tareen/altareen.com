@@ -2,8 +2,8 @@
 title: "CLTV vs CAC"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "A complete and practical guide to mastering your CLTV to CAC ratio with real examples and a free financial model for founders, marketers, and finance teams"
-whenToUseFull: "A complete and practical guide to mastering your CLTV to CAC ratio with real examples and a free financial model for founders, marketers, and finance teams"
+whenToUse: "Analyze customer lifetime value against acquisition cost to evaluate efficiency, payback, and sustainable growth."
+whenToUseFull: "Analyze customer lifetime value against acquisition cost to evaluate efficiency, payback, and sustainable growth."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-A complete and practical guide to mastering your CLTV to CAC ratio with real examples and a free financial model for founders, marketers, and finance teams
+Analyze customer lifetime value against acquisition cost to evaluate efficiency, payback, and sustainable growth.

@@ -6,14 +6,10 @@ const IDEAS_CATEGORY = "Business Plans";
 
 const all = await getCollection("toolkit");
 
-// Only show items from the Business Plans category
 const items = all.filter(
   (item) => (item.data.primaryCategory || "Uncategorized").trim() === IDEAS_CATEGORY
 );
 
-console.log("ideas total:", items.length);
-
-// Build grouped structure
 const groupsMap = new Map();
 for (const item of items) {
   const c = (item.data.primaryCategory || "Uncategorized").trim();
@@ -39,7 +35,6 @@ function catId(name) {
   );
 }
 
-// Featured (Notion checkbox -> frontmatter `featured: true`)
 const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 ---
 
@@ -49,115 +44,148 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 >
   <div class="toolkit">
     {featured.length > 0 && (
-      <section class="featuredBlock" id="__featured" data-group="__featured">
+      <section class="featuredBlock" id="__featured" data-group="__featured" data-expanded="false">
         <div class="groupHead">
-          <h2 class="groupTitle">
-            Featured <span class="count">({featured.length})</span>
-          </h2>
+          <div class="groupTitleWrap">
+            <h2 class="groupTitle">
+              Featured <span class="count">({featured.length})</span>
+            </h2>
+            <div class="groupRule" aria-hidden="true"></div>
+          </div>
         </div>
 
-        <div class="grid">
-          {featured.map((item) => (
-            <a
-              class="card"
-              href={`/concepts/${item.slug}/`}
-              data-title={item.data.title}
-              data-category={item.data.primaryCategory || "Uncategorized"}
-              data-when={item.data.whenToUse || ""}
-              data-featured="true"
-            >
-              {item.data.cover ? (
-                <div class="thumb" aria-hidden="true">
-                  <img
-                    class="cover"
-                    src={item.data.cover}
-                    alt={`Cover for ${item.data.title}`}
-                    loading="lazy"
-                  />
-                </div>
-              ) : (
-                <div class="thumb thumbEmpty" aria-hidden="true">
-                  <span class="thumbMark">AL</span>
-                </div>
-              )}
-
-              <div class="meta">
-                <div class="cardTitle">{item.data.title}</div>
-
-                <div class="excerpt">
-                  <div class="excerptLabel">Description</div>
-                  <div class="whenToUse">
-                    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">No description yet.</span>}
+        <div class="groupReveal" data-expand-wrap>
+          <div class="grid" data-expand-grid>
+            {featured.map((item) => (
+              <a class="card" href={`/concepts/${item.slug}/`}>
+                {item.data.cover ? (
+                  <div class="thumb" aria-hidden="true">
+                    <img
+                      class="cover"
+                      src={item.data.cover}
+                      alt={`Cover for ${item.data.title}`}
+                      loading="lazy"
+                    />
                   </div>
-                </div>
-
-                {Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
-                  <div class="tagsRow" aria-label="Tags">
-                    {item.data.tags.slice(0, 4).map((tag) => (
-                      <span class="tagChip">{tag}</span>
-                    ))}
+                ) : (
+                  <div class="thumb thumbEmpty" aria-hidden="true">
+                    <span class="thumbMark">AL</span>
                   </div>
                 )}
-              </div>
-            </a>
-          ))}
+
+                <div class="meta">
+                  <div class="cardTitle">{item.data.title}</div>
+
+                  <div class="excerpt">
+                    <div class="excerptLabel">Description</div>
+                    <div class="whenToUse">
+                      {item.data.whenToUse ? item.data.whenToUse : <span class="muted">No description yet.</span>}
+                    </div>
+                  </div>
+
+                  {Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
+                    <div class="tagsRow" aria-label="Tags">
+                      {item.data.tags.slice(0, 4).map((tag) => (
+                        <span class="tagChip">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div class="groupFooter">
+          <button
+            class="groupToggle"
+            type="button"
+            data-expand-toggle
+            hidden
+            aria-expanded="false"
+            aria-label="View all concepts in this section"
+          >
+<span class="groupTogglePill" aria-hidden="true">
+  <img class="groupToggleIcon" src="/homepage/downarrow.png" alt="" />
+</span>
+          </button>
         </div>
       </section>
     )}
 
+    {items.length === 0 && (
+      <div class="empty">
+        <div class="emptyTitle">No concepts yet</div>
+        <div class="emptyDesc">Add concepts to your collection and they will appear here.</div>
+      </div>
+    )}
+
     {groups.map((g) => (
-      <section class="group" id={catId(g.category)} data-group={g.category}>
+      <section class="group" id={catId(g.category)} data-group={g.category} data-expanded="false">
         <div class="groupHead">
-          <h2 class="groupTitle">
-            {g.category} <span class="count">({g.items.length})</span>
-          </h2>
-          <div class="groupRule" aria-hidden="true"></div>
+          <div class="groupTitleWrap">
+<h2 class="groupTitle">
+  Concepts <span class="count">({g.items.length})</span>
+</h2>
+            <div class="groupRule" aria-hidden="true"></div>
+          </div>
         </div>
 
-        <div class="grid">
-          {g.items.map((item) => (
-            <a
-              class="card"
-              href={`/concepts/${item.slug}/`}
-              data-title={item.data.title}
-              data-category={item.data.primaryCategory || "Uncategorized"}
-              data-when={item.data.whenToUse || ""}
-            >
-              {item.data.cover ? (
-                <div class="thumb" aria-hidden="true">
-                  <img
-                    class="cover"
-                    src={item.data.cover}
-                    alt={`Cover for ${item.data.title}`}
-                    loading="lazy"
-                  />
-                </div>
-              ) : (
-                <div class="thumb thumbEmpty" aria-hidden="true">
-                  <span class="thumbMark">AL</span>
-                </div>
-              )}
-
-              <div class="meta">
-                <div class="cardTitle">{item.data.title}</div>
-
-                <div class="excerpt">
-                  <div class="excerptLabel">Description</div>
-                  <div class="whenToUse">
-                    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">No description yet.</span>}
+        <div class="groupReveal" data-expand-wrap>
+          <div class="grid" data-expand-grid>
+            {g.items.map((item) => (
+              <a class="card" href={`/concepts/${item.slug}/`}>
+                {item.data.cover ? (
+                  <div class="thumb" aria-hidden="true">
+                    <img
+                      class="cover"
+                      src={item.data.cover}
+                      alt={`Cover for ${item.data.title}`}
+                      loading="lazy"
+                    />
                   </div>
-                </div>
-
-                {Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
-                  <div class="tagsRow" aria-label="Tags">
-                    {item.data.tags.slice(0, 4).map((tag) => (
-                      <span class="tagChip">{tag}</span>
-                    ))}
+                ) : (
+                  <div class="thumb thumbEmpty" aria-hidden="true">
+                    <span class="thumbMark">AL</span>
                   </div>
                 )}
-              </div>
-            </a>
-          ))}
+
+                <div class="meta">
+                  <div class="cardTitle">{item.data.title}</div>
+
+                  <div class="excerpt">
+                    <div class="excerptLabel">Description</div>
+                    <div class="whenToUse">
+                      {item.data.whenToUse ? item.data.whenToUse : <span class="muted">No description yet.</span>}
+                    </div>
+                  </div>
+
+                  {Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
+                    <div class="tagsRow" aria-label="Tags">
+                      {item.data.tags.slice(0, 4).map((tag) => (
+                        <span class="tagChip">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div class="groupFooter">
+          <button
+            class="groupToggle"
+            type="button"
+            data-expand-toggle
+            hidden
+            aria-expanded="false"
+            aria-label="View all concepts in this section"
+          >
+<span class="groupTogglePill" aria-hidden="true">
+  <img class="groupToggleIcon" src="/homepage/downarrow.png" alt="" />
+</span>
+          </button>
         </div>
       </section>
     ))}
@@ -166,31 +194,125 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 
     <script is:inline>
       window.addEventListener("DOMContentLoaded", () => {
-        const toTop = document.getElementById("toTop");
-        if (!toTop) return;
+        try {
+          const root = document.querySelector(".toolkit");
+          const toTop = document.getElementById("toTop");
 
-        function updateToTop() {
-          const show = window.scrollY > 420;
-          toTop.classList.toggle("isVisible", show);
+          const expandableSections = Array.from(
+            document.querySelectorAll("section.group, section.featuredBlock")
+          );
+
+          if (!root) throw new Error("Toolkit root not found (.toolkit).");
+
+          function getVisibleCardsInSection(section) {
+            return Array.from(section.querySelectorAll("a.card")).filter(
+              (card) => !card.classList.contains("isHidden")
+            );
+          }
+
+          function refreshExpandableSections() {
+            expandableSections.forEach((section) => {
+              const wrap = section.querySelector("[data-expand-wrap]");
+              const toggle = section.querySelector("[data-expand-toggle]");
+              const footer = section.querySelector(".groupFooter");
+
+              if (!wrap || !toggle || !footer) return;
+
+              const cards = getVisibleCardsInSection(section);
+
+              if (!cards.length) {
+                toggle.hidden = true;
+                footer.classList.remove("isVisible");
+                toggle.setAttribute("aria-expanded", "false");
+                section.classList.remove("isCollapsible", "isCollapsed", "isExpanded");
+                wrap.style.removeProperty("--collapsed-h");
+                return;
+              }
+
+              const firstTop = cards[0].offsetTop;
+              const firstRow = cards.filter((card) => Math.abs(card.offsetTop - firstTop) < 2);
+              const firstRowHeight = Math.max(
+                ...firstRow.map((card) => card.offsetHeight + (card.offsetTop - firstTop))
+              );
+
+              const hasMoreThanOneRow = cards.length > firstRow.length;
+              const peek = window.innerWidth <= 720 ? 14 : 18;
+              const collapsedHeight = firstRowHeight + peek;
+
+              const expanded = section.dataset.expanded === "true";
+
+              if (!hasMoreThanOneRow) {
+                toggle.hidden = true;
+                footer.classList.remove("isVisible");
+                toggle.setAttribute("aria-expanded", "false");
+                section.classList.remove("isCollapsible", "isCollapsed", "isExpanded");
+                wrap.style.removeProperty("--collapsed-h");
+                return;
+              }
+
+              wrap.style.setProperty("--collapsed-h", `${Math.ceil(collapsedHeight)}px`);
+              section.classList.add("isCollapsible");
+              section.classList.toggle("isExpanded", expanded);
+              section.classList.toggle("isCollapsed", !expanded);
+
+              toggle.hidden = false;
+              footer.classList.add("isVisible");
+              toggle.setAttribute("aria-expanded", String(expanded));
+              toggle.setAttribute(
+                "aria-label",
+                expanded ? "Show fewer concepts in this section" : "View all concepts in this section"
+              );
+            });
+          }
+
+          function updateToTop() {
+            if (!toTop) return;
+            const show = window.scrollY > 420;
+            toTop.classList.toggle("isVisible", show);
+          }
+
+          document.querySelectorAll("[data-expand-toggle]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const section = btn.closest("section.group, section.featuredBlock");
+              if (!section) return;
+
+              const expanded = section.dataset.expanded === "true";
+              section.dataset.expanded = expanded ? "false" : "true";
+              refreshExpandableSections();
+            });
+          });
+
+          window.addEventListener("resize", refreshExpandableSections);
+          window.addEventListener("scroll", updateToTop, { passive: true });
+          toTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+          updateToTop();
+
+          requestAnimationFrame(refreshExpandableSections);
+          setTimeout(refreshExpandableSections, 80);
+          setTimeout(refreshExpandableSections, 260);
+
+          window.addEventListener("load", refreshExpandableSections);
+        } catch (e) {
+          console.error("[concepts] init failed:", e);
         }
-
-        window.addEventListener("scroll", updateToTop, { passive: true });
-        toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-        updateToTop();
       });
     </script>
 
     <style>
       .toolkit {
-        padding-top: 8px;
-        padding-bottom: 72px;
+        width: 100%;
+        padding-top: 10px;
+        padding-bottom: 76px;
+        box-sizing: border-box;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        --tk-radius: 18px;
+        --tk-radius-sm: 12px;
       }
 
       .group,
       .featuredBlock {
-        scroll-margin-top: 96px;
+        scroll-margin-top: 102px;
       }
 
       .isHidden {
@@ -198,9 +320,9 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
       }
 
       .featuredBlock {
-        margin-top: 12px;
-        padding: 18px;
-        border-radius: 16px;
+        margin-top: 10px;
+        padding: 16px;
+        border-radius: var(--tk-radius);
         border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
         background:
           linear-gradient(
@@ -209,8 +331,8 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
             color-mix(in srgb, var(--surface) 98%, black 2%)
           );
         box-shadow:
-          0 1px 0 rgba(255,255,255,0.62) inset,
-          0 8px 20px rgba(0,0,0,0.018);
+          0 1px 0 rgba(255,255,255,0.66) inset,
+          0 12px 28px rgba(0,0,0,0.022);
       }
 
       .group {
@@ -223,14 +345,23 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 
       .groupHead {
         display: flex;
-        align-items: baseline;
-        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
         margin-bottom: 12px;
+      }
+
+      .groupTitleWrap {
+        min-width: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
       }
 
       .groupTitle {
         margin: 0;
-        color: var(--ink);
+        color:rgb(3, 35, 71);
         font-size: 1rem;
         font-weight: 650;
         letter-spacing: -0.02em;
@@ -247,10 +378,135 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
         display: none;
       }
 
+      .groupReveal {
+        position: relative;
+        overflow: clip;
+        transition: max-height 560ms cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: max-height;
+      }
+
+      .groupReveal::after {
+        content: "";
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 96px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.22s var(--ease);
+        background: linear-gradient(
+          180deg,
+          rgba(247, 247, 248, 0) 0%,
+          rgba(247, 247, 248, 0.74) 56%,
+          rgba(247, 247, 248, 0.98) 100%
+        );
+      }
+
+      .isCollapsible.isCollapsed .groupReveal {
+        max-height: var(--collapsed-h);
+      }
+
+      .isCollapsible.isCollapsed .groupReveal::after {
+        opacity: 1;
+      }
+
+     .groupFooter {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  margin-top: -12px;
+  position: relative;
+  z-index: 3;
+  padding-bottom: 4px;
+}
+
+.groupFooter.isVisible {
+  display: flex;
+}
+
+.groupToggle {
+  margin: 0 auto;
+  width: 126px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.groupToggle::before,
+.groupToggle::after {
+  content: "";
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--border) 72%, transparent) 50%,
+    transparent 100%
+  );
+  opacity: 0.9;
+}
+
+.groupToggle[hidden] {
+  display: none !important;
+}
+
+.groupTogglePill {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  filter: none;
+  transform: none;
+}
+
+.groupTogglePill::before {
+  display: none;
+}
+
+.groupToggle:hover .groupTogglePill {
+  transform: translateY(-1px);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  filter: none;
+}
+
+.groupToggleIcon {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+  opacity: 0.98;
+  transform: rotate(0deg);
+  transition:
+    transform 0.28s var(--ease),
+    opacity 0.2s var(--ease);
+}
+
+.groupToggle:hover .groupToggleIcon {
+  opacity: 1;
+}
+
+.isExpanded .groupToggleIcon {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
       .grid {
         display: grid;
-        gap: 16px;
-        grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+        column-gap: 12px;
+        row-gap: 16px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         align-items: stretch;
       }
 
@@ -264,12 +520,12 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
         background:
           linear-gradient(
             180deg,
-            color-mix(in srgb, var(--surface) 98%, white 2%),
+            color-mix(in srgb, var(--surface) 99%, white 1%),
             color-mix(in srgb, var(--surface) 98%, black 2%)
           );
         box-shadow:
-          0 1px 0 rgba(255,255,255,0.62) inset,
-          0 8px 20px rgba(0,0,0,0.018);
+          0 1px 0 rgba(255,255,255,0.68) inset,
+          0 10px 24px rgba(15, 23, 42, 0.026);
         height: 100%;
         color: inherit;
         transition:
@@ -280,48 +536,49 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
       }
 
       .card:hover {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
         border-color: color-mix(in srgb, var(--border) 92%, transparent);
         box-shadow:
-          0 1px 0 rgba(255,255,255,0.72) inset,
-          0 12px 24px rgba(0,0,0,0.035);
+          0 1px 0 rgba(255,255,255,0.78) inset,
+          0 16px 32px rgba(15, 23, 42, 0.04);
       }
 
       .thumb {
         width: 100%;
-        aspect-ratio: 16/9;
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0.015) 0%, transparent 100%);
-        border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+        aspect-ratio: 16 / 9;
+        padding: 4px;
+        box-sizing: border-box;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.02) 100%);
         display: flex;
-        align-items: center;
-        justify-content: center;
+        align-items: stretch;
+        justify-content: stretch;
         position: relative;
       }
 
       .thumb::after {
         content: "";
         position: absolute;
-        inset: 0;
-        background: linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, 0.025));
+        inset: 4px;
+        border-radius: 12px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
         pointer-events: none;
       }
 
       .cover {
         width: 100%;
         height: 100%;
-        object-fit: contain;
+        object-fit: cover;
         object-position: center;
         display: block;
-        padding: 5px;
-        box-sizing: border-box;
         transition: transform 0.22s var(--ease);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.86);
-        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 68%, transparent);
+        border-radius: 12px;
+        background: #0b1018;
+        box-shadow: none;
       }
 
       .card:hover .cover {
-        transform: scale(1.01);
+        transform: scale(1.012);
       }
 
       .thumbEmpty {
@@ -337,14 +594,15 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
         padding: 8px 12px;
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.75);
+        margin: auto;
       }
 
       .meta {
-        padding: 16px 16px 18px;
+        padding: 14px 14px 16px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        min-height: 132px;
+        gap: 8px;
+        min-height: 124px;
         height: 100%;
         box-sizing: border-box;
       }
@@ -353,8 +611,8 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
         margin: 0;
         color: var(--ink);
         font-weight: 650;
-        letter-spacing: -0.015em;
-        line-height: 1.22;
+        letter-spacing: -0.018em;
+        line-height: 1.18;
         font-size: 1rem;
       }
 
@@ -387,14 +645,14 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 
       .whenToUse {
         color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
-        font-size: 0.88rem;
-        line-height: 1.52;
+        font-size: 0.875rem;
+        line-height: 1.48;
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        min-height: calc(1.52em * 3);
-        max-height: calc(1.52em * 3);
+        min-height: calc(1.48em * 3);
+        max-height: calc(1.48em * 3);
       }
 
       .muted {
@@ -407,7 +665,7 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
         flex-wrap: wrap;
         gap: 6px;
         padding-top: 2px;
-        min-height: 48px;
+        min-height: 28px;
         align-content: flex-start;
       }
 
@@ -422,12 +680,43 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
         padding: 5px 8px;
         border-radius: 999px;
         border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-        background: rgba(0, 0, 0, 0.025);
-        color: color-mix(in srgb, var(--ink-muted) 82%, var(--ink) 18%);
+        background: color-mix(in srgb, var(--surface) 98%, black 2%);
+        color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
         font-size: 11px;
-        font-weight: 550;
         line-height: 1;
+        font-weight: 600;
+        letter-spacing: -0.01em;
         white-space: nowrap;
+      }
+
+      .empty {
+        margin: 22px 0 12px;
+        padding: 24px 18px;
+        border-radius: var(--tk-radius);
+        border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+        background:
+          linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--surface) 98%, white 2%),
+            color-mix(in srgb, var(--surface) 98%, black 2%)
+          );
+        text-align: center;
+        box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset;
+      }
+
+      .emptyTitle {
+        font-weight: 650;
+        font-size: 1rem;
+        margin-bottom: 6px;
+        color: var(--ink);
+        letter-spacing: -0.015em;
+      }
+
+      .emptyDesc {
+        color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
+        margin-bottom: 14px;
+        font-size: 14px;
+        line-height: 1.45;
       }
 
       .toTop {
@@ -466,28 +755,67 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
         border-color: color-mix(in srgb, var(--border) 92%, transparent);
       }
 
-      @media (max-width: 720px) {
-        .toolkit {
-          padding-bottom: 52px;
+      @media (max-width: 1180px) {
+        .grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          column-gap: 12px;
+          row-gap: 16px;
+        }
+      }
+
+      @media (max-width: 1040px) {
+        .grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          column-gap: 12px;
+          row-gap: 16px;
+        }
+      }
+
+      @media (max-width: 860px) {
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          column-gap: 12px;
+          row-gap: 16px;
         }
 
+        .group + .group {
+          margin-top: 28px;
+        }
+      }
+
+      @media (max-width: 720px) {
         .featuredBlock {
           padding: 12px;
-          border-radius: 14px;
+          border-radius: 16px;
         }
 
-        .grid {
-          gap: 10px;
-          grid-template-columns: 1fr;
+        .groupHead {
+          margin-bottom: 10px;
+        }
+
+        .groupFooter {
+          margin-top: -9px;
+          padding-bottom: 2px;
+        }
+
+        .groupToggle {
+          width: 116px;
+          gap: 8px;
+        }
+
+        .groupTogglePill {
+          width: 38px;
+          height: 28px;
         }
 
         .card {
-          border-radius: 14px;
+          border-radius: 16px;
         }
 
         .meta {
-          padding: 14px;
+          padding: 13px 13px 14px;
           gap: 8px;
+          min-height: 118px;
         }
 
         .cardTitle {
@@ -495,15 +823,26 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
         }
 
         .whenToUse {
-          font-size: 0.86rem;
-          line-height: 1.48;
-          min-height: calc(1.48em * 3);
-          max-height: calc(1.48em * 3);
+          font-size: 0.85rem;
+          line-height: 1.46;
+          min-height: calc(1.46em * 3);
+          max-height: calc(1.46em * 3);
         }
 
         .toTop {
           right: 14px;
           bottom: 14px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .toolkit {
+          padding-bottom: 54px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+          row-gap: 12px;
         }
       }
 
@@ -514,11 +853,15 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 
         .card,
         .cover,
-        .toTop {
+        .toTop,
+        .groupTogglePill,
+        .groupToggleIcon,
+        .groupReveal {
           transition: none !important;
         }
 
-        .card:hover {
+        .card:hover,
+        .groupToggle:hover .groupTogglePill {
           transform: none !important;
         }
       }

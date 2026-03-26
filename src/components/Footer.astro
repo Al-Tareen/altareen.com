@@ -1,12 +1,9 @@
 <footer class="footer-wrap">
   <div class="footer-shell">
-    <!-- Top section -->
     <div class="footer-grid">
-      <!-- Column 1: Branding -->
       <section class="brand-col" aria-label="Brand">
         <a href="/" class="brand-link" aria-label="Al Tareen Home">
-          <img src="/logoblack.png" alt="Al Tareen logo" class="brand-logo" loading="lazy" />
-          <!-- <span class="brand-logo-fallback">AL</span> -->
+          <img src="/logo.png" alt="Al Tareen logo" class="brand-logo" loading="lazy" />
         </a>
 
         <div class="brand-text">
@@ -15,7 +12,6 @@
             AI Transformation • Product Management • Product Strategy
           </p>
 
-          <!-- Social links under branding -->
           <div class="brand-social" aria-label="External links">
             <a href="https://www.linkedin.com/in/California" target="_blank" rel="noopener noreferrer">LinkedIn</a>
             <span class="sep" aria-hidden="true">·</span>
@@ -26,7 +22,6 @@
         </div>
       </section>
 
-      <!-- Column 2: Navigation -->
       <nav class="nav-col" aria-label="Footer Navigation">
         <div class="col-title">Navigation</div>
         <ul class="link-list">
@@ -36,31 +31,43 @@
           <li><a href="/finance-toolkit">Finance Toolkit</a></li>
           <li><a href="/concepts">Concepts</a></li>
           <li><a href="/about">About</a></li>
-          <li><a href="/contact">Contact</a></li>
         </ul>
       </nav>
 
-      <!-- Column 3: Legal -->
       <nav class="legal-col" aria-label="Legal and Notice">
         <div class="col-title">Legal & Notice</div>
         <ul class="link-list">
           <li><a href="/privacy">Privacy Policy</a></li>
           <li><a href="/disclaimer">Disclaimer</a></li>
+          <li>
+            <button type="button" class="footer-legal-btn" id="footer-cookie-preferences">
+              Cookie Preferences
+            </button>
+          </li>
         </ul>
       </nav>
     </div>
 
-    <!-- Disclaimer -->
     <div class="notice-line" role="note" aria-label="Disclaimer">
       Educational content only. Nothing on this site constitutes financial, legal, or tax advice.
     </div>
 
-    <!-- Bottom bar -->
     <div class="bottom-bar">
       <div class="bottom-left">© 2026 Al Tareen. All rights reserved.</div>
     </div>
   </div>
 </footer>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("footer-cookie-preferences");
+    btn?.addEventListener("click", () => {
+      if (typeof window !== "undefined" && typeof window.openCookiePreferences === "function") {
+        window.openCookiePreferences();
+      }
+    });
+  });
+</script>
 
 <style>
 .footer-wrap {
@@ -127,29 +134,6 @@
   object-fit: contain;
   display: block;
   border-radius: 10px;
-}
-
-.brand-logo-fallback {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--ink);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--surface) 78%, white 22%),
-      color-mix(in srgb, var(--surface) 90%, black 10%)
-    );
-  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 8px 22px rgba(0, 0, 0, 0.10);
 }
 
 .brand-name {
@@ -228,13 +212,15 @@
   gap: 5px;
 }
 
-.link-list a {
-  display: inline-block;
+.link-list a,
+.footer-legal-btn {
+  display: inline;
   color: color-mix(in srgb, var(--ink-muted) 91%, var(--ink) 9%);
   text-decoration: none;
   font-size: 13.25px;
   line-height: 1.32;
   font-weight: 450;
+  letter-spacing: normal;
   transition:
     color 0.18s var(--ease),
     opacity 0.18s var(--ease),
@@ -245,10 +231,31 @@
   opacity: 0.93;
 }
 
-.link-list a:hover {
+.link-list a:hover,
+.footer-legal-btn:hover {
   color: var(--ink);
   text-decoration-color: color-mix(in srgb, var(--ink) 24%, transparent);
   opacity: 1;
+}
+
+.footer-legal-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: 13.25px;
+  font-weight: 450;
+  line-height: 1.32;
+  color: color-mix(in srgb, var(--ink-muted) 91%, var(--ink) 9%);
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: transparent;
+  opacity: 0.93;
 }
 
 .notice-line {
@@ -265,8 +272,8 @@
 
 .bottom-bar {
   margin-top: 8px;
-  padding-top: 0;        /* removed extra divider spacing */
-  border-top: none;      /* removed one more divider */
+  padding-top: 0;
+  border-top: none;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -281,7 +288,6 @@
   opacity: 0.82;
 }
 
-/* Tablet */
 @media (max-width: 900px) {
   .footer-shell {
     padding: 32px 20px 16px;
@@ -306,7 +312,6 @@
   }
 }
 
-/* Mobile */
 @media (max-width: 640px) {
   .footer-shell {
     padding: 20px 16px 12px;
@@ -317,7 +322,6 @@
     gap: 0;
   }
 
-  /* Keep only one divider after brand */
   .brand-col {
     grid-template-columns: auto 1fr;
     gap: 12px;
@@ -326,8 +330,7 @@
     border-bottom: 1px solid color-mix(in srgb, var(--border) 54%, transparent);
   }
 
-  .brand-logo,
-  .brand-logo-fallback {
+  .brand-logo {
     width: 36px;
     height: 36px;
   }
@@ -401,25 +404,25 @@
     gap: 2px;
   }
 
-  .link-list a {
+  .link-list a,
+  .footer-legal-btn {
     font-size: 12.75px;
     line-height: 1.24;
-    padding: 2px 0;
   }
 
   .notice-line {
     margin-top: 10px;
     padding-top: 0;
-    border-top: none; /* less lines on mobile */
+    border-top: none;
     font-size: 10px;
     line-height: 1.32;
-    opacity: 0.62; /* reduced prominence further */
+    opacity: 0.62;
   }
 
   .bottom-bar {
     margin-top: 6px;
     padding-top: 0;
-    border-top: none; /* no extra divider */
+    border-top: none;
   }
 
   .bottom-left {
@@ -432,7 +435,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .link-list a,
-  .brand-social a {
+  .brand-social a,
+  .footer-legal-btn {
     transition: none;
   }
 }

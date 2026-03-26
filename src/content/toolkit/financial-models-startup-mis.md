@@ -2,8 +2,8 @@
 title: "Startup MIS"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "An Excel-based Management Information System (MIS) for early-stage and growth startups to track KPIs, identify trends, and make smarter decisions."
-whenToUseFull: "An Excel-based Management Information System (MIS) for early-stage and growth startups to track KPIs, identify trends, and make smarter decisions."
+whenToUse: "Track core KPIs, trends, and operating performance in a single management reporting view."
+whenToUseFull: "Track core KPIs, trends, and operating performance in a single management reporting view."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-An Excel-based Management Information System (MIS) for early-stage and growth startups to track KPIs, identify trends, and make smarter decisions.
+Track core KPIs, trends, and operating performance in a single management reporting view.

@@ -2,8 +2,8 @@
 title: "SaaS Financial Model"
 primaryCategory: "Financial Models"
 categories: ["Financial Models"]
-whenToUse: "A simple Excel sheet that’s helped startups raise millions, extend runway, and close investors faster"
-whenToUseFull: "A simple Excel sheet that’s helped startups raise millions, extend runway, and close investors faster"
+whenToUse: "Forecast SaaS revenue, expenses, cash flow, and runway for planning, fundraising, and operating decisions."
+whenToUseFull: "Forecast SaaS revenue, expenses, cash flow, and runway for planning, fundraising, and operating decisions."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -15,4 +15,4 @@ files: []
 tags: []
 ---
 ## When to use
-A simple Excel sheet that’s helped startups raise millions, extend runway, and close investors faster
+Forecast SaaS revenue, expenses, cash flow, and runway for planning, fundraising, and operating decisions.
