@@ -158,17 +158,37 @@ const quickActions = [
 const showQuickActions = quickActions.length > 0;
 const showHeroRail = showQuickActions || hasMultipleDownloads;
 
-const category = item.data.primaryCategory || "";
-const title = item.data.title || "";
+const category = item.data.primaryCategory || "Concepts";
+const baseTitle = item.data.title || "Concept";
+
+// 🔥 SEO-optimized title (high CTR + keyword intent)
+const title = `${baseTitle} | AI Product Management Concept | Altareen`;
+
+// 🔥 Strong, keyword-rich description
 const description =
   item.data.description ||
   item.data.whenToUseFull ||
   item.data.whenToUse ||
-  "AI Transformation • Product Management • Strategy";
+  `Explore ${baseTitle}, a strategic AI-driven product management concept. 
+  Understand its purpose, application, and real-world execution in modern product and business environments.`;
+
+// 🔥 Optional keyword enhancer (used by PageShell if supported)
+const seoKeywords = [
+  baseTitle,
+  "AI product management",
+  "product strategy concept",
+  "business concept framework",
+  "AI frameworks",
+  "product management ideas",
+  "Altareen concepts",
+].join(", ");
+
+// 🔥 Published date (kept)
 const publishedDate = item.data.datePublished || undefined;
+
+// 🔥 Unique feedback key (unchanged)
 const feedbackKey = `ideas:${item.slug}`;
 ---
-
 <PageShell
   title={title}
   description={description}
@@ -177,6 +197,7 @@ const feedbackKey = `ideas:${item.slug}`;
   slug={item.slug}
   toolkitType="concepts"
   datePublished={publishedDate}
+  keywords={seoKeywords}
 >
 
   <div class="toolkitDetail" data-item-key={feedbackKey}>
