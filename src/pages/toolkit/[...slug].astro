@@ -142,9 +142,30 @@ const quickActions = [
 const showQuickActions = quickActions.length > 0;
 const showHeroRail = showQuickActions || hasMultipleDownloads;
 
-const category = item.data.primaryCategory || "";
-const title = item.data.title || "";
-const description = item.data.description || "AI Transformation • Product Management • Strategy";
+const category = item.data.primaryCategory || "PM Toolkit";
+const baseTitle = item.data.title || "Framework";
+
+// SEO-optimized page title
+const title = `${baseTitle} | Product Management Framework | Altareen`;
+
+// Stronger, keyword-rich dynamic description
+const description =
+  item.data.description ||
+  item.data.whenToUseFull ||
+  item.data.whenToUse ||
+  `Explore ${baseTitle}, a product management framework for structured decision-making, execution, and strategic planning. Learn when to use it, required inputs, expected outputs, and common mistakes.`;
+
+// Optional keyword enhancer for PageShell if supported
+const seoKeywords = [
+  baseTitle,
+  "product management framework",
+  "PM framework",
+  "product strategy",
+  "AI product management",
+  "framework template",
+  "Altareen PM Toolkit",
+].join(", ");
+
 const publishedDate = item.data.datePublished || undefined;
 ---
 
@@ -156,6 +177,7 @@ const publishedDate = item.data.datePublished || undefined;
   slug={item.slug}
   toolkitType="pm"
   datePublished={publishedDate}
+  keywords={seoKeywords}
 >
   <div class="toolkitDetail" data-framework-slug={item.slug}>
     <!-- Top row -->
