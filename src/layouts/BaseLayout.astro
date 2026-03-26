@@ -152,8 +152,11 @@ const schemaGraph = [
 
 <script>
   window.trackEvent = function(name, params = {}) {
+    console.log("trackEvent fired:", name, params);
     if (typeof gtag === "function") {
       gtag('event', name, params);
+    } else {
+      console.warn("gtag is not available");
     }
   };
 </script>
