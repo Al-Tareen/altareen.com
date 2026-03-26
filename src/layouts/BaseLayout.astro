@@ -2,6 +2,7 @@
 const {
   title = "Al Tareen",
   description = "AI Transformation • Product Management • Strategy",
+  keywords = "",
   slug = "",
   toolkitType = "",
   datePublished,
@@ -75,6 +76,7 @@ const jsonLd = isToolkitDetail
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content={description} />
+  {keywords && <meta name="keywords" content={keywords} />}
   <link rel="canonical" href={canonical} />
 
   <meta property="og:title" content={title} />

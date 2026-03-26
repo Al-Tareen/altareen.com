@@ -6,6 +6,7 @@ import Footer from "./Footer.astro";
 const {
   title,
   description,
+  keywords = "",
   subtitle,
   hidePageHead = false,
   slug = "",
@@ -17,6 +18,7 @@ const {
 <BaseLayout
   title={title}
   description={description}
+  keywords={keywords}
   slug={slug}
   toolkitType={toolkitType}
   datePublished={datePublished}
