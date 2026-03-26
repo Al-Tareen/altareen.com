@@ -423,17 +423,18 @@ const aboutBreadcrumbs = [
       overflow: hidden;
     }
 
-    .aboutPage {
-      width: 100%;
-      max-width: var(--content-width);
-      margin: 0 auto;
-      padding: 10px 0 76px;
-      position: relative;
-      box-sizing: border-box;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      isolation: isolate;
-    }
+.aboutPage {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 10px 0 76px;
+  position: relative;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  isolation: isolate;
+  overflow-x: clip;
+}
 
     .aboutPage::before {
       content: "";

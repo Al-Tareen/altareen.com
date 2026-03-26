@@ -404,15 +404,16 @@ const homepageBreadcrumbs = [
     -webkit-backdrop-filter: blur(16px);
   }
 
-  .wrap {
-    position: relative;
-    width: 100%;
-    max-width: var(--content-width, 1140px);
-    margin: 0 auto;
-    padding: 68px 28px 124px;
-    box-sizing: border-box;
-    isolation: isolate;
-  }
+.wrap {
+  position: relative;
+  width: 100%;
+  max-width: var(--content-width, 1140px);
+  margin: 0 auto;
+  padding: 68px 28px 124px;
+  box-sizing: border-box;
+  isolation: isolate;
+  overflow-x: clip;
+}
 
   .wrap::before {
     content: "";

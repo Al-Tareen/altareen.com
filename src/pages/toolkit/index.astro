@@ -48,7 +48,7 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 
 const pmtoolkitBreadcrumbs = [
   { name: "Home", path: "/" },
-  { name: "PM Toolkit", path: "/pmtoolkit/" },
+  { name: "PM Toolkit", path: "/toolkit/" },
 ];
 ---
 
@@ -1117,7 +1117,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 
   @media (max-width: 720px) {
     .controlsBar {
-      top: calc(var(--siteHeaderH) + 10px);
+      top: calc(var(--siteHeaderH) + 0px);
       padding: 12px;
       border-radius: 16px;
       gap: 8px;
@@ -1247,7 +1247,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 
     .controlsBar {
       padding: 12px;
-      top: calc(var(--siteHeaderH) + 6px + env(safe-area-inset-top, 0px));
+      top: calc(var(--siteHeaderH) + -8px + env(safe-area-inset-top, 0px));
       border-radius: 16px;
     }
 
