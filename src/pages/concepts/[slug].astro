@@ -188,6 +188,12 @@ const publishedDate = item.data.datePublished || undefined;
 
 // 🔥 Unique feedback key (unchanged)
 const feedbackKey = `ideas:${item.slug}`;
+
+const conceptsSlugBreadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Concepts", path: "/concepts/" },
+  { name: baseTitle, path: `/concepts/${item.slug}/` },
+];
 ---
 <PageShell
   title={title}
@@ -198,6 +204,7 @@ const feedbackKey = `ideas:${item.slug}`;
   toolkitType="concepts"
   datePublished={publishedDate}
   keywords={seoKeywords}
+  breadcrumbs={conceptsSlugBreadcrumbs}
 >
 
   <div class="toolkitDetail" data-item-key={feedbackKey}>

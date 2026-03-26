@@ -1,5 +1,10 @@
 ---
 import PageShell from "../components/PageShell.astro";
+
+const privacyBreadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Privacy Policy", path: "/privacy/" },
+];
 ---
 
 <PageShell
@@ -7,6 +12,7 @@ import PageShell from "../components/PageShell.astro";
   description="How Al Tareen collects, uses, and protects your information."
   keywords="Al Tareen privacy policy, cookies, data collection, consent preferences, website privacy"
   hidePageHead={false}
+  breadcrumbs={privacyBreadcrumbs}
 >
   <section class="legalPage" aria-label="Privacy Policy">
     <div class="legalContainer">

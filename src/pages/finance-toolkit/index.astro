@@ -37,12 +37,18 @@ function catId(name) {
 }
 
 const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
+
+const financeBreadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Finance Toolkit", path: "/finance-toolkit/" },
+];
 ---
 
 <PageShell
   title="Finance Toolkit"
   description="Financial models for founders and finance professionals."
   keywords="finance toolkit, financial models, founder finance tools, business models, finance frameworks, Altareen"
+breadcrumbs={financeBreadcrumbs}
 >
  
 <div class="toolkit" data-view="grid">

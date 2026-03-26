@@ -1,11 +1,17 @@
 ---
 import PageShell from "../components/PageShell.astro";
+
+const disclaimerBreadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Disclaimer", path: "/disclaimer/" },
+];
 ---
 
 <PageShell
   title="Disclaimer"
   description="Important legal disclaimers regarding the use of Al Tareen."
   keywords="product manager toolkit, product management frameworks, PM frameworks, product strategy, prioritization, Altareen"
+breadcrumbs={disclaimerBreadcrumbs}
 >
   <section class="legalPage" aria-label="Disclaimer">
     <div class="legalContainer">

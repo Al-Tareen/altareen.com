@@ -167,6 +167,12 @@ const seoKeywords = [
 ].join(", ");
 
 const publishedDate = item.data.datePublished || undefined;
+
+const pmFrameworkBreadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "PM Toolkit", path: "/toolkit/" },
+  { name: baseTitle, path: `/toolkit/${item.slug}/` },
+];
 ---
 
 <PageShell
@@ -178,6 +184,8 @@ const publishedDate = item.data.datePublished || undefined;
   toolkitType="pm"
   datePublished={publishedDate}
   keywords={seoKeywords}
+    breadcrumbs={pmFrameworkBreadcrumbs}
+
 >
   <div class="toolkitDetail" data-framework-slug={item.slug}>
     <!-- Top row -->

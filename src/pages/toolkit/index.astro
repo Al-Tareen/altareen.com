@@ -45,12 +45,18 @@ function catId(name) {
 
 // Featured (Notion checkbox -> frontmatter `featured: true`)
 const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
+
+const pmtoolkitBreadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "PM Toolkit", path: "/pmtoolkit/" },
+];
 ---
 
 <PageShell
   title="Product Manager Toolkit"
   description="Frameworks that help product managers make better decisions."
   keywords="product manager toolkit, product management frameworks, PM frameworks, product strategy, prioritization, Altareen"
+breadcrumbs={pmtoolkitBreadcrumbs}
 >
 
 <div class="toolkit" data-view="grid">

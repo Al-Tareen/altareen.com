@@ -36,12 +36,18 @@ function catId(name) {
 }
 
 const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
+
+const conceptsBreadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Concepts", path: "/concepts/" },
+];
 ---
 
 <PageShell
   title="Concepts"
   description="Early-stage concepts and strategic business ideas."
   keywords="concepts, business ideas, strategic concepts, AI concepts, Altareen"
+  breadcrumbs={conceptsBreadcrumbs}
 >
   <div class="toolkit">
     {featured.length > 0 && (
