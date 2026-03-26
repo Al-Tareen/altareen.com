@@ -149,6 +149,15 @@ const schemaGraph = [
 
   gtag('config', 'G-2HCBGG64QQ');
 </script>
+
+<script>
+  window.trackEvent = function(name, params = {}) {
+    if (typeof gtag === "function") {
+      gtag('event', name, params);
+    }
+  };
+</script>
+
 </head>
 <body>
   <div id="pageLoaderBar" class="page-loader-bar" aria-hidden="true"></div>

@@ -95,22 +95,28 @@ const aboutBreadcrumbs = [
           </div>
 
           <div class="railActions" role="group" aria-label="Primary actions">
-            <button class="actionBtn primary js-open-contact" type="button">
+            <button class="actionBtn primary js-open-contact"
+        type="button"
+        onclick="trackEvent('contact_open')">
               <span class="actionBtnIcon" aria-hidden="true">✉</span>
               <span class="actionBtnText">Contact</span>
             </button>
 
-            <a class="actionBtn" href={profile.linkedin} target="_blank" rel="noopener">
-              <span class="actionBtnIcon actionBtnIconText" aria-hidden="true">in</span>
+<a class="actionBtn"
+   href={profile.linkedin}
+   target="_blank"
+   rel="noopener"
+   onclick="trackEvent('outbound_click', { destination: 'linkedin' })">
+                 <span class="actionBtnIcon actionBtnIconText" aria-hidden="true">in</span>
               <span class="actionBtnText">LinkedIn</span>
             </a>
 
-            <a class="actionBtn" href={profile.github} target="_blank" rel="noopener">
+            <a class="actionBtn" href={profile.github} target="_blank" rel="noopener" onclick="trackEvent('outbound_click', { destination: 'github' })">
               <span class="actionBtnIcon" aria-hidden="true">⌘</span>
               <span class="actionBtnText">GitHub</span>
             </a>
 
-            <a class="actionBtn" href={profile.resumeUrl} download target="_blank" rel="noopener">
+            <a class="actionBtn" href={profile.resumeUrl} download target="_blank" rel="noopener" onclick="trackEvent('resume_click')">
               <span class="actionBtnIcon" aria-hidden="true">↓</span>
               <span class="actionBtnText">Resume</span>
             </a>
