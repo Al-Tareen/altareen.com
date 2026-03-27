@@ -634,6 +634,20 @@ async function submitFeedback(value) {
               renderFeedbackStats(data);
               applyFeedbackState(data?.userVote ?? next);
 
+              const finalVote = data?.userVote ?? next;
+
+if (finalVote) {
+  trackEvent('framework_feedback', {
+    framework: frameworkSlug,
+    action: finalVote
+  });
+} else {
+  trackEvent('framework_feedback', {
+    framework: frameworkSlug,
+    action: 'cleared'
+  });
+}
+
               if ((data?.userVote ?? next) === "like") showToast("Marked as helpful");
               else if ((data?.userVote ?? next) === "dislike") showToast("Feedback saved");
               else showToast("Feedback cleared");
