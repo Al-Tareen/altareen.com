@@ -187,7 +187,7 @@ const seoKeywords = [
 const publishedDate = item.data.datePublished || undefined;
 
 // 🔥 Unique feedback key (unchanged)
-const feedbackKey = `ideas:${item.slug}`;
+const feedbackKey = item.slug;
 
 const conceptsSlugBreadcrumbs = [
   { name: "Home", path: "/" },
@@ -207,7 +207,13 @@ const conceptsSlugBreadcrumbs = [
   breadcrumbs={conceptsSlugBreadcrumbs}
 >
 
-  <div class="toolkitDetail" data-item-key={feedbackKey}>
+ <div
+  class="toolkitDetail"
+  data-item-key={feedbackKey}
+  data-concept-slug={item.slug}
+  data-concept-name={baseTitle}
+  data-concept-category={itemCategory}
+>
     <!-- Top row -->
     <div class="topRow">
       <a class="back" href="/concepts/" aria-label="Back to Concepts">
@@ -292,16 +298,24 @@ const conceptsSlugBreadcrumbs = [
 
     <div class="sideMeta">
       {quickActions.map((a) => {
-        if (a.kind === "download") {
-          return (
-            <a class="qaRow primary qaDownloadRow" href={a.href} download target="_blank" rel="noopener">
-              <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-              <span class="qaText">{a.label}</span>
-              {a.fileType && <span class="qaFileType">{a.fileType}</span>}
-            </a>
-          );
-        }
-
+     if (a.kind === "download") {
+  return (
+    <a
+      class="qaRow primary qaDownloadRow"
+      href={a.href}
+      download
+      target="_blank"
+      rel="noopener"
+      data-track="concept_download"
+      data-track-source="quick_actions"
+      data-track-file={a.label || "Download"}
+    >
+      <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+      <span class="qaText">{a.label}</span>
+      {a.fileType && <span class="qaFileType">{a.fileType}</span>}
+    </a>
+  );
+}
         if (a.kind === "preview") {
           return (
             <button class="qaRow" type="button" data-preview>
@@ -320,13 +334,20 @@ const conceptsSlugBreadcrumbs = [
           );
         }
 
-        return (
-          <a class="qaRow" href={a.href} target="_blank" rel="noopener">
-            <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-            <span class="qaText">{a.label}</span>
-            <span class="qaEnd" aria-hidden="true">↗</span>
-          </a>
-        );
+return (
+  <a
+    class="qaRow"
+    href={a.href}
+    target="_blank"
+    rel="noopener"
+    data-track="concept_related_click"
+    data-track-source="quick_actions"
+  >
+    <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+    <span class="qaText">{a.label}</span>
+    <span class="qaEnd" aria-hidden="true">↗</span>
+  </a>
+);
       })}
     </div>
   </div>
@@ -346,14 +367,17 @@ const conceptsSlugBreadcrumbs = [
 
     <div class="downloadList">
       {normalizedDownloads.map((f, i) => (
-        <a
-          class="fileRow"
-          href={f.href}
-          download
-          target="_blank"
-          rel="noopener"
-          aria-label={`Download ${f.displayName || `Attachment ${i + 1}`}`}
-        >
+<a
+  class="fileRow"
+  href={f.href}
+  download
+  target="_blank"
+  rel="noopener"
+  aria-label={`Download ${f.displayName || `Attachment ${i + 1}`}`}
+  data-track="concept_download"
+  data-track-source="downloads_list"
+  data-track-file={f.displayName || `Attachment ${i + 1}`}
+>
           <span class="fileType" aria-hidden="true">{f.typeLabel}</span>
           <span class="fileName">{f.displayName || `Attachment ${i + 1}`}</span>
         </a>
@@ -380,9 +404,17 @@ const conceptsSlugBreadcrumbs = [
           <section class="cardBlock" data-section>
             <h2>Related Link</h2>
             <p>
-              <a class="link" href={item.data.link} target="_blank" rel="noopener">
-                Open related link →
-              </a>
+<a
+  class="link"
+  href={item.data.link}
+  target="_blank"
+  rel="noopener"
+  data-track="concept_related_click"
+  data-track-source="concepts_slug"
+>
+  Open related link →
+</a>
+
             </p>
           </section>
         )}
@@ -402,10 +434,19 @@ const conceptsSlugBreadcrumbs = [
             </div>
 
             <div class="modalActions">
-              <a class="pillBtn" href={primaryAssetUrl} download target="_blank" rel="noopener">
-                <span class="btnIcon" aria-hidden="true">↓</span>
-                <span>Download</span>
-              </a>
+<a
+  class="pillBtn"
+  href={primaryAssetUrl}
+  download
+  target="_blank"
+  rel="noopener"
+  data-track="concept_download"
+  data-track-source="preview_modal"
+  data-track-file={primaryAsset?.name || "Preview Download"}
+>
+  <span class="btnIcon" aria-hidden="true">↓</span>
+  <span>Download</span>
+</a>
               <button class="pillBtn" type="button" data-close>
                 <span class="btnIcon" aria-hidden="true">✕</span>
                 <span>Close</span>
@@ -423,311 +464,371 @@ const conceptsSlugBreadcrumbs = [
     <!-- Toast -->
     <div class="toast" id="toast" role="status" aria-live="polite">Link copied</div>
 
-    <script is:inline>
-      window.addEventListener("DOMContentLoaded", () => {
+   <script is:inline>
+  window.safeTrackEvent = function (eventName, payload = {}) {
+    try {
+      if (typeof window !== "undefined" && typeof window.trackEvent === "function") {
+        window.trackEvent(eventName, payload);
+      }
+    } catch (err) {
+      console.error("[concepts-slug] trackEvent failed:", err);
+    }
+  };
+
+  window.addEventListener("DOMContentLoaded", () => {
+    try {
+      const toast = document.getElementById("toast");
+      const shareBtn = document.querySelector("[data-share]");
+      const pageRoot = document.querySelector(".toolkitDetail");
+      const itemKey = pageRoot?.dataset?.itemKey || "";
+      const conceptSlug = pageRoot?.dataset?.conceptSlug || "";
+      const conceptName = pageRoot?.dataset?.conceptName || "";
+      const conceptCategory = pageRoot?.dataset?.conceptCategory || "";
+
+safeTrackEvent("concept_view", {
+  concept: conceptSlug,
+  concept_name: conceptName,
+  category: conceptCategory,
+  source: "concepts_slug",
+});
+
+      function showToast(msg) {
+        if (!toast) return;
+        toast.textContent = msg || "Done";
+        toast.classList.add("isOn");
+        window.clearTimeout(window.__toastT);
+        window.__toastT = window.setTimeout(() => toast.classList.remove("isOn"), 1200);
+      }
+
+      document.querySelectorAll("[data-track]").forEach((el) => {
+        el.addEventListener("click", () => {
+          const eventName = el.getAttribute("data-track");
+          const source = el.getAttribute("data-track-source") || "unknown";
+          const file = el.getAttribute("data-track-file") || "";
+
+          const payload = {
+            concept: conceptSlug,
+            concept_name: conceptName,
+            source,
+          };
+
+          if (file) payload.file = file;
+
+          safeTrackEvent(eventName, payload);
+        });
+      });
+
+      // ---- Cover feedback (like / dislike) ----
+      const likeBtn = document.querySelector('[data-feedback="like"]');
+      const dislikeBtn = document.querySelector('[data-feedback="dislike"]');
+
+      const feedbackBarEl = document.querySelector("[data-feedback-bar]");
+      const feedbackCountsEl = document.querySelector("[data-feedback-counts]");
+      const feedbackSummaryEl = document.querySelector("[data-feedback-summary]");
+      const feedbackSummaryDotEl = document.querySelector("[data-feedback-summary-dot]");
+
+      const likeCountEl = document.querySelector("[data-like-count]");
+      const dislikeCountEl = document.querySelector("[data-dislike-count]");
+      const likeBarEl = document.querySelector("[data-bar-likes]");
+      const dislikeBarEl = document.querySelector("[data-bar-dislikes]");
+
+      let currentVote = null;
+      let feedbackBusy = false;
+
+      function applyFeedbackState(value) {
+        currentVote = value === "like" || value === "dislike" ? value : null;
+
+        [likeBtn, dislikeBtn].forEach((btn) => {
+          if (!btn) return;
+          const isActive = btn.dataset.feedback === currentVote;
+          btn.classList.toggle("isActive", isActive);
+          btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+      }
+
+      function setFeedbackBusy(isBusy) {
+        feedbackBusy = isBusy;
+
+        [likeBtn, dislikeBtn].forEach((btn) => {
+          if (!btn) return;
+          btn.disabled = isBusy;
+          btn.classList.toggle("isBusy", isBusy);
+        });
+      }
+
+      function renderFeedbackStats(data) {
+        const likes = Number(data?.likes || 0);
+        const dislikes = Number(data?.dislikes || 0);
+        const total = Number(data?.total || 0);
+
+        if (likeCountEl) likeCountEl.textContent = String(likes);
+        if (dislikeCountEl) dislikeCountEl.textContent = String(dislikes);
+
+        if (total === 0) {
+          if (likeBarEl) likeBarEl.style.width = "0%";
+          if (dislikeBarEl) dislikeBarEl.style.width = "0%";
+
+          feedbackBarEl?.classList.add("isEmpty");
+          feedbackBarEl?.classList.remove("isPulse");
+
+          if (feedbackSummaryEl) {
+            feedbackSummaryEl.textContent = "No ratings yet";
+            feedbackSummaryEl.classList.add("isEmpty");
+          }
+
+          if (feedbackSummaryDotEl) feedbackSummaryDotEl.style.display = "none";
+          if (feedbackCountsEl) feedbackCountsEl.style.display = "none";
+          return;
+        }
+
+        const likePct = (likes / total) * 100;
+        const dislikePct = (dislikes / total) * 100;
+        const likePctRounded = Math.round(likePct);
+
+        if (likeBarEl) likeBarEl.style.width = `${likePct}%`;
+        if (dislikeBarEl) dislikeBarEl.style.width = `${dislikePct}%`;
+
+        feedbackBarEl?.classList.remove("isEmpty");
+        feedbackBarEl?.classList.remove("isPulse");
+
+        if (feedbackBarEl) {
+          void feedbackBarEl.offsetWidth;
+          feedbackBarEl.classList.add("isPulse");
+        }
+
+        if (feedbackSummaryEl) {
+          feedbackSummaryEl.innerHTML = `<span data-like-percent>${likePctRounded}%</span> found this helpful`;
+          feedbackSummaryEl.classList.remove("isEmpty");
+        }
+
+        if (feedbackSummaryDotEl) feedbackSummaryDotEl.style.display = "";
+        if (feedbackCountsEl) feedbackCountsEl.style.display = "inline-flex";
+      }
+
+      async function loadFeedbackStats() {
+        if (!itemKey) {
+          console.error("[concepts-slug] Missing item key");
+          return;
+        }
+
         try {
-          const toast = document.getElementById("toast");
-          const shareBtn = document.querySelector("[data-share]");
+          const res = await fetch(`/api/framework-feedback?slug=${encodeURIComponent(itemKey)}`, {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          });
 
-          function showToast(msg) {
-            if (!toast) return;
-            toast.textContent = msg || "Done";
-            toast.classList.add("isOn");
-            window.clearTimeout(window.__toastT);
-            window.__toastT = window.setTimeout(() => toast.classList.remove("isOn"), 1200);
-          }
+          if (!res.ok) throw new Error(`Failed to load feedback stats (${res.status})`);
 
-          const pageRoot = document.querySelector(".toolkitDetail");
-          const itemKey = pageRoot?.dataset?.itemKey || "";
-
-          // ---- Cover feedback (like / dislike) ----
-          const likeBtn = document.querySelector('[data-feedback="like"]');
-          const dislikeBtn = document.querySelector('[data-feedback="dislike"]');
-
-          const feedbackBarEl = document.querySelector("[data-feedback-bar]");
-          const feedbackCountsEl = document.querySelector("[data-feedback-counts]");
-          const feedbackSummaryEl = document.querySelector("[data-feedback-summary]");
-          const feedbackSummaryDotEl = document.querySelector("[data-feedback-summary-dot]");
-
-          const likeCountEl = document.querySelector("[data-like-count]");
-          const dislikeCountEl = document.querySelector("[data-dislike-count]");
-          const likeBarEl = document.querySelector("[data-bar-likes]");
-          const dislikeBarEl = document.querySelector("[data-bar-dislikes]");
-
-          let currentVote = null; // "like" | "dislike" | null
-          let feedbackBusy = false;
-
-          function applyFeedbackState(value) {
-            currentVote = value === "like" || value === "dislike" ? value : null;
-
-            [likeBtn, dislikeBtn].forEach((btn) => {
-              if (!btn) return;
-              const isActive = btn.dataset.feedback === currentVote;
-              btn.classList.toggle("isActive", isActive);
-              btn.setAttribute("aria-pressed", isActive ? "true" : "false");
-            });
-          }
-
-          function setFeedbackBusy(isBusy) {
-            feedbackBusy = isBusy;
-
-            [likeBtn, dislikeBtn].forEach((btn) => {
-              if (!btn) return;
-              btn.disabled = isBusy;
-              btn.classList.toggle("isBusy", isBusy);
-            });
-          }
-
-          function renderFeedbackStats(data) {
-            const likes = Number(data?.likes || 0);
-            const dislikes = Number(data?.dislikes || 0);
-            const total = Number(data?.total || 0);
-
-            if (likeCountEl) likeCountEl.textContent = String(likes);
-            if (dislikeCountEl) dislikeCountEl.textContent = String(dislikes);
-
-            if (total === 0) {
-              if (likeBarEl) likeBarEl.style.width = "0%";
-              if (dislikeBarEl) dislikeBarEl.style.width = "0%";
-
-              feedbackBarEl?.classList.add("isEmpty");
-              feedbackBarEl?.classList.remove("isPulse");
-
-              if (feedbackSummaryEl) {
-                feedbackSummaryEl.textContent = "No ratings yet";
-                feedbackSummaryEl.classList.add("isEmpty");
-              }
-
-              if (feedbackSummaryDotEl) feedbackSummaryDotEl.style.display = "none";
-              if (feedbackCountsEl) feedbackCountsEl.style.display = "none";
-              return;
-            }
-
-            const likePct = (likes / total) * 100;
-            const dislikePct = (dislikes / total) * 100;
-            const likePctRounded = Math.round(likePct);
-
-            if (likeBarEl) likeBarEl.style.width = `${likePct}%`;
-            if (dislikeBarEl) dislikeBarEl.style.width = `${dislikePct}%`;
-
-            feedbackBarEl?.classList.remove("isEmpty");
-            feedbackBarEl?.classList.remove("isPulse");
-
-            if (feedbackBarEl) {
-              void feedbackBarEl.offsetWidth;
-              feedbackBarEl.classList.add("isPulse");
-            }
-
-            if (feedbackSummaryEl) {
-              feedbackSummaryEl.innerHTML = `<span data-like-percent>${likePctRounded}%</span> found this helpful`;
-              feedbackSummaryEl.classList.remove("isEmpty");
-            }
-
-            if (feedbackSummaryDotEl) feedbackSummaryDotEl.style.display = "";
-            if (feedbackCountsEl) feedbackCountsEl.style.display = "inline-flex";
-          }
-
-          async function loadFeedbackStats() {
-            if (!itemKey) return;
-
-            try {
-              const res = await fetch(`/api/framework-feedback?slug=${encodeURIComponent(itemKey)}`, {
-                method: "GET",
-                headers: { Accept: "application/json" },
-              });
-
-              if (!res.ok) throw new Error("Failed to load feedback stats");
-
-              const data = await res.json();
-              renderFeedbackStats(data);
-              applyFeedbackState(data?.userVote || null);
-            } catch (err) {
-              console.error(err);
-              renderFeedbackStats({ likes: 0, dislikes: 0, total: 0 });
-              applyFeedbackState(null);
-            }
-          }
+          const data = await res.json();
+          renderFeedbackStats(data);
+          applyFeedbackState(data?.userVote || null);
+        } catch (err) {
+          console.error("[concepts-slug] loadFeedbackStats failed:", err);
+          renderFeedbackStats({ likes: 0, dislikes: 0, total: 0 });
+          applyFeedbackState(null);
+        }
+      }
 
       async function submitFeedback(value) {
-  if (!itemKey) throw new Error("Missing item key");
-  if (feedbackBusy) throw new Error("Feedback request already in progress");
+        if (!itemKey) throw new Error("Missing item key");
+        if (feedbackBusy) throw new Error("Feedback request already in progress");
 
-  try {
-    setFeedbackBusy(true);
+        try {
+          setFeedbackBusy(true);
 
-    let consent = "declined";
+          let consent = "declined";
 
-    if (typeof window !== "undefined") {
-      try {
-        const rawPrefs = localStorage.getItem("cookie_preferences");
-        const prefs = rawPrefs ? JSON.parse(rawPrefs) : null;
-        const optionalEnabled = Boolean(
-          prefs?.optional ?? prefs?.functional ?? prefs?.analytics
-        );
-
-        consent = optionalEnabled ? "accepted" : "declined";
-      } catch {
-        consent = "declined";
-      }
-    }
-
-    const res = await fetch("/api/framework-feedback", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        slug: itemKey,
-        value: value ?? null,
-        consent,
-      }),
-    });
-
-    if (!res.ok) throw new Error(`Failed to save feedback (${res.status})`);
-
-    const data = await res.json();
-    return data;
-  } finally {
-    setFeedbackBusy(false);
-  }
-}
-
-          async function handleFeedbackClick(type) {
-            if (feedbackBusy) return;
-
-            const prevVote = currentVote;
-            const next = currentVote === type ? null : type;
-
-            applyFeedbackState(next);
-
+          if (typeof window !== "undefined") {
             try {
-              const data = await submitFeedback(next);
-              renderFeedbackStats(data);
-              applyFeedbackState(data?.userVote ?? next);
+              const isLocal =
+                window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1";
 
-              if ((data?.userVote ?? next) === "like") showToast("Marked as helpful");
-              else if ((data?.userVote ?? next) === "dislike") showToast("Feedback saved");
-              else showToast("Feedback cleared");
-            } catch (err) {
-              console.error(err);
-              applyFeedbackState(prevVote);
-              await loadFeedbackStats();
-              showToast("Could not save feedback");
-            }
-          }
+              if (isLocal) {
+                consent = "accepted";
+              } else {
+                const rawPrefs = localStorage.getItem("cookie_preferences");
+                const prefs = rawPrefs ? JSON.parse(rawPrefs) : null;
+                const optionalEnabled = Boolean(
+                  prefs?.optional ?? prefs?.functional ?? prefs?.analytics
+                );
 
-          likeBtn?.addEventListener("click", () => handleFeedbackClick("like"));
-          dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
-
-          loadFeedbackStats();
-
-          function setButtonCopied(btn) {
-            if (!btn) return;
-
-            const label = btn.querySelector(".qaLabel");
-            const icon = btn.querySelector(".btnIcon");
-            const rowText = btn.querySelector(".qaText");
-            const rowIcon = btn.querySelector(".qaIcon");
-
-            const prevText = label ? label.textContent : rowText ? rowText.textContent : "";
-            const prevIcon = icon ? icon.textContent : rowIcon ? rowIcon.textContent : "";
-
-            btn.classList.add("isCopied");
-
-            if (label) label.textContent = "Copied";
-            if (icon) icon.textContent = "✓";
-            if (rowText) rowText.textContent = "Copied";
-            if (rowIcon) rowIcon.textContent = "✓";
-
-            window.clearTimeout(window.__copiedT);
-            window.__copiedT = window.setTimeout(() => {
-              btn.classList.remove("isCopied");
-              if (label) label.textContent = prevText;
-              if (icon) icon.textContent = prevIcon;
-              if (rowText) rowText.textContent = prevText;
-              if (rowIcon) rowIcon.textContent = prevIcon;
-            }, 900);
-          }
-
-          async function shareLink() {
-            const url = window.location.href;
-            const title = document.title || "Link";
-
-            if (navigator.share) {
-              try {
-                await navigator.share({ title, url });
-                showToast("Share opened");
-                return;
-              } catch {
-                // fallback to copy
+                consent = optionalEnabled ? "accepted" : "declined";
               }
-            }
-
-            try {
-              await navigator.clipboard.writeText(url);
-              showToast("Link copied");
-              setButtonCopied(shareBtn);
             } catch {
-              const ta = document.createElement("textarea");
-              ta.value = url;
-              ta.style.position = "fixed";
-              ta.style.left = "-9999px";
-              document.body.appendChild(ta);
-              ta.select();
-              document.execCommand("copy");
-              ta.remove();
-              showToast("Link copied");
-              setButtonCopied(shareBtn);
+              consent = "declined";
             }
           }
 
-          shareBtn?.addEventListener("click", shareLink);
-
-          // ---- Preview modal ----
-          const modal = document.getElementById("previewModal");
-          const openPreviewBtn = document.querySelector("[data-preview]");
-          const closeEls = modal ? modal.querySelectorAll("[data-close]") : [];
-
-          function openModal() {
-            if (!modal) return;
-            modal.setAttribute("aria-hidden", "false");
-            document.documentElement.classList.add("modalOpen");
-          }
-
-          function closeModal() {
-            if (!modal) return;
-            modal.setAttribute("aria-hidden", "true");
-            document.documentElement.classList.remove("modalOpen");
-          }
-
-          openPreviewBtn?.addEventListener("click", openModal);
-          closeEls?.forEach((el) => el.addEventListener("click", closeModal));
-
-          window.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") closeModal();
+          const res = await fetch("/api/framework-feedback", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              slug: itemKey,
+              value: value ?? null,
+              consent,
+            }),
           });
 
-          // Keyboard shortcuts
-          window.addEventListener("keydown", (e) => {
-            if (e.target && ["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
-            if (e.metaKey || e.ctrlKey || e.altKey) return;
+          if (!res.ok) {
+            const text = await res.text();
+            console.error("[concepts-slug] submitFeedback failed:", res.status, text);
+            throw new Error(`Failed to save feedback (${res.status})`);
+          }
 
-            if (e.key.toLowerCase() === "s") shareLink();
+          return await res.json();
+        } finally {
+          setFeedbackBusy(false);
+        }
+      }
 
-            if (e.key.toLowerCase() === "d") {
-              const dl = document.querySelector(".qaRow.primary, .qa.primary");
-              if (dl) dl.click();
-            }
+      async function handleFeedbackClick(type) {
+        if (feedbackBusy) return;
 
-            if (e.key.toLowerCase() === "p") {
-              const pv = document.querySelector("[data-preview]");
-              if (pv) pv.click();
-            }
+        const prevVote = currentVote;
+        const next = currentVote === type ? null : type;
+
+        applyFeedbackState(next);
+
+        try {
+          const data = await submitFeedback(next);
+          renderFeedbackStats(data);
+          applyFeedbackState(data?.userVote ?? next);
+
+          const finalVote = data?.userVote ?? next;
+
+          safeTrackEvent("concept_feedback", {
+            concept: conceptSlug || itemKey,
+            concept_name: conceptName,
+            feedback_type: finalVote || "cleared",
+            source: "concepts_slug",
           });
-        } catch {}
+
+          if (finalVote === "like") showToast("Marked as helpful");
+          else if (finalVote === "dislike") showToast("Feedback saved");
+          else showToast("Feedback cleared");
+        } catch (err) {
+          console.error("[concepts-slug] handleFeedbackClick failed:", err);
+          applyFeedbackState(prevVote);
+          await loadFeedbackStats();
+          showToast("Could not save feedback");
+        }
+      }
+
+      likeBtn?.addEventListener("click", () => handleFeedbackClick("like"));
+      dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
+
+      loadFeedbackStats();
+
+      function setButtonCopied(btn) {
+        if (!btn) return;
+
+        const label = btn.querySelector(".qaLabel");
+        const icon = btn.querySelector(".btnIcon");
+        const rowText = btn.querySelector(".qaText");
+        const rowIcon = btn.querySelector(".qaIcon");
+
+        const prevText = label ? label.textContent : rowText ? rowText.textContent : "";
+        const prevIcon = icon ? icon.textContent : rowIcon ? rowIcon.textContent : "";
+
+        btn.classList.add("isCopied");
+
+        if (label) label.textContent = "Copied";
+        if (icon) icon.textContent = "✓";
+        if (rowText) rowText.textContent = "Copied";
+        if (rowIcon) rowIcon.textContent = "✓";
+
+        window.clearTimeout(window.__copiedT);
+        window.__copiedT = window.setTimeout(() => {
+          btn.classList.remove("isCopied");
+          if (label) label.textContent = prevText;
+          if (icon) icon.textContent = prevIcon;
+          if (rowText) rowText.textContent = prevText;
+          if (rowIcon) rowIcon.textContent = prevIcon;
+        }, 900);
+      }
+
+      async function shareLink() {
+        const url = window.location.href;
+        const title = document.title || "Link";
+
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, url });
+            showToast("Share opened");
+            return;
+          } catch {
+            // fallback to copy
+          }
+        }
+
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast("Link copied");
+          setButtonCopied(shareBtn);
+        } catch {
+          const ta = document.createElement("textarea");
+          ta.value = url;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+          showToast("Link copied");
+          setButtonCopied(shareBtn);
+        }
+      }
+
+      shareBtn?.addEventListener("click", shareLink);
+
+      const modal = document.getElementById("previewModal");
+      const openPreviewBtn = document.querySelector("[data-preview]");
+      const closeEls = modal ? modal.querySelectorAll("[data-close]") : [];
+
+      function openModal() {
+        if (!modal) return;
+        modal.setAttribute("aria-hidden", "false");
+        document.documentElement.classList.add("modalOpen");
+      }
+
+      function closeModal() {
+        if (!modal) return;
+        modal.setAttribute("aria-hidden", "true");
+        document.documentElement.classList.remove("modalOpen");
+      }
+
+      openPreviewBtn?.addEventListener("click", openModal);
+      closeEls?.forEach((el) => el.addEventListener("click", closeModal));
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
       });
-    </script>
+
+      window.addEventListener("keydown", (e) => {
+        if (e.target && ["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+        if (e.key.toLowerCase() === "s") shareLink();
+
+        if (e.key.toLowerCase() === "d") {
+          const dl = document.querySelector(".qaRow.primary, .qa.primary");
+          if (dl) dl.click();
+        }
+
+        if (e.key.toLowerCase() === "p") {
+          const pv = document.querySelector("[data-preview]");
+          if (pv) pv.click();
+        }
+      });
+    } catch (err) {
+      console.error("[concepts-slug] init failed:", err);
+    }
+  });
+</script>
 
     <style>
       .toolkitDetail {

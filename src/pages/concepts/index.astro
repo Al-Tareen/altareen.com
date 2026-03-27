@@ -64,41 +64,52 @@ const conceptsBreadcrumbs = [
         <div class="groupReveal" data-expand-wrap>
           <div class="grid" data-expand-grid>
             {featured.map((item) => (
-              <a class="card" href={`/concepts/${item.slug}/`}>
-                {item.data.cover ? (
-                  <div class="thumb" aria-hidden="true">
-                    <img
-                      class="cover"
-                      src={item.data.cover}
-                      alt={`Cover for ${item.data.title}`}
-                      loading="lazy"
-                    />
-                  </div>
-                ) : (
-                  <div class="thumb thumbEmpty" aria-hidden="true">
-                    <span class="thumbMark">AL</span>
-                  </div>
-                )}
+<a
+  class="card"
+  href={`/concepts/${item.slug}/`}
+  onclick={`trackEvent('concept_click', {
+    concept: '${item.slug}',
+    concept_name: '${(item.data.title || "").replace(/'/g, "\\'")}',
+    category: '${(item.data.primaryCategory || "Concepts").replace(/'/g, "\\'")}',
+    featured: true,
+    source: 'concepts',
+    position: ${featured.findIndex((x) => x.slug === item.slug) + 1}
+  })`}
+>
+  {item.data.cover ? (
+    <div class="thumb" aria-hidden="true">
+      <img
+        class="cover"
+        src={item.data.cover}
+        alt={`Cover for ${item.data.title}`}
+        loading="lazy"
+      />
+    </div>
+  ) : (
+    <div class="thumb thumbEmpty" aria-hidden="true">
+      <span class="thumbMark">AL</span>
+    </div>
+  )}
 
-                <div class="meta">
-                  <div class="cardTitle">{item.data.title}</div>
+  <div class="meta">
+    <div class="cardTitle">{item.data.title}</div>
 
-                  <div class="excerpt">
-                    <div class="excerptLabel">Description</div>
-                    <div class="whenToUse">
-                      {item.data.whenToUse ? item.data.whenToUse : <span class="muted">No description yet.</span>}
-                    </div>
-                  </div>
+    <div class="excerpt">
+      <div class="excerptLabel">Description</div>
+      <div class="whenToUse">
+        {item.data.whenToUse ? item.data.whenToUse : <span class="muted">No description yet.</span>}
+      </div>
+    </div>
 
-                  {Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
-                    <div class="tagsRow" aria-label="Tags">
-                      {item.data.tags.slice(0, 4).map((tag) => (
-                        <span class="tagChip">{tag}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </a>
+    {Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
+      <div class="tagsRow" aria-label="Tags">
+        {item.data.tags.slice(0, 4).map((tag) => (
+          <span class="tagChip">{tag}</span>
+        ))}
+      </div>
+    )}
+  </div>
+</a>
             ))}
           </div>
         </div>
@@ -141,41 +152,52 @@ const conceptsBreadcrumbs = [
         <div class="groupReveal" data-expand-wrap>
           <div class="grid" data-expand-grid>
             {g.items.map((item) => (
-              <a class="card" href={`/concepts/${item.slug}/`}>
-                {item.data.cover ? (
-                  <div class="thumb" aria-hidden="true">
-                    <img
-                      class="cover"
-                      src={item.data.cover}
-                      alt={`Cover for ${item.data.title}`}
-                      loading="lazy"
-                    />
-                  </div>
-                ) : (
-                  <div class="thumb thumbEmpty" aria-hidden="true">
-                    <span class="thumbMark">AL</span>
-                  </div>
-                )}
+             <a
+  class="card"
+  href={`/concepts/${item.slug}/`}
+  onclick={`trackEvent('concept_click', {
+    concept: '${item.slug}',
+    concept_name: '${(item.data.title || "").replace(/'/g, "\\'")}',
+    category: '${(item.data.primaryCategory || "Concepts").replace(/'/g, "\\'")}',
+    featured: false,
+    source: 'concepts',
+    position: ${g.items.findIndex((x) => x.slug === item.slug) + 1}
+  })`}
+>
+  {item.data.cover ? (
+    <div class="thumb" aria-hidden="true">
+      <img
+        class="cover"
+        src={item.data.cover}
+        alt={`Cover for ${item.data.title}`}
+        loading="lazy"
+      />
+    </div>
+  ) : (
+    <div class="thumb thumbEmpty" aria-hidden="true">
+      <span class="thumbMark">AL</span>
+    </div>
+  )}
 
-                <div class="meta">
-                  <div class="cardTitle">{item.data.title}</div>
+  <div class="meta">
+    <div class="cardTitle">{item.data.title}</div>
 
-                  <div class="excerpt">
-                    <div class="excerptLabel">Description</div>
-                    <div class="whenToUse">
-                      {item.data.whenToUse ? item.data.whenToUse : <span class="muted">No description yet.</span>}
-                    </div>
-                  </div>
+    <div class="excerpt">
+      <div class="excerptLabel">Description</div>
+      <div class="whenToUse">
+        {item.data.whenToUse ? item.data.whenToUse : <span class="muted">No description yet.</span>}
+      </div>
+    </div>
 
-                  {Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
-                    <div class="tagsRow" aria-label="Tags">
-                      {item.data.tags.slice(0, 4).map((tag) => (
-                        <span class="tagChip">{tag}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </a>
+    {Array.isArray(item.data.tags) && item.data.tags.length > 0 && (
+      <div class="tagsRow" aria-label="Tags">
+        {item.data.tags.slice(0, 4).map((tag) => (
+          <span class="tagChip">{tag}</span>
+        ))}
+      </div>
+    )}
+  </div>
+</a>
             ))}
           </div>
         </div>

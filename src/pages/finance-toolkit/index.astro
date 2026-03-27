@@ -92,16 +92,25 @@ breadcrumbs={financeBreadcrumbs}
         <div class="groupReveal" data-expand-wrap>
           <div class="grid" data-expand-grid>
             {featured.map((item) => (
-              <a
-                class="card"
-                href={item.data.link || `/toolkit/${item.slug}/`}
-                target={item.data.link ? "_blank" : undefined}
-                rel={item.data.link ? "noopener noreferrer" : undefined}
-                data-title={item.data.title}
-                data-category={item.data.primaryCategory || "Uncategorized"}
-                data-when={item.data.whenToUse || ""}
-                data-featured="true"
-              >
+<a
+  class="card"
+  href={item.data.link || `/toolkit/${item.slug}/`}
+  target={item.data.link ? "_blank" : undefined}
+  rel={item.data.link ? "noopener noreferrer" : undefined}
+  data-title={item.data.title}
+  data-category={item.data.primaryCategory || "Uncategorized"}
+  data-when={item.data.whenToUse || ""}
+  data-featured="true"
+  onclick={`trackEvent('framework_click', {
+    framework: '${item.slug}',
+    framework_name: '${(item.data.title || "").replace(/'/g, "\\'")}',
+    category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}',
+    featured: true,
+    source: 'finance_toolkit',
+    destination: '${item.data.link ? "external" : "internal"}',
+    position: ${featured.findIndex((x) => x.slug === item.slug) + 1}
+  })`}
+>
                 {item.data.link && (
                   <span class="externalBadge" aria-hidden="true" title="Opens external link">↗</span>
                 )}
@@ -172,15 +181,24 @@ breadcrumbs={financeBreadcrumbs}
         <div class="groupReveal" data-expand-wrap>
           <div class="grid" data-expand-grid>
             {g.items.map((item) => (
-              <a
-                class="card"
-                href={item.data.link || `/toolkit/${item.slug}/`}
-                target={item.data.link ? "_blank" : undefined}
-                rel={item.data.link ? "noopener noreferrer" : undefined}
-                data-title={item.data.title}
-                data-category={item.data.primaryCategory || "Uncategorized"}
-                data-when={item.data.whenToUse || ""}
-              >
+<a
+  class="card"
+  href={item.data.link || `/toolkit/${item.slug}/`}
+  target={item.data.link ? "_blank" : undefined}
+  rel={item.data.link ? "noopener noreferrer" : undefined}
+  data-title={item.data.title}
+  data-category={item.data.primaryCategory || "Uncategorized"}
+  data-when={item.data.whenToUse || ""}
+  onclick={`trackEvent('framework_click', {
+    framework: '${item.slug}',
+    framework_name: '${(item.data.title || "").replace(/'/g, "\\'")}',
+    category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}',
+    featured: false,
+    source: 'finance_toolkit',
+    destination: '${item.data.link ? "external" : "internal"}',
+    position: ${g.items.findIndex((x) => x.slug === item.slug) + 1}
+  })`}
+>
                 {item.data.link && (
                   <span class="externalBadge" aria-hidden="true" title="Opens external link">↗</span>
                 )}
@@ -318,8 +336,8 @@ breadcrumbs={financeBreadcrumbs}
             );
           }
 
-          function refreshExpandableSections(forceExpand = false) {
-            const isCompact = root?.dataset.view === "compact";
+function refreshExpandableSections(forceExpand = false) {
+  const isCompact = root?.dataset.view === "compact";
 
             expandableSections.forEach((section) => {
               const wrap = section.querySelector("[data-expand-wrap]");
@@ -336,6 +354,8 @@ breadcrumbs={financeBreadcrumbs}
                 wrap.style.removeProperty("--collapsed-h");
                 return;
               }
+
+
 
               const cards = getVisibleCardsInSection(section);
 
@@ -393,7 +413,9 @@ breadcrumbs={financeBreadcrumbs}
                 expanded ? "Show fewer models in this section" : "View all models in this section"
               );
             });
-          }
+}
+            
+          
 
           function applyFilter() {
             const query = normalize(q?.value);
@@ -468,13 +490,22 @@ breadcrumbs={financeBreadcrumbs}
             if (saved === "compact" || saved === "grid") setView(saved);
           } catch {}
 
-          viewGrid?.addEventListener("click", () => setView("grid"));
-          viewCompact?.addEventListener("click", () => setView("compact"));
+viewGrid?.addEventListener("click", () => setView("grid"));
+viewCompact?.addEventListener("click", () => setView("compact"));
 
-          q?.addEventListener("input", applyFilter);
-          cat?.addEventListener("change", applyFilter);
-          clear?.addEventListener("click", clearFilters);
-          emptyClear?.addEventListener("click", clearFilters);
+q?.addEventListener("input", applyFilter);
+
+cat?.addEventListener("change", () => {
+  trackEvent("toolkit_category_select", {
+    category_name: cat.value || "All categories",
+    source: "finance_toolkit",
+  });
+
+  applyFilter();
+});
+
+clear?.addEventListener("click", clearFilters);
+emptyClear?.addEventListener("click", clearFilters);
 
           document.querySelectorAll("[data-jump]").forEach((btn) => {
             btn.addEventListener("click", () => {
@@ -581,6 +612,9 @@ breadcrumbs={financeBreadcrumbs}
         } catch (e) {
           console.error("[finance-toolkit] init failed:", e);
         }
+        
+        
+
       });
     </script>
 
