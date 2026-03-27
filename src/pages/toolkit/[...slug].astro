@@ -623,9 +623,16 @@ async function submitFeedback(value) {
             applyFeedbackState(next);
 
             try {
-              const data = await submitFeedback(next);
-              renderFeedbackStats(data);
-              applyFeedbackState(data?.userVote ?? next);
+const data = await submitFeedback(next);
+renderFeedbackStats(data);
+applyFeedbackState(data?.userVote ?? next);
+
+const finalVote = data?.userVote ?? next;
+
+trackEvent("framework_feedback", {
+  framework: frameworkSlug,
+  action: finalVote || "cleared",
+});
 
               const finalVote = data?.userVote ?? next;
 
