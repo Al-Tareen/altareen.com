@@ -120,7 +120,11 @@ const homepageBreadcrumbs = [
     </section>
 
     <section class="grid" aria-label="Homepage sections">
-      <a class="card card-premium card-pm" href="/toolkit">
+      <a
+  class="card card-premium card-pm"
+  href="/toolkit"
+  onclick="trackEvent('homepage_section_click', { section: 'pm_toolkit', destination: '/toolkit', position: 1 })"
+>
         <div class="card-ambience" aria-hidden="true">
           <img
             class="card-ambience-media"
@@ -175,7 +179,11 @@ const homepageBreadcrumbs = [
         <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
 
-      <a class="card card-premium card-finance" href="/finance-toolkit">
+      <a
+  class="card card-premium card-finance"
+  href="/finance-toolkit"
+  onclick="trackEvent('homepage_section_click', { section: 'finance_toolkit', destination: '/finance-toolkit', position: 2 })"
+>
         <div class="card-ambience" aria-hidden="true">
           <img
             class="card-ambience-media"
@@ -230,7 +238,11 @@ const homepageBreadcrumbs = [
         <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
 
-      <a class="card card-premium card-concepts" href="/concepts">
+      <a
+  class="card card-premium card-concepts"
+  href="/concepts"
+  onclick="trackEvent('homepage_section_click', { section: 'concepts', destination: '/concepts', position: 3 })"
+>
         <div class="card-ambience" aria-hidden="true">
           <img
             class="card-ambience-media"
@@ -285,7 +297,11 @@ const homepageBreadcrumbs = [
         <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
 
-      <a class="card card-premium card-projects" href="/projects">
+      <a
+  class="card card-premium card-projects"
+  href="/projects"
+  onclick="trackEvent('homepage_section_click', { section: 'projects', destination: '/projects', position: 4 })"
+>
   <div class="card-ambience" aria-hidden="true">
     <img
       class="card-ambience-media"
@@ -306,7 +322,11 @@ const homepageBreadcrumbs = [
   <span class="card-arrow" aria-hidden="true">↗</span>
 </a>
 
-<a class="card card-premium card-about" href="/about">
+<a
+  class="card card-premium card-about"
+  href="/about"
+  onclick="trackEvent('homepage_section_click', { section: 'about', destination: '/about', position: 5 })"
+>
   <div class="card-ambience" aria-hidden="true">
     <img
       class="card-ambience-media"
