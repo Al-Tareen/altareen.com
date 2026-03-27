@@ -102,14 +102,15 @@ breadcrumbs={pmtoolkitBreadcrumbs}
         <div class="groupReveal" data-expand-wrap>
           <div class="grid" data-expand-grid>
             {featured.map((item) => (
-              <a
-                class="card"
-                href={`/toolkit/${item.slug}/`}
-                data-title={item.data.title}
-                data-category={item.data.primaryCategory || "Uncategorized"}
-                data-when={item.data.whenToUse || ""}
-                data-featured="true"
-              >
+            <a
+  class="card"
+  href={`/toolkit/${item.slug}/`}
+  data-title={item.data.title}
+  data-category={item.data.primaryCategory || "Uncategorized"}
+  data-when={item.data.whenToUse || ""}
+  data-featured="true"
+  onclick={`trackEvent('framework_click', { framework: '${item.slug}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: true })`}
+>
                 {item.data.cover ? (
                   <div class="thumb" aria-hidden="true">
                     <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
@@ -174,13 +175,14 @@ breadcrumbs={pmtoolkitBreadcrumbs}
         <div class="groupReveal" data-expand-wrap>
           <div class="grid" data-expand-grid>
             {g.items.map((item) => (
-              <a
-                class="card"
-                href={`/toolkit/${item.slug}/`}
-                data-title={item.data.title}
-                data-category={item.data.primaryCategory || "Uncategorized"}
-                data-when={item.data.whenToUse || ""}
-              >
+<a
+  class="card"
+  href={`/toolkit/${item.slug}/`}
+  data-title={item.data.title}
+  data-category={item.data.primaryCategory || "Uncategorized"}
+  data-when={item.data.whenToUse || ""}
+  onclick={`trackEvent('framework_click', { framework: '${item.slug}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: false })`}
+>
                 {item.data.cover ? (
                   <div class="thumb" aria-hidden="true">
                     <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
