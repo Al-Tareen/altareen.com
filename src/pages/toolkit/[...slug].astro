@@ -614,53 +614,39 @@ async function submitFeedback(value) {
   }
 }
 
-          async function handleFeedbackClick(type) {
-            if (feedbackBusy) return;
+        async function handleFeedbackClick(type) {
+  if (feedbackBusy) return;
 
-            const prevVote = currentVote;
-            const next = currentVote === type ? null : type;
+  const prevVote = currentVote;
+  const next = currentVote === type ? null : type;
 
-            applyFeedbackState(next);
+  applyFeedbackState(next);
 
-            try {
-const data = await submitFeedback(next);
-renderFeedbackStats(data);
-applyFeedbackState(data?.userVote ?? next);
+  try {
+    const data = await submitFeedback(next);
+    renderFeedbackStats(data);
+    applyFeedbackState(data?.userVote ?? next);
 
-const finalVote = data?.userVote ?? next;
+    const finalVote = data?.userVote ?? next;
 
-trackEvent("framework_feedback", {
-  framework: frameworkSlug,
-  action: finalVote || "cleared",
-});
+    trackEvent("framework_feedback", {
+      framework: frameworkSlug,
+      action: finalVote || "cleared",
+    });
 
-              const finalVote = data?.userVote ?? next;
-
-if (finalVote) {
-  trackEvent('framework_feedback', {
-    framework: frameworkSlug,
-    action: finalVote
-  });
-} else {
-  trackEvent('framework_feedback', {
-    framework: frameworkSlug,
-    action: 'cleared'
-  });
+    if ((data?.userVote ?? next) === "like") showToast("Marked as helpful");
+    else if ((data?.userVote ?? next) === "dislike") showToast("Feedback saved");
+    else showToast("Feedback cleared");
+  } catch (err) {
+    console.error(err);
+    applyFeedbackState(prevVote);
+    await loadFeedbackStats();
+    showToast("Could not save feedback");
+  }
 }
 
-              if ((data?.userVote ?? next) === "like") showToast("Marked as helpful");
-              else if ((data?.userVote ?? next) === "dislike") showToast("Feedback saved");
-              else showToast("Feedback cleared");
-            } catch (err) {
-              console.error(err);
-              applyFeedbackState(prevVote);
-              await loadFeedbackStats();
-              showToast("Could not save feedback");
-            }
-          }
-
-          likeBtn?.addEventListener("click", () => handleFeedbackClick("like"));
-          dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
+likeBtn?.addEventListener("click", () => handleFeedbackClick("like"));
+dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
 
           loadFeedbackStats();
 
