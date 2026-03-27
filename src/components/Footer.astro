@@ -12,13 +12,34 @@
             AI Transformation • Product Management • Product Strategy
           </p>
 
-          <div class="brand-social" aria-label="External links">
-            <a href="https://www.linkedin.com/in/California" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-            <span class="sep" aria-hidden="true">·</span>
-            <a href="https://github.com/Al-Tareen" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <span class="sep" aria-hidden="true">·</span>
-            <a href="/files/Al-Tareen-Resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a>
-          </div>
+<div class="brand-social" aria-label="External links">
+  <a
+    href="https://www.linkedin.com/in/California"
+    target="_blank"
+    rel="noopener noreferrer"
+    onclick="trackEvent('outbound_click', { destination: 'linkedin', source: 'footer' })"
+  >
+    LinkedIn
+  </a>
+  <span class="sep" aria-hidden="true">·</span>
+  <a
+    href="https://github.com/Al-Tareen"
+    target="_blank"
+    rel="noopener noreferrer"
+    onclick="trackEvent('outbound_click', { destination: 'github', source: 'footer' })"
+  >
+    GitHub
+  </a>
+  <span class="sep" aria-hidden="true">·</span>
+  <a
+    href="/files/Al-Tareen-Resume.pdf"
+    target="_blank"
+    rel="noopener noreferrer"
+    onclick="trackEvent('resume_click', { source: 'footer' })"
+  >
+    Resume
+  </a>
+</div>
         </div>
       </section>
 
@@ -34,18 +55,32 @@
         </ul>
       </nav>
 
-      <nav class="legal-col" aria-label="Legal and Notice">
-        <div class="col-title">Legal & Notice</div>
-        <ul class="link-list">
-          <li><a href="/privacy">Privacy Policy</a></li>
-          <li><a href="/disclaimer">Disclaimer</a></li>
-          <li>
-            <button type="button" class="footer-legal-btn" id="footer-cookie-preferences">
-              Cookie Preferences
-            </button>
-          </li>
-        </ul>
-      </nav>
+<nav class="legal-col" aria-label="Legal and Notice">
+  <div class="col-title">Legal & Notice</div>
+  <ul class="link-list">
+    <li>
+      <a
+        href="/privacy"
+        onclick="trackEvent('footer_legal_click', { destination: 'privacy', source: 'footer' })"
+      >
+        Privacy Policy
+      </a>
+    </li>
+    <li>
+      <a
+        href="/disclaimer"
+        onclick="trackEvent('footer_legal_click', { destination: 'disclaimer', source: 'footer' })"
+      >
+        Disclaimer
+      </a>
+    </li>
+    <li>
+      <button type="button" class="footer-legal-btn" id="footer-cookie-preferences">
+        Cookie Preferences
+      </button>
+    </li>
+  </ul>
+</nav>
     </div>
 
     <div class="notice-line" role="note" aria-label="Disclaimer">
@@ -61,7 +96,12 @@
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const btn = document.getElementById("footer-cookie-preferences");
+
     btn?.addEventListener("click", () => {
+      if (typeof window !== "undefined" && typeof window.trackEvent === "function") {
+        window.trackEvent("cookie_preferences_open", { source: "footer" });
+      }
+
       if (typeof window !== "undefined" && typeof window.openCookiePreferences === "function") {
         window.openCookiePreferences();
       }
