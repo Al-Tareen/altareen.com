@@ -274,20 +274,13 @@ const pmFrameworkBreadcrumbs = [
     <div class="sideMeta">
       {quickActions.map((a) => {
        if (a.kind === "download") {
-  return (
-    <a
-      class="qaRow primary qaDownloadRow"
-      href={a.href}
-      download
-      target="_blank"
-      rel="noopener"
-      onclick={`trackEvent('framework_download', { framework: '${item.slug}', source: 'quick_actions' })`}
-    >
-      <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-      <span class="qaText">{a.label}</span>
-      {a.fileType && <span class="qaFileType">{a.fileType}</span>}
-    </a>
-  );
+return (
+  <a class="qaRow" href={a.href} target="_blank" rel="noopener">
+    <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+    <span class="qaText">{a.label}</span>
+    <span class="qaEnd" aria-hidden="true">↗</span>
+  </a>
+);
 }
 
         if (a.kind === "preview") {
