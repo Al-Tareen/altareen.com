@@ -273,15 +273,22 @@ const pmFrameworkBreadcrumbs = [
 
     <div class="sideMeta">
       {quickActions.map((a) => {
-        if (a.kind === "download") {
-          return (
-            <a class="qaRow primary qaDownloadRow" href={a.href} download target="_blank" rel="noopener">
-              <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-              <span class="qaText">{a.label}</span>
-              {a.fileType && <span class="qaFileType">{a.fileType}</span>}
-            </a>
-          );
-        }
+       if (a.kind === "download") {
+  return (
+    <a
+      class="qaRow primary qaDownloadRow"
+      href={a.href}
+      download
+      target="_blank"
+      rel="noopener"
+      onclick={`trackEvent('framework_download', { framework: '${item.slug}', source: 'quick_actions' })`}
+    >
+      <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+      <span class="qaText">{a.label}</span>
+      {a.fileType && <span class="qaFileType">{a.fileType}</span>}
+    </a>
+  );
+}
 
         if (a.kind === "preview") {
           return (
@@ -334,15 +341,15 @@ const pmFrameworkBreadcrumbs = [
 
     <div class="downloadList">
       {normalizedDownloads.map((f, i) => (
-        <a
-          class="fileRow"
-          href={f.href}
-          download
-          target="_blank"
-          rel="noopener"
-          aria-label={`Download ${f.displayName || `Attachment ${i + 1}`}`}
-            onclick={`trackEvent('framework_download', { framework: '${item.slug}' })`}
-        >
+<a
+  class="fileRow"
+  href={f.href}
+  download
+  target="_blank"
+  rel="noopener"
+  aria-label={`Download ${f.displayName || `Attachment ${i + 1}`}`}
+  onclick={`trackEvent('framework_download', { framework: '${item.slug}', file: '${f.displayName.replace(/'/g, "\\'")}', source: 'downloads_list' })`}
+>
           <span class="fileType" aria-hidden="true">{f.typeLabel}</span>
           <span class="fileName">{f.displayName || `Attachment ${i + 1}`}</span>
         </a>
