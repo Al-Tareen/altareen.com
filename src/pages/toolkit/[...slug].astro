@@ -175,6 +175,7 @@ const pmFrameworkBreadcrumbs = [
 ];
 ---
 
+
 <PageShell
   title={title}
   description={description}
@@ -301,7 +302,14 @@ const pmFrameworkBreadcrumbs = [
         }
 
         return (
-          <a class="qaRow" href={a.href} target="_blank" rel="noopener">
+          <a 
+  class="qaRow primary qaDownloadRow"
+  href={a.href}
+  download
+  target="_blank"
+  rel="noopener"
+  onclick={`trackEvent('framework_download', { framework: '${item.slug}' })`}
+>
             <span class="qaIcon" aria-hidden="true">{a.icon}</span>
             <span class="qaText">{a.label}</span>
             <span class="qaEnd" aria-hidden="true">↗</span>
@@ -333,6 +341,7 @@ const pmFrameworkBreadcrumbs = [
           target="_blank"
           rel="noopener"
           aria-label={`Download ${f.displayName || `Attachment ${i + 1}`}`}
+            onclick={`trackEvent('framework_download', { framework: '${item.slug}' })`}
         >
           <span class="fileType" aria-hidden="true">{f.typeLabel}</span>
           <span class="fileName">{f.displayName || `Attachment ${i + 1}`}</span>
