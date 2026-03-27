@@ -382,9 +382,13 @@ const aboutBreadcrumbs = [
 
           const data = await res.json();
 
-          if (res.ok && data.success) {
-            form.reset();
-            successEl.removeAttribute("hidden");
+if (res.ok && data.success) {
+  form.reset();
+  successEl.removeAttribute("hidden");
+
+  // 🔥 REAL conversion tracking
+  trackEvent('contact_submit');
+}
           } else {
             errorEl.removeAttribute("hidden");
             console.error("Web3Forms error:", data);
