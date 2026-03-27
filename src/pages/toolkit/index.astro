@@ -421,7 +421,18 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       viewCompact?.addEventListener("click", () => setView("compact"));
 
       q?.addEventListener("input", applyFilter);
-      cat?.addEventListener("change", applyFilter);
+     cat?.addEventListener("change", () => {
+  const selected = cat.value || "";
+
+  if (selected) {
+    trackEvent("toolkit_category_select", {
+      category: selected,
+      page: "pm_toolkit_index",
+    });
+  }
+
+  applyFilter();
+});
       clear?.addEventListener("click", clearFilters);
       emptyClear?.addEventListener("click", clearFilters);
 
