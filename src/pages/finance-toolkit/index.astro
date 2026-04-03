@@ -286,6 +286,34 @@ breadcrumbs={financeBreadcrumbs}
             return String(s || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
           }
 
+          const controlsBar = document.querySelector(".controlsBar");
+          const toolkitRoot = document.querySelector(".toolkit");
+
+          function syncStickyControlBar() {
+            if (!controlsBar) return;
+
+            const stickyTop = parseFloat(getComputedStyle(controlsBar).top || "0") || 0;
+            const rect = controlsBar.getBoundingClientRect();
+            const isSticky = rect.top <= stickyTop + 0.5;
+
+            controlsBar.classList.toggle("isStickyMobile", isSticky);
+
+            if (isSticky && toolkitRoot) {
+              const hostRect = toolkitRoot.getBoundingClientRect();
+              const leftExpand = Math.max(0, hostRect.left);
+              const rightExpand = Math.max(0, window.innerWidth - hostRect.right);
+              controlsBar.style.setProperty("--sticky-expand-left", `${leftExpand}px`);
+              controlsBar.style.setProperty("--sticky-expand-right", `${rightExpand}px`);
+            } else {
+              controlsBar.style.removeProperty("--sticky-expand-left");
+              controlsBar.style.removeProperty("--sticky-expand-right");
+            }
+          }
+
+          function queueStickyControlBarSync() {
+            window.requestAnimationFrame(syncStickyControlBar);
+          }
+
           function getHasActiveFilter() {
             return Boolean(normalize(q?.value) || (cat?.value || ""));
           }
@@ -490,6 +518,11 @@ function refreshExpandableSections(forceExpand = false) {
             if (saved === "compact" || saved === "grid") setView(saved);
           } catch {}
 
+window.addEventListener("scroll", queueStickyControlBarSync, { passive: true });
+window.addEventListener("resize", queueStickyControlBarSync);
+window.visualViewport?.addEventListener("resize", queueStickyControlBarSync);
+window.visualViewport?.addEventListener("scroll", queueStickyControlBarSync);
+
 viewGrid?.addEventListener("click", () => setView("grid"));
 viewCompact?.addEventListener("click", () => setView("compact"));
 
@@ -600,6 +633,10 @@ emptyClear?.addEventListener("click", clearFilters);
           applyFilter();
           computeActiveSection();
           updateRails();
+          queueStickyControlBarSync();
+          setTimeout(queueStickyControlBarSync, 80);
+          setTimeout(queueStickyControlBarSync, 220);
+          window.addEventListener("load", queueStickyControlBarSync);
 
           requestAnimationFrame(() => refreshExpandableSections(getHasActiveFilter()));
           setTimeout(() => refreshExpandableSections(getHasActiveFilter()), 80);
@@ -641,8 +678,8 @@ emptyClear?.addEventListener("click", clearFilters);
 
   .controlsBar {
     position: sticky;
-    top: calc(var(--siteHeaderH) + 0px);
-    z-index: 90;
+    top: calc(var(--siteHeaderH, 64px) + 0px);
+    z-index: 40;
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
@@ -665,7 +702,13 @@ emptyClear?.addEventListener("click", clearFilters);
       0 1px 0 rgba(255,255,255,0.7) inset,
       0 16px 34px rgba(0,0,0,0.035);
     margin: 0 0 14px;
-    transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+    transition:
+      box-shadow 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      border-radius 0.22s var(--ease),
+      margin 0.22s var(--ease),
+      padding 0.22s var(--ease),
+      width 0.22s var(--ease);
   }
 
   .controlsBar:focus-within {
@@ -673,6 +716,18 @@ emptyClear?.addEventListener("click", clearFilters);
     box-shadow:
       0 1px 0 rgba(255,255,255,0.78) inset,
       0 20px 40px rgba(0,0,0,0.045);
+  }
+
+  .controlsBar.isStickyMobile {
+    width: auto;
+    max-width: none;
+    margin-left: calc(var(--sticky-expand-left, 0px) * -1);
+    margin-right: calc(var(--sticky-expand-right, 0px) * -1);
+    border-radius: 0;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
   }
 
   .field {
@@ -1334,6 +1389,11 @@ emptyClear?.addEventListener("click", clearFilters);
       border-radius: 16px;
       gap: 8px;
       margin-bottom: 12px;
+    }
+
+    .controlsBar.isStickyMobile {
+      padding-left: max(12px, env(safe-area-inset-left, 0px));
+      padding-right: max(12px, env(safe-area-inset-right, 0px));
     }
 
     .field {

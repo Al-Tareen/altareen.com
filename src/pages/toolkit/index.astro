@@ -45,9 +45,23 @@ function catId(name) {
 
 // Featured (Notion checkbox -> frontmatter `featured: true`)
 const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
-const spotlight = featured.slice(0, 3);
-const featuredRemainder = featured.slice(3);
-const spotlightKickers = ["Selected", "Highlighted", "Recommended"];
+const analyticsCards = [
+  {
+    title: "Most Popular Framework",
+    metricLabel: "Views",
+    eventLine: "framework_click",
+  },
+  {
+    title: "Most Downloaded Framework",
+    metricLabel: "Downloads",
+    eventLine: "framework_download • file_download",
+  },
+  {
+    title: "Most Liked Framework",
+    metricLabel: "Likes",
+    eventLine: "framework_feedback",
+  },
+];
 
 const pmtoolkitBreadcrumbs = [
   { name: "Home", path: "/" },
@@ -90,66 +104,30 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     </div>
   </div> 
 
-    {spotlight.length > 0 && (
-      <section class="spotlightBlock" id="__spotlight" data-group="__spotlight">
-        <div class="groupHead">
-          <div class="groupTitleWrap">
-            <h2 class="groupTitle">
-              Spotlight <span class="count">({spotlight.length})</span>
-            </h2>
-            <div class="groupRule" aria-hidden="true"></div>
-          </div>
-        </div>
+    {analyticsCards.length > 0 && (
+      <section class="analyticsStrip" aria-label="Framework performance overview">
+        <div class="analyticsGrid">
+          {analyticsCards.map((card) => (
+            <article class="analyticsCard">
+              <div class="analyticsTitle">{card.title}</div>
 
-        <div class="spotlightGrid">
-          {spotlight.map((item, index) => (
-            <a
-              class="card spotlightCard"
-              href={`/toolkit/${item.slug}/`}
-              data-title={item.data.title}
-              data-category={item.data.primaryCategory || "Uncategorized"}
-              data-when={item.data.whenToUse || ""}
-              data-featured="true"
-              onclick={`trackEvent('framework_click', { framework: '${item.slug}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: true, surface: 'spotlight' })`}
-            >
-              {item.data.cover ? (
-                <div class="thumb" aria-hidden="true">
-                  <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
-                </div>
-              ) : (
-                <div class="thumb thumbEmpty" aria-hidden="true">
-                  <span class="thumbMark">AL</span>
-                </div>
-              )}
-
-              <div class="meta spotlightMeta">
-                <div class="spotlightTop">
-                  <span class="spotlightKicker">{spotlightKickers[index] || "Featured"}</span>
-                  <span class="spotlightCategory">{item.data.primaryCategory || "Uncategorized"}</span>
-                </div>
-
-                <div class="cardTitle">{item.data.title}</div>
-
-                <div class="excerpt">
-                  <div class="excerptLabel">When to use</div>
-                  <div class="whenToUse">
-                    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
-                  </div>
-                </div>
+              <div class="analyticsEventRow">
+                <span class="analyticsEventLabel">{card.metricLabel}</span>
+                <span class="analyticsEventValue">{card.eventLine}</span>
               </div>
-            </a>
+            </article>
           ))}
         </div>
       </section>
     )}
 
            <!-- Featured -->
-    {featuredRemainder.length > 0 && (
+    {featured.length > 0 && (
       <section class="featuredBlock" id="__featured" data-group="__featured" data-expanded="false">
         <div class="groupHead">
           <div class="groupTitleWrap">
             <h2 class="groupTitle">
-              Featured <span class="count">({featuredRemainder.length})</span>
+              Featured <span class="count">({featured.length})</span>
             </h2>
             <div class="groupRule" aria-hidden="true"></div>
           </div>
@@ -157,7 +135,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 
         <div class="groupReveal" data-expand-wrap>
           <div class="grid" data-expand-grid>
-            {featuredRemainder.map((item) => (
+            {featured.map((item) => (
             <a
   class="card"
   href={`/toolkit/${item.slug}/`}
@@ -307,6 +285,34 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 
       function normalize(s) {
         return (s || "").toLowerCase().trim();
+      }
+
+      const controlsBar = document.querySelector(".controlsBar");
+      const toolkitRoot = document.querySelector(".toolkit");
+
+      function syncStickyControlBar() {
+        if (!controlsBar) return;
+
+        const stickyTop = parseFloat(getComputedStyle(controlsBar).top || "0") || 0;
+        const rect = controlsBar.getBoundingClientRect();
+        const isSticky = rect.top <= stickyTop + 0.5;
+
+        controlsBar.classList.toggle("isStickyMobile", isSticky);
+
+        if (isSticky && toolkitRoot) {
+          const hostRect = toolkitRoot.getBoundingClientRect();
+          const leftExpand = Math.max(0, hostRect.left);
+          const rightExpand = Math.max(0, window.innerWidth - hostRect.right);
+          controlsBar.style.setProperty("--sticky-expand-left", `${leftExpand}px`);
+          controlsBar.style.setProperty("--sticky-expand-right", `${rightExpand}px`);
+        } else {
+          controlsBar.style.removeProperty("--sticky-expand-left");
+          controlsBar.style.removeProperty("--sticky-expand-right");
+        }
+      }
+
+      function queueStickyControlBarSync() {
+        window.requestAnimationFrame(syncStickyControlBar);
       }
 
       function getHasActiveFilter() {
@@ -476,7 +482,12 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       viewGrid?.addEventListener("click", () => setView("grid"));
       viewCompact?.addEventListener("click", () => setView("compact"));
 
-      q?.addEventListener("input", applyFilter);
+    window.addEventListener("scroll", queueStickyControlBarSync, { passive: true });
+    window.addEventListener("resize", queueStickyControlBarSync);
+    window.visualViewport?.addEventListener("resize", queueStickyControlBarSync);
+    window.visualViewport?.addEventListener("scroll", queueStickyControlBarSync);
+
+    q?.addEventListener("input", applyFilter);
      cat?.addEventListener("change", () => {
   const selected = cat.value || "";
 
@@ -511,6 +522,11 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       toTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
       updateToTop();
 
+      queueStickyControlBarSync();
+      setTimeout(queueStickyControlBarSync, 80);
+      setTimeout(queueStickyControlBarSync, 220);
+      window.addEventListener("load", queueStickyControlBarSync);
+
       applyFilter();
 
       requestAnimationFrame(() => refreshExpandableSections(getHasActiveFilter()));
@@ -529,6 +545,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 <style>
   .toolkit {
     width: 100%;
+    overflow-x: visible;
     padding-top: 10px;
     padding-bottom: 76px;
     box-sizing: border-box;
@@ -550,8 +567,8 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 
   .controlsBar {
     position: sticky;
-    top: calc(var(--siteHeaderH) + 0px);
-    z-index: 90;
+    top: calc(var(--siteHeaderH, 64px) + 8px);
+    z-index: 40;
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
@@ -574,7 +591,13 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       0 1px 0 rgba(255,255,255,0.7) inset,
       0 16px 34px rgba(0,0,0,0.035);
     margin: 0 0 14px;
-    transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+    transition:
+      box-shadow 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      border-radius 0.22s var(--ease),
+      margin 0.22s var(--ease),
+      padding 0.22s var(--ease),
+      width 0.22s var(--ease);
   }
 
   .controlsBar:focus-within {
@@ -582,6 +605,83 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     box-shadow:
       0 1px 0 rgba(255,255,255,0.78) inset,
       0 20px 40px rgba(0,0,0,0.045);
+  }
+
+  .controlsBar.isStickyMobile {
+    width: auto;
+    max-width: none;
+    margin-left: calc(var(--sticky-expand-left, 0px) * -1);
+    margin-right: calc(var(--sticky-expand-right, 0px) * -1);
+    border-radius: 0;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
+  }
+
+  .analyticsStrip {
+    margin-bottom: 18px;
+  }
+
+  .analyticsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .analyticsCard {
+    position: relative;
+    min-width: 0;
+    padding: 18px 18px 16px;
+    border-radius: 20px;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface) 99%, white 1%), color-mix(in srgb, var(--surface) 97%, black 3%));
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.74) inset,
+      0 18px 32px rgba(15, 23, 42, 0.05);
+  }
+
+
+  .analyticsTitle {
+    color: var(--ink);
+    font-size: 1.02rem;
+    font-weight: 650;
+    letter-spacing: -0.022em;
+    line-height: 1.2;
+    margin-bottom: 18px;
+  }
+
+  .analyticsEventRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
+  }
+
+  .analyticsEventLabel {
+    flex: 0 0 auto;
+    padding-inline: 0;
+    min-height: 0;
+    border-radius: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 0;
+    color: color-mix(in srgb, var(--ink-muted) 82%, var(--ink) 18%);
+  }
+
+  .analyticsEventValue {
+    min-width: 0;
+    color: var(--ink);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-align: right;
   }
 
   .field {
@@ -1271,12 +1371,23 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     }
 
     .controlsBar {
-      top: calc(var(--siteHeaderH) + 0px);
+      top: calc(var(--siteHeaderH, 64px) - 1px);
       padding: 12px;
       border-radius: 16px;
       gap: 8px;
       margin-bottom: 12px;
     }
+
+    .controlsBar.isStickyMobile {
+      padding-left: max(12px, env(safe-area-inset-left, 0px));
+      padding-right: max(12px, env(safe-area-inset-right, 0px));
+    }
+
+    .analyticsGrid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
 
     .field {
       min-width: 100%;
@@ -1401,7 +1512,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 
     .controlsBar {
       padding: 12px;
-      top: calc(var(--siteHeaderH) + -8px + env(safe-area-inset-top, 0px));
+      top: calc(var(--siteHeaderH, 64px) - 0px);
       border-radius: 16px;
     }
 
@@ -1443,6 +1554,23 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       transform: none !important;
     }
   }
+
+  @media (max-width: 720px) {
+    .toolkit {
+      padding-top: 0;
+    }
+
+    .controlsBar {
+      top: calc(var(--siteHeaderH, 64px) - 4px);
+      margin-bottom: 12px;
+    }
+
+    .controlsBar.isStickyMobile {
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+  }
+
 </style>
 
   </div>

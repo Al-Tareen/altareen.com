@@ -412,8 +412,8 @@ const projectsSchema = {
               target="_blank"
               rel="noreferrer"
             >
-              <span class="actionBtnText">Open in new tab</span>
-              <span class="actionBtnIcon" aria-hidden="true">↗</span>
+              <span class="actionBtnText" id="projectPreviewActionText">Open in new tab</span>
+              <span class="actionBtnIcon" id="projectPreviewActionIcon" aria-hidden="true">↗</span>
             </a>
 
             <button
@@ -449,6 +449,34 @@ const projectsSchema = {
 
     function normalize(s) {
       return (s || "").toLowerCase().trim();
+    }
+
+    const controlsBar = document.querySelector(".controlsBar");
+    const projectsRoot = document.querySelector(".projectsRoot");
+
+    function syncStickyControlBar() {
+      if (!controlsBar) return;
+
+      const stickyTop = parseFloat(getComputedStyle(controlsBar).top || "0") || 0;
+      const rect = controlsBar.getBoundingClientRect();
+      const isSticky = rect.top <= stickyTop + 0.5;
+
+      controlsBar.classList.toggle("isStickyMobile", isSticky);
+
+      if (isSticky && projectsRoot) {
+        const hostRect = projectsRoot.getBoundingClientRect();
+        const leftExpand = Math.max(0, hostRect.left);
+        const rightExpand = Math.max(0, window.innerWidth - hostRect.right);
+        controlsBar.style.setProperty("--sticky-expand-left", `${leftExpand}px`);
+        controlsBar.style.setProperty("--sticky-expand-right", `${rightExpand}px`);
+      } else {
+        controlsBar.style.removeProperty("--sticky-expand-left");
+        controlsBar.style.removeProperty("--sticky-expand-right");
+      }
+    }
+
+    function queueStickyControlBarSync() {
+      window.requestAnimationFrame(syncStickyControlBar);
     }
 
     function countVisibleCards() {
@@ -568,6 +596,9 @@ const projectsSchema = {
       toTop.classList.toggle("isVisible", show);
     }
 
+    window.addEventListener("scroll", queueStickyControlBarSync, { passive: true });
+    window.addEventListener("resize", queueStickyControlBarSync);
+
     q?.addEventListener("input", applyFilter);
     cat?.addEventListener("change", applyFilter);
     clear?.addEventListener("click", clearFilters);
@@ -597,11 +628,127 @@ const projectsSchema = {
     const modalTitle = document.getElementById("projectPreviewTitle");
     const modalBody = document.getElementById("projectPreviewBody");
     const openNew = document.getElementById("projectPreviewOpenNew");
+    const previewActionText = document.getElementById("projectPreviewActionText");
+    const previewActionIcon = document.getElementById("projectPreviewActionIcon");
     const openButtons = document.querySelectorAll("[data-preview-open]");
     const closeButtons = document.querySelectorAll("[data-preview-close]");
 
+    let activePdfRenderToken = 0;
+    let pdfJsLibPromise = null;
+
+    async function loadPdfJs() {
+      if (window.pdfjsLib) return window.pdfjsLib;
+      if (pdfJsLibPromise) return pdfJsLibPromise;
+
+      pdfJsLibPromise = new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[data-pdfjs-loader="true"]');
+
+        function finish() {
+          if (!window.pdfjsLib) {
+            reject(new Error("pdf.js failed to load."));
+            return;
+          }
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+          resolve(window.pdfjsLib);
+        }
+
+        if (existing) {
+          existing.addEventListener("load", finish, { once: true });
+          existing.addEventListener("error", () => reject(new Error("pdf.js loader failed.")), { once: true });
+          if (window.pdfjsLib) finish();
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+        script.async = true;
+        script.dataset.pdfjsLoader = "true";
+        script.addEventListener("load", finish, { once: true });
+        script.addEventListener("error", () => reject(new Error("pdf.js loader failed.")), { once: true });
+        document.head.appendChild(script);
+      });
+
+      return pdfJsLibPromise;
+    }
+
     function buildPdfPreviewUrl(baseUrl) {
       return `${baseUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&zoom=page-width`;
+    }
+
+    async function renderPdfPreview(url, title) {
+      if (!modalBody) return;
+
+      const renderToken = ++activePdfRenderToken;
+      modalBody.innerHTML = "";
+      modalBody.dataset.kind = "pdf";
+
+      const stage = document.createElement("div");
+      stage.className = "previewPdfStage";
+
+      const loading = document.createElement("div");
+      loading.className = "previewPdfLoading";
+      loading.textContent = "Loading PDF…";
+      stage.appendChild(loading);
+      modalBody.appendChild(stage);
+
+      try {
+        const pdfjsLib = await loadPdfJs();
+        if (renderToken != activePdfRenderToken || !modalBody) return;
+
+        const pdf = await pdfjsLib.getDocument(url).promise;
+        if (renderToken != activePdfRenderToken || !modalBody) return;
+
+        stage.innerHTML = "";
+
+        const doc = document.createElement("div");
+        doc.className = "previewPdfDoc";
+        stage.appendChild(doc);
+
+        const availableWidth = Math.max(320, (modalBody.clientWidth || stage.clientWidth || 960) - 32);
+        const targetWidth = Math.max(280, Math.min(1400, availableWidth));
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+          if (renderToken != activePdfRenderToken || !modalBody) return;
+
+          const page = await pdf.getPage(pageNumber);
+          const baseViewport = page.getViewport({ scale: 1 });
+          const scale = targetWidth / baseViewport.width;
+          const viewport = page.getViewport({ scale });
+
+          const pageWrap = document.createElement("div");
+          pageWrap.className = "previewPdfPage";
+
+          const canvas = document.createElement("canvas");
+          canvas.className = "previewPdfPageCanvas";
+          const context = canvas.getContext("2d", { alpha: false });
+
+          canvas.width = Math.floor(viewport.width * pixelRatio);
+          canvas.height = Math.floor(viewport.height * pixelRatio);
+          canvas.style.width = `${viewport.width}px`;
+          canvas.style.height = `${viewport.height}px`;
+
+          pageWrap.appendChild(canvas);
+          doc.appendChild(pageWrap);
+
+          await page.render({
+            canvasContext: context,
+            viewport,
+            transform: pixelRatio !== 1 ? [pixelRatio, 0, 0, pixelRatio, 0, 0] : null,
+          }).promise;
+        }
+      } catch (error) {
+        if (renderToken != activePdfRenderToken || !modalBody) return;
+        stage.innerHTML = "";
+
+        const frame = document.createElement("iframe");
+        frame.className = "previewFrame previewPdfFrame";
+        frame.src = buildPdfPreviewUrl(url);
+        frame.title = title || "PDF preview";
+        frame.loading = "lazy";
+        frame.setAttribute("aria-label", title || "PDF preview");
+        stage.appendChild(frame);
+      }
     }
 
     function buildPreview(kind, url, title) {
@@ -611,28 +758,7 @@ const projectsSchema = {
       modalBody.dataset.kind = kind || "file";
 
       if (kind === "pdf") {
-        const stage = document.createElement("div");
-        stage.className = "previewPdfStage";
-
-        const canvas = document.createElement("div");
-        canvas.className = "previewPdfCanvas";
-
-        const pdfObject = document.createElement("object");
-        pdfObject.className = "previewPdfObject";
-        pdfObject.type = "application/pdf";
-        pdfObject.data = buildPdfPreviewUrl(url);
-        pdfObject.setAttribute("aria-label", title || "PDF preview");
-
-        const frame = document.createElement("iframe");
-        frame.className = "previewFrame";
-        frame.src = buildPdfPreviewUrl(url);
-        frame.title = title;
-        frame.loading = "lazy";
-
-        pdfObject.appendChild(frame);
-        canvas.appendChild(pdfObject);
-        stage.appendChild(canvas);
-        modalBody.appendChild(stage);
+        renderPdfPreview(url, title);
         return;
       }
 
@@ -685,6 +811,17 @@ const projectsSchema = {
       modalTitle.textContent = title || "Preview";
       buildPreview(kind, url, title || "Preview");
       openNew.href = url;
+
+      if (kind === "pdf") {
+        openNew.setAttribute("download", "");
+        if (previewActionText) previewActionText.textContent = "Download";
+        if (previewActionIcon) previewActionIcon.textContent = "↓";
+      } else {
+        openNew.removeAttribute("download");
+        if (previewActionText) previewActionText.textContent = "Open in new tab";
+        if (previewActionIcon) previewActionIcon.textContent = "↗";
+      }
+
       modal.hidden = false;
 
       if (typeof modal.scrollTo === "function") {
@@ -700,12 +837,15 @@ const projectsSchema = {
 
     function closePreview() {
       if (!modal || !modalBody) return;
+      activePdfRenderToken += 1;
       modal.hidden = true;
       modalBody.innerHTML = "";
       modalBody.removeAttribute("data-kind");
+      openNew?.removeAttribute("download");
+      if (previewActionText) previewActionText.textContent = "Open in new tab";
+      if (previewActionIcon) previewActionIcon.textContent = "↗";
       unlockPreviewScroll();
     }
-
     openButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
         const title = btn.getAttribute("data-preview-title") || "Preview";
@@ -738,7 +878,7 @@ const projectsSchema = {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     isolation: isolate;
-    overflow-x: clip;
+    overflow-x: visible;
     background: transparent;
     --card-radius: 18px;
     --card-radius-sm: 12px;
@@ -785,7 +925,13 @@ const projectsSchema = {
       0 1px 0 rgba(255,255,255,0.7) inset,
       0 16px 34px rgba(0,0,0,0.035);
     margin: 0 0 30px;
-    transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+    transition:
+      box-shadow 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      border-radius 0.22s var(--ease),
+      margin 0.22s var(--ease),
+      padding 0.22s var(--ease),
+      width 0.22s var(--ease);
   }
 
   .controlsBar:focus-within {
@@ -794,6 +940,19 @@ const projectsSchema = {
       0 1px 0 rgba(255,255,255,0.78) inset,
       0 20px 40px rgba(0,0,0,0.045);
   }
+
+  .controlsBar.isStickyMobile {
+    width: calc(100% + var(--sticky-expand-left, 0px) + var(--sticky-expand-right, 0px));
+    max-width: none;
+    margin-left: calc(var(--sticky-expand-left, 0px) * -1);
+    margin-right: calc(var(--sticky-expand-right, 0px) * -1);
+    border-radius: 0;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
+  }
+
 
   .field {
     flex: 1;
@@ -1357,12 +1516,6 @@ const projectsSchema = {
     text-transform: uppercase;
   }
 
-  .comingNoteText {
-    color: rgba(255,255,255,0.68);
-    font-size: 0.76rem;
-    line-height: 1.48;
-    max-width: 17ch;
-  }
 
   .bottomMeta {
     display: grid;
@@ -1505,7 +1658,7 @@ const projectsSchema = {
     color: var(--surface);
     border-color: rgba(0, 0, 0, 0.1);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
-    font-weight: 500;
+    font-weight: 600;
   }
 
   .actionBtn.primary:hover {
@@ -1532,8 +1685,8 @@ const projectsSchema = {
     white-space: nowrap;
     text-overflow: ellipsis;
     text-align: left;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 550;
     line-height: 1;
     letter-spacing: -0.01em;
     color: inherit;
@@ -1546,7 +1699,8 @@ const projectsSchema = {
     min-height: 40px;
     justify-content: center;
     padding: 10px 12px;
-    gap: 8px;
+    gap: 10px;
+    border-radius: 12px;
   }
 
   .projectActionBtn .actionBtnText,
@@ -1709,10 +1863,13 @@ const projectsSchema = {
 
   .previewBody[data-kind="pdf"] {
     background: #f6f6f7;
+    overflow: auto;
   }
 
   .previewBody[data-kind="image"] {
     background: linear-gradient(180deg, rgba(248,248,249,0.98), rgba(242,242,244,0.98));
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .previewPdfStage,
@@ -1730,13 +1887,64 @@ const projectsSchema = {
   .previewPdfStage,
   .previewPdfCanvas {
     display: flex;
-    align-items: stretch;
-    justify-content: stretch;
+    align-items: flex-start;
+    justify-content: center;
     background: #f6f6f7;
   }
 
-  .previewPdfObject,
-  .previewFrame {
+  .previewPdfStage {
+    min-height: 100%;
+    padding: 16px;
+    overflow: auto;
+  }
+
+  .previewPdfDoc {
+    width: 100%;
+    display: grid;
+    gap: 16px;
+    justify-items: center;
+    align-content: start;
+  }
+
+  .previewPdfPage {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .previewPdfPageCanvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    background: white;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+    border-radius: 2px;
+  }
+
+  .previewPdfLoading {
+    width: 100%;
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
+    font-size: 0.92rem;
+    font-weight: 500;
+  }
+
+  .previewPdfFrame {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 100%;
+    height: 100%;
+    min-height: 100%;
+    display: block;
+    border: 0;
+    background: white;
+  }
+
+  .previewFrame,
+  .previewPdfFrame {
     display: block;
     width: 100%;
     max-width: 100%;
@@ -1765,15 +1973,17 @@ const projectsSchema = {
     width: 100%;
     height: 100%;
     padding: 0;
+    overflow: auto;
   }
 
   .previewImage {
     display: block;
-    width: 100%;
-    height: 100%;
+    width: auto;
+    height: auto;
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+    object-position: center;
     box-shadow: 0 18px 32px rgba(15, 23, 42, 0.08);
     border-radius: clamp(12px, 1vw, 16px);
   }
@@ -1865,6 +2075,8 @@ const projectsSchema = {
     }
 
     .previewImage {
+      width: auto;
+      height: auto;
       max-width: 100%;
       max-height: 100%;
     }
@@ -1911,6 +2123,12 @@ const projectsSchema = {
       margin-bottom: 20px;
     }
 
+    .controlsBar.isStickyMobile {
+      padding-left: max(12px, env(safe-area-inset-left, 0px));
+      padding-right: max(12px, env(safe-area-inset-right, 0px));
+    }
+
+
     .field {
       flex-basis: 100%;
       min-width: 0;
@@ -1930,6 +2148,10 @@ const projectsSchema = {
       width: 100%;
       justify-content: space-between;
       margin-left: 0;
+    }
+
+    #clear {
+      display: none !important;
     }
 
     .projectRail {
@@ -2005,6 +2227,10 @@ const projectsSchema = {
       padding: 0;
     }
 
+    .previewPdfStage {
+      padding: 10px;
+    }
+
     .previewFrame {
       min-height: calc(100dvh - 162px);
     }
@@ -2013,15 +2239,27 @@ const projectsSchema = {
       min-width: 100%;
       min-height: calc(100dvh - 204px);
       padding: 6px;
+      align-items: flex-start;
     }
 
     .previewImageCanvas {
       padding: 0;
+      width: 100%;
+      height: auto;
+      min-height: calc(100dvh - 216px);
+      overflow: auto;
+      align-items: flex-start;
     }
 
     .previewImage {
+      display: block;
+      width: 100%;
+      height: auto;
       max-width: 100%;
-      max-height: 100%;
+      max-height: none;
+      min-width: 0;
+      object-fit: contain;
+      object-position: top center;
     }
   }
 
