@@ -317,7 +317,6 @@ const projectsSchema = {
                         <div class="cardActions comingActions" aria-hidden="true">
                           <div class="comingNote">
                             <div class="comingNoteLabel">Coming Soon</div>
-                            <div class="comingNoteText">Selected work now being refined for release.</div>
                           </div>
                         </div>
                       ) : (
@@ -402,39 +401,38 @@ const projectsSchema = {
           <div class="previewHeadCopy">
             <div class="previewEyebrow">Project Preview</div>
             <h3 class="previewTitle" id="projectPreviewTitle">Preview</h3>
+            <div class="previewHint">Esc to close</div>
           </div>
 
-          <div class="previewTools" id="previewTools" hidden>
-            <button class="previewToolBtn" id="zoomOutBtn" type="button" aria-label="Zoom out">−</button>
-            <button class="previewToolBtn" id="zoomResetBtn" type="button" aria-label="Reset zoom">100%</button>
-            <button class="previewToolBtn" id="zoomInBtn" type="button" aria-label="Zoom in">+</button>
-          </div>
+          <div class="previewActions">
+            <a
+              class="actionBtn projectSecondaryBtn previewActionBtn"
+              id="projectPreviewOpenNew"
+              href="#"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span class="actionBtnText">Open in new tab</span>
+              <span class="actionBtnIcon" aria-hidden="true">↗</span>
+            </a>
 
-          <button
-            class="previewClose"
-            type="button"
-            data-preview-close
-            aria-label="Close preview"
-          >
-            ×
-          </button>
+            <button
+              class="actionBtn previewActionBtn"
+              type="button"
+              data-preview-close
+              aria-label="Close preview"
+            >
+              <span class="actionBtnText">Close</span>
+              <span class="actionBtnIcon" aria-hidden="true">✕</span>
+            </button>
+          </div>
         </div>
 
         <div class="previewBody" id="projectPreviewBody"></div>
-
-        <div class="previewFoot">
-          <a
-            class="actionBtn projectSecondaryBtn"
-            id="projectPreviewOpenNew"
-            href="#"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Open in new tab
-          </a>
-        </div>
       </div>
     </div>
+
+    <button id="toTop" class="toTop" type="button" aria-label="Back to top">↑ Top</button>
   </div>
 </PageShell>
 
@@ -447,6 +445,7 @@ const projectsSchema = {
     const emptyClear = document.getElementById("emptyClear");
     const resultsText = document.getElementById("resultsText");
     const railGroups = Array.from(document.querySelectorAll("[data-rail-group]"));
+    const toTop = document.getElementById("toTop");
 
     function normalize(s) {
       return (s || "").toLowerCase().trim();
@@ -563,10 +562,19 @@ const projectsSchema = {
       q?.focus();
     }
 
+    function updateToTop() {
+      if (!toTop) return;
+      const show = window.scrollY > 420;
+      toTop.classList.toggle("isVisible", show);
+    }
+
     q?.addEventListener("input", applyFilter);
     cat?.addEventListener("change", applyFilter);
     clear?.addEventListener("click", clearFilters);
     emptyClear?.addEventListener("click", clearFilters);
+    window.addEventListener("scroll", updateToTop, { passive: true });
+    toTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    updateToTop();
     applyFilter();
 
     document.querySelectorAll("[data-project-cta]").forEach((el) => {
@@ -591,68 +599,16 @@ const projectsSchema = {
     const openNew = document.getElementById("projectPreviewOpenNew");
     const openButtons = document.querySelectorAll("[data-preview-open]");
     const closeButtons = document.querySelectorAll("[data-preview-close]");
-    const previewTools = document.getElementById("previewTools");
-    const zoomOutBtn = document.getElementById("zoomOutBtn");
-    const zoomInBtn = document.getElementById("zoomInBtn");
-    const zoomResetBtn = document.getElementById("zoomResetBtn");
 
-    const canUseZoom = typeof CSS !== "undefined" && CSS.supports?.("zoom", "1");
-
-    let currentImage = null;
-    let currentPdfFrame = null;
-    let currentZoomTarget = null;
-    let currentScale = 1;
-    let currentPreviewKind = "";
-
-    function buildPdfPreviewUrl(baseUrl, scale = 1) {
-      const zoomValue = scale === 1 ? "page-width" : `${Math.round(scale * 100)}`;
-      return `${baseUrl}#toolbar=1&navpanes=0&pagemode=none&zoom=${zoomValue}&view=FitH`;
-    }
-
-    function applyCurrentScale() {
-      if (currentPreviewKind === "pdf" && currentPdfFrame) {
-        const baseUrl = currentPdfFrame.dataset.baseUrl || "";
-        if (baseUrl) {
-          const nextSrc = buildPdfPreviewUrl(baseUrl, currentScale);
-          if (currentPdfFrame.dataset.activeSrc !== nextSrc) {
-            currentPdfFrame.dataset.activeSrc = nextSrc;
-            currentPdfFrame.src = nextSrc;
-          }
-        }
-      } else if (currentZoomTarget) {
-        if (canUseZoom) {
-          currentZoomTarget.style.zoom = String(currentScale);
-          currentZoomTarget.style.transform = "";
-        } else {
-          currentZoomTarget.style.zoom = "";
-          currentZoomTarget.style.transform = `scale(${currentScale})`;
-        }
-      }
-
-      if (zoomResetBtn) {
-        zoomResetBtn.textContent = `${Math.round(currentScale * 100)}%`;
-      }
-    }
-
-    function setPreviewScale(next) {
-      currentScale = Math.min(3, Math.max(0.75, next));
-      applyCurrentScale();
+    function buildPdfPreviewUrl(baseUrl) {
+      return `${baseUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&zoom=page-width`;
     }
 
     function buildPreview(kind, url, title) {
       if (!modalBody) return;
 
       modalBody.innerHTML = "";
-      modalBody.dataset.kind = kind;
-      currentImage = null;
-      currentPdfFrame = null;
-      currentZoomTarget = null;
-      currentPreviewKind = kind;
-      currentScale = 1;
-
-      if (previewTools) {
-        previewTools.hidden = !(kind === "image" || kind === "pdf");
-      }
+      modalBody.dataset.kind = kind || "file";
 
       if (kind === "pdf") {
         const stage = document.createElement("div");
@@ -661,21 +617,22 @@ const projectsSchema = {
         const canvas = document.createElement("div");
         canvas.className = "previewPdfCanvas";
 
+        const pdfObject = document.createElement("object");
+        pdfObject.className = "previewPdfObject";
+        pdfObject.type = "application/pdf";
+        pdfObject.data = buildPdfPreviewUrl(url);
+        pdfObject.setAttribute("aria-label", title || "PDF preview");
+
         const frame = document.createElement("iframe");
         frame.className = "previewFrame";
-        frame.dataset.baseUrl = url;
-        frame.dataset.activeSrc = buildPdfPreviewUrl(url, 1);
-        frame.src = frame.dataset.activeSrc;
+        frame.src = buildPdfPreviewUrl(url);
         frame.title = title;
         frame.loading = "lazy";
 
-        canvas.appendChild(frame);
+        pdfObject.appendChild(frame);
+        canvas.appendChild(pdfObject);
         stage.appendChild(canvas);
         modalBody.appendChild(stage);
-
-        currentPdfFrame = frame;
-        currentZoomTarget = frame;
-        setPreviewScale(1);
         return;
       }
 
@@ -695,10 +652,6 @@ const projectsSchema = {
         canvas.appendChild(img);
         stage.appendChild(canvas);
         modalBody.appendChild(stage);
-
-        currentImage = img;
-        currentZoomTarget = img;
-        setPreviewScale(1);
         return;
       }
 
@@ -706,7 +659,7 @@ const projectsSchema = {
       fallback.className = "previewFallback";
       fallback.innerHTML = `
         <div class="previewFallbackTitle">Preview unavailable in modal</div>
-        <p class="previewFallbackDesc">Use the button below to open the file in a new tab.</p>
+        <p class="previewFallbackDesc">Use the action above to open the file in a new tab.</p>
       `;
       modalBody.appendChild(fallback);
     }
@@ -733,15 +686,15 @@ const projectsSchema = {
       buildPreview(kind, url, title || "Preview");
       openNew.href = url;
       modal.hidden = false;
+
       if (typeof modal.scrollTo === "function") {
         modal.scrollTo({ top: 0, left: 0, behavior: "instant" });
       } else {
         modal.scrollTop = 0;
       }
-      if (modalBody) {
-        modalBody.scrollTop = 0;
-        modalBody.scrollLeft = 0;
-      }
+
+      modalBody.scrollTop = 0;
+      modalBody.scrollLeft = 0;
       lockPreviewScroll();
     }
 
@@ -750,18 +703,8 @@ const projectsSchema = {
       modal.hidden = true;
       modalBody.innerHTML = "";
       modalBody.removeAttribute("data-kind");
-      currentImage = null;
-      currentPdfFrame = null;
-      currentZoomTarget = null;
-      currentPreviewKind = "";
-      currentScale = 1;
-      if (previewTools) previewTools.hidden = true;
       unlockPreviewScroll();
     }
-
-    zoomOutBtn?.addEventListener("click", () => setPreviewScale(currentScale - 0.2));
-    zoomInBtn?.addEventListener("click", () => setPreviewScale(currentScale + 0.2));
-    zoomResetBtn?.addEventListener("click", () => setPreviewScale(1));
 
     openButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -1562,7 +1505,7 @@ const projectsSchema = {
     color: var(--surface);
     border-color: rgba(0, 0, 0, 0.1);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .actionBtn.primary:hover {
@@ -1589,8 +1532,8 @@ const projectsSchema = {
     white-space: nowrap;
     text-overflow: ellipsis;
     text-align: left;
-    font-size: 13px;
-    font-weight: 550;
+    font-size: 14px;
+    font-weight: 500;
     line-height: 1;
     letter-spacing: -0.01em;
     color: inherit;
@@ -1625,7 +1568,7 @@ const projectsSchema = {
       0 8px 16px rgba(0, 0, 0, 0.03);
   }
 
-  :where(.actionBtn, .ghost, .primary, .previewToolBtn, .previewClose, .railFloat):focus-visible {
+  :where(.actionBtn, .ghost, .primary, .railFloat):focus-visible {
     outline: none;
     border-color: color-mix(in srgb, var(--border) 92%, transparent);
     box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
@@ -1663,17 +1606,17 @@ const projectsSchema = {
   .previewPanel {
     position: relative;
     z-index: 1;
-    width: min(1360px, calc(100vw - 28px - var(--preview-scrollbar-comp, 0px)));
+    width: min(1280px, calc(100vw - 28px - var(--preview-scrollbar-comp, 0px)));
     height: min(
       calc(100dvh - (var(--siteHeaderH, 64px) + 32px) - max(18px, calc(env(safe-area-inset-bottom, 0px) + 12px))),
-      1080px
+      1040px
     );
     max-height: calc(
       100dvh - (var(--siteHeaderH, 64px) + 32px) - max(18px, calc(env(safe-area-inset-bottom, 0px) + 12px))
     );
     margin: 0 auto;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr;
     border-radius: 22px;
     border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
     background:
@@ -1688,24 +1631,21 @@ const projectsSchema = {
     overflow: hidden;
   }
 
-  .previewHead,
-  .previewFoot {
+  .previewHead {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 14px;
     padding: 16px 18px;
     border-bottom: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
-  }
-
-  .previewFoot {
-    border-bottom: 0;
-    border-top: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
-    justify-content: flex-end;
+    background: color-mix(in srgb, var(--surface) 99%, white 1%);
   }
 
   .previewHeadCopy {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .previewEyebrow {
@@ -1715,7 +1655,6 @@ const projectsSchema = {
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    margin-bottom: 6px;
   }
 
   .previewTitle {
@@ -1724,39 +1663,46 @@ const projectsSchema = {
     font-size: 1rem;
     font-weight: 675;
     letter-spacing: -0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .previewTools {
+  .previewHint {
+    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .previewActions {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     margin-left: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
-  .previewToolBtn,
-  .previewClose {
-    display: inline-flex;
-    align-items: center;
+  .previewActionBtn {
+    width: auto;
+    min-width: 0;
+    flex: 0 0 auto;
     justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    padding: 0 10px;
-    border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-    background: color-mix(in srgb, var(--surface) 98%, black 2%);
-    color: var(--ink);
-    font-size: 0.9rem;
-    font-weight: 650;
-    cursor: pointer;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .previewActionBtn .actionBtnText {
+    flex: 0 1 auto;
+    text-align: center;
   }
 
   .previewBody {
     min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    display: flex;
+    overflow: hidden;
+    display: grid;
     align-items: stretch;
-    justify-content: stretch;
+    justify-items: stretch;
     background: linear-gradient(180deg, rgba(248,248,249,0.98), rgba(242,242,244,0.98));
     padding: 0;
   }
@@ -1770,78 +1716,64 @@ const projectsSchema = {
   }
 
   .previewPdfStage,
-  .previewImageStage {
+  .previewPdfCanvas,
+  .previewImageStage,
+  .previewImageCanvas {
     width: 100%;
     height: 100%;
     min-width: 0;
     min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
     box-sizing: border-box;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
   }
 
-  .previewPdfStage {
-    padding: 0;
-    background: #f6f6f7;
-  }
-
+  .previewPdfStage,
   .previewPdfCanvas {
-    width: 100%;
-    min-width: 0;
-    min-height: 100%;
     display: flex;
     align-items: stretch;
     justify-content: stretch;
-    padding: 0;
-    overflow-x: hidden;
+    background: #f6f6f7;
   }
 
+  .previewPdfObject,
   .previewFrame {
     display: block;
     width: 100%;
     max-width: 100%;
-    min-width: 0;
-    flex: 1 1 auto;
+    min-width: 100%;
     height: 100%;
     min-height: 100%;
     border: 0;
     border-radius: 0;
     background: white;
-    box-shadow: none;
-    transform-origin: top center;
+    overflow: hidden;
+    flex: 1 1 auto;
   }
 
   .previewImageStage {
-    padding: clamp(8px, 0.9vw, 12px);
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
+    padding: 0;
     background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,245,246,0.98));
   }
 
   .previewImageCanvas {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
     width: 100%;
-    min-width: 0;
-    min-height: 100%;
+    height: 100%;
     padding: 0;
-    box-sizing: border-box;
-    overflow-x: hidden;
   }
 
   .previewImage {
     display: block;
     width: 100%;
+    height: 100%;
     max-width: 100%;
-    min-width: 0;
-    height: auto;
-    max-height: none;
+    max-height: 100%;
     object-fit: contain;
-    transform-origin: center top;
-    transition: transform 0.18s ease;
     box-shadow: 0 18px 32px rgba(15, 23, 42, 0.08);
     border-radius: clamp(12px, 1vw, 16px);
   }
@@ -1877,6 +1809,42 @@ const projectsSchema = {
     line-height: 1.55;
   }
 
+  .toTop {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 60;
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    background: color-mix(in srgb, var(--surface) 96%, white 4%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.62) inset,
+      0 10px 20px rgba(0,0,0,0.05);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), border-color 0.2s var(--ease);
+    font-size: 12px;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
+  }
+
+  .toTop.isVisible {
+    opacity: 0.98;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .toTop:hover {
+    color: var(--ink);
+    border-color: color-mix(in srgb, var(--border) 92%, transparent);
+  }
+
   .previewIsOpen {
     overflow: hidden;
   }
@@ -1892,8 +1860,13 @@ const projectsSchema = {
       max-height: calc(100dvh - (var(--siteHeaderH, 64px) + 24px) - max(14px, calc(env(safe-area-inset-bottom, 0px) + 8px)));
     }
 
-    .previewImage {
+    .previewFrame {
       width: 100%;
+    }
+
+    .previewImage {
+      max-width: 100%;
+      max-height: 100%;
     }
   }
 
@@ -2017,19 +1990,14 @@ const projectsSchema = {
       border-radius: 18px;
     }
 
-    .previewHead,
-    .previewFoot {
-      padding: 14px 15px;
-    }
-
     .previewHead {
+      padding: 14px 15px;
       flex-wrap: wrap;
     }
 
-    .previewTools {
-      margin-left: 0;
-      order: 3;
+    .previewActions {
       width: 100%;
+      margin-left: 0;
       justify-content: flex-start;
     }
 
@@ -2037,23 +2005,14 @@ const projectsSchema = {
       padding: 0;
     }
 
-    .previewPdfStage {
-      padding: 0;
-    }
-
-    .previewImageStage {
-      padding: 4px;
-    }
-
     .previewFrame {
       min-height: calc(100dvh - 162px);
-      border-radius: 0;
     }
 
     .previewImageStage {
       min-width: 100%;
       min-height: calc(100dvh - 204px);
-      border-radius: 12px;
+      padding: 6px;
     }
 
     .previewImageCanvas {
@@ -2061,9 +2020,8 @@ const projectsSchema = {
     }
 
     .previewImage {
-      width: 100%;
       max-width: 100%;
-      min-width: 100%;
+      max-height: 100%;
     }
   }
 
@@ -2077,6 +2035,11 @@ const projectsSchema = {
       top: calc(var(--siteHeaderH, 64px) - 8px + env(safe-area-inset-top, 0px));
       border-radius: 16px;
     }
+
+    .toTop {
+      right: 12px;
+      bottom: 12px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -2088,9 +2051,7 @@ const projectsSchema = {
     .actionBtn,
     .ghost,
     .primary,
-    .railFloat,
-    .previewToolBtn,
-    .previewClose {
+    .railFloat {
       transition: none !important;
     }
 

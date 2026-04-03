@@ -45,6 +45,9 @@ function catId(name) {
 
 // Featured (Notion checkbox -> frontmatter `featured: true`)
 const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
+const spotlight = featured.slice(0, 3);
+const featuredRemainder = featured.slice(3);
+const spotlightKickers = ["Selected", "Highlighted", "Recommended"];
 
 const pmtoolkitBreadcrumbs = [
   { name: "Home", path: "/" },
@@ -87,13 +90,66 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     </div>
   </div> 
 
+    {spotlight.length > 0 && (
+      <section class="spotlightBlock" id="__spotlight" data-group="__spotlight">
+        <div class="groupHead">
+          <div class="groupTitleWrap">
+            <h2 class="groupTitle">
+              Spotlight <span class="count">({spotlight.length})</span>
+            </h2>
+            <div class="groupRule" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="spotlightGrid">
+          {spotlight.map((item, index) => (
+            <a
+              class="card spotlightCard"
+              href={`/toolkit/${item.slug}/`}
+              data-title={item.data.title}
+              data-category={item.data.primaryCategory || "Uncategorized"}
+              data-when={item.data.whenToUse || ""}
+              data-featured="true"
+              onclick={`trackEvent('framework_click', { framework: '${item.slug}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: true, surface: 'spotlight' })`}
+            >
+              {item.data.cover ? (
+                <div class="thumb" aria-hidden="true">
+                  <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
+                </div>
+              ) : (
+                <div class="thumb thumbEmpty" aria-hidden="true">
+                  <span class="thumbMark">AL</span>
+                </div>
+              )}
+
+              <div class="meta spotlightMeta">
+                <div class="spotlightTop">
+                  <span class="spotlightKicker">{spotlightKickers[index] || "Featured"}</span>
+                  <span class="spotlightCategory">{item.data.primaryCategory || "Uncategorized"}</span>
+                </div>
+
+                <div class="cardTitle">{item.data.title}</div>
+
+                <div class="excerpt">
+                  <div class="excerptLabel">When to use</div>
+                  <div class="whenToUse">
+                    {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
+                  </div>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
            <!-- Featured -->
-    {featured.length > 0 && (
+    {featuredRemainder.length > 0 && (
       <section class="featuredBlock" id="__featured" data-group="__featured" data-expanded="false">
         <div class="groupHead">
           <div class="groupTitleWrap">
             <h2 class="groupTitle">
-              Featured <span class="count">({featured.length})</span>
+              Featured <span class="count">({featuredRemainder.length})</span>
             </h2>
             <div class="groupRule" aria-hidden="true"></div>
           </div>
@@ -101,7 +157,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 
         <div class="groupReveal" data-expand-wrap>
           <div class="grid" data-expand-grid>
-            {featured.map((item) => (
+            {featuredRemainder.map((item) => (
             <a
   class="card"
   href={`/toolkit/${item.slug}/`}
@@ -365,7 +421,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
         const query = normalize(q?.value);
         const selected = cat?.value || "";
 
-        const sections = document.querySelectorAll("section.group, section.featuredBlock");
+        const sections = document.querySelectorAll("section.group, section.featuredBlock, section.spotlightBlock");
 
         sections.forEach((section) => {
           const cards = section.querySelectorAll("a.card");
@@ -482,8 +538,9 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     --tk-radius-sm: 12px;
   }
 
-  .group,
-  .featuredBlock {
+    .group,
+  .featuredBlock,
+  .spotlightBlock {
     scroll-margin-top: 102px;
   }
 
@@ -683,6 +740,73 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     box-shadow:
       0 1px 0 rgba(255,255,255,0.66) inset,
       0 12px 28px rgba(0,0,0,0.022);
+  }
+
+  .spotlightBlock {
+    margin-top: 12px;
+    margin-bottom: 18px;
+  }
+
+  .spotlightGrid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .spotlightCard {
+    border-radius: 18px;
+    border-color: color-mix(in srgb, var(--border) 78%, transparent);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.7) inset,
+      0 14px 30px rgba(15, 23, 42, 0.032);
+  }
+
+  .spotlightCard .thumb {
+    aspect-ratio: 16 / 10;
+    padding: 5px;
+  }
+
+  .spotlightMeta {
+    padding: 16px 16px 18px;
+    min-height: 148px;
+    gap: 10px;
+  }
+
+  .spotlightTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .spotlightKicker {
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
+  }
+
+  .spotlightCategory {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    background: color-mix(in srgb, var(--surface) 98%, black 2%);
+    color: color-mix(in srgb, var(--ink-muted) 82%, var(--ink) 18%);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  .spotlightCard .cardTitle {
+    font-size: 1.04rem;
   }
 
   .group {
@@ -1101,6 +1225,10 @@ breadcrumbs={pmtoolkitBreadcrumbs}
   }
 
   @media (max-width: 1180px) {
+    .spotlightGrid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
       column-gap: 12px;
@@ -1109,6 +1237,10 @@ breadcrumbs={pmtoolkitBreadcrumbs}
   }
 
   @media (max-width: 1040px) {
+    .spotlightGrid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       column-gap: 12px;
@@ -1129,6 +1261,15 @@ breadcrumbs={pmtoolkitBreadcrumbs}
   }
 
   @media (max-width: 720px) {
+    .spotlightGrid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .spotlightMeta {
+      min-height: 0;
+    }
+
     .controlsBar {
       top: calc(var(--siteHeaderH) + 0px);
       padding: 12px;
