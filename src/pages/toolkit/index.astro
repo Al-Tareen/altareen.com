@@ -1,6 +1,7 @@
 ---
 import PageShell from "../../components/PageShell.astro";
 import { getCollection } from "astro:content";
+import analyticsData from "../../data/toolkit-analytics.json";
 
 const HIDDEN_CATEGORIES = new Set(["Business Plans", "TBA", "Financial Models"]);
 
@@ -51,21 +52,21 @@ const getFrameworkName = (item) => item?.data?.title || "—";
 const analyticsCards = [
   {
     title: "Most Popular Framework",
-    frameworkName: getFrameworkName(featured[0] || items[0]),
+    frameworkName: analyticsData.mostPopular.frameworkName,
     metricLabel: "Views",
-    metricValue: "0",
+    metricValue: analyticsData.mostPopular.metricValue,
   },
   {
     title: "Most Downloaded Framework",
-    frameworkName: getFrameworkName(featured[1] || items[1] || featured[0] || items[0]),
+    frameworkName: analyticsData.mostDownloaded.frameworkName,
     metricLabel: "Downloads",
-    metricValue: "0",
+    metricValue: analyticsData.mostDownloaded.metricValue,
   },
   {
     title: "Most Liked Framework",
-    frameworkName: getFrameworkName(featured[2] || items[2] || featured[0] || items[0]),
+    frameworkName: analyticsData.mostLiked.frameworkName,
     metricLabel: "Likes",
-    metricValue: "0",
+    metricValue: analyticsData.mostLiked.metricValue,
   },
 ];
 

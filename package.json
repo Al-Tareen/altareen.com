@@ -12,6 +12,7 @@
   "dependencies": {
     "@astrojs/node": "^9.5.4",
     "@astrojs/sitemap": "^3.7.2",
+    "@google-analytics/data": "^5.2.1",
     "@notionhq/client": "^5.9.0",
     "astro": "^5.17.1",
     "dotenv": "^17.3.1"

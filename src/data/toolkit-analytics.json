@@ -1,0 +1,14 @@
+{
+    "mostPopular": {
+      "frameworkName": "Abuse / Misuse Threat Model",
+      "metricValue": "142"
+    },
+    "mostDownloaded": {
+      "frameworkName": "AI Incident Response Runbook",
+      "metricValue": "38"
+    },
+    "mostLiked": {
+      "frameworkName": "AI Risk Assessment Checklist",
+      "metricValue": "17"
+    }
+  }
