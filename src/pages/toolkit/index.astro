@@ -45,21 +45,27 @@ function catId(name) {
 
 // Featured (Notion checkbox -> frontmatter `featured: true`)
 const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
+
+const getFrameworkName = (item) => item?.data?.title || "—";
+
 const analyticsCards = [
   {
     title: "Most Popular Framework",
+    frameworkName: getFrameworkName(featured[0] || items[0]),
     metricLabel: "Views",
-    eventLine: "framework_click",
+    metricValue: "0",
   },
   {
     title: "Most Downloaded Framework",
+    frameworkName: getFrameworkName(featured[1] || items[1] || featured[0] || items[0]),
     metricLabel: "Downloads",
-    eventLine: "framework_download • file_download",
+    metricValue: "0",
   },
   {
     title: "Most Liked Framework",
+    frameworkName: getFrameworkName(featured[2] || items[2] || featured[0] || items[0]),
     metricLabel: "Likes",
-    eventLine: "framework_feedback",
+    metricValue: "0",
   },
 ];
 
@@ -110,10 +116,11 @@ breadcrumbs={pmtoolkitBreadcrumbs}
           {analyticsCards.map((card) => (
             <article class="analyticsCard">
               <div class="analyticsTitle">{card.title}</div>
+              <div class="analyticsFrameworkName">{card.frameworkName}</div>
 
               <div class="analyticsEventRow">
                 <span class="analyticsEventLabel">{card.metricLabel}</span>
-                <span class="analyticsEventValue">{card.eventLine}</span>
+                <span class="analyticsEventValue">{card.metricValue}</span>
               </div>
             </article>
           ))}
@@ -649,6 +656,16 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     font-weight: 650;
     letter-spacing: -0.022em;
     line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .analyticsFrameworkName {
+    color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.35;
+    min-height: 1.35em;
     margin-bottom: 18px;
   }
 
