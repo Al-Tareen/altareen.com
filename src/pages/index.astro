@@ -106,7 +106,7 @@ const homepageBreadcrumbs = [
 >
   <Header />
 
-  <main class="wrap">
+  <main class="wrap homepage-shell">
     <section class="hero">
       <p class="eyebrow">AI Transformation • Product Management • Product Strategy</p>
 
@@ -115,16 +115,14 @@ const homepageBreadcrumbs = [
       <p class="lead">
         Welcome to my website. Explore selected Projects, a PM Toolkit for effective decision-making, a Finance Toolkit containing various models, Concepts that reflect how I think through new opportunities, and more.
       </p>
-
-
     </section>
 
     <section class="grid" aria-label="Homepage sections">
       <a
-  class="card card-premium card-pm"
-  href="/toolkit"
-  onclick="trackEvent('homepage_section_click', { section: 'pm_toolkit', destination: '/toolkit', position: 1 })"
->
+        class="card card-premium card-pm"
+        href="/toolkit"
+        onclick="trackEvent('homepage_section_click', { section: 'pm_toolkit', destination: '/toolkit', position: 1 })"
+      >
         <div class="card-ambience" aria-hidden="true">
           <img
             class="card-ambience-media"
@@ -180,10 +178,10 @@ const homepageBreadcrumbs = [
       </a>
 
       <a
-  class="card card-premium card-finance"
-  href="/finance-toolkit"
-  onclick="trackEvent('homepage_section_click', { section: 'finance_toolkit', destination: '/finance-toolkit', position: 2 })"
->
+        class="card card-premium card-finance"
+        href="/finance-toolkit"
+        onclick="trackEvent('homepage_section_click', { section: 'finance_toolkit', destination: '/finance-toolkit', position: 2 })"
+      >
         <div class="card-ambience" aria-hidden="true">
           <img
             class="card-ambience-media"
@@ -239,10 +237,10 @@ const homepageBreadcrumbs = [
       </a>
 
       <a
-  class="card card-premium card-concepts"
-  href="/concepts"
-  onclick="trackEvent('homepage_section_click', { section: 'concepts', destination: '/concepts', position: 3 })"
->
+        class="card card-premium card-concepts"
+        href="/concepts"
+        onclick="trackEvent('homepage_section_click', { section: 'concepts', destination: '/concepts', position: 3 })"
+      >
         <div class="card-ambience" aria-hidden="true">
           <img
             class="card-ambience-media"
@@ -298,55 +296,54 @@ const homepageBreadcrumbs = [
       </a>
 
       <a
-  class="card card-premium card-projects"
-  href="/projects"
-  onclick="trackEvent('homepage_section_click', { section: 'projects', destination: '/projects', position: 4 })"
->
-  <div class="card-ambience" aria-hidden="true">
-    <img
-      class="card-ambience-media"
-      src="/homepage/projects.png"
-      alt=""
-      loading="lazy"
-      decoding="async"
-    />
-  </div>
+        class="card card-premium card-projects"
+        href="/projects"
+        onclick="trackEvent('homepage_section_click', { section: 'projects', destination: '/projects', position: 4 })"
+      >
+        <div class="card-ambience" aria-hidden="true">
+          <img
+            class="card-ambience-media"
+            src="/homepage/projects.png"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
 
-  <div class="card-premium-overlay" aria-hidden="true"></div>
+        <div class="card-premium-overlay" aria-hidden="true"></div>
 
-  <div class="card-copy">
-    <h2>Projects</h2>
-    <p>Selected work across AI Transformation, Product Management, and more</p>
-  </div>
+        <div class="card-copy">
+          <h2>Projects</h2>
+          <p>Selected work across AI Transformation, Product Management, and more</p>
+        </div>
 
-  <span class="card-arrow" aria-hidden="true">↗</span>
-</a>
+        <span class="card-arrow" aria-hidden="true">↗</span>
+      </a>
 
-<a
-  class="card card-premium card-about"
-  href="/about"
-  onclick="trackEvent('homepage_section_click', { section: 'about', destination: '/about', position: 5 })"
->
-  <div class="card-ambience" aria-hidden="true">
-    <img
-      class="card-ambience-media"
-      src="/homepage/about.png"
-      alt=""
-      loading="lazy"
-      decoding="async"
-    />
-  </div>
+      <a
+        class="card card-premium card-about"
+        href="/about"
+        onclick="trackEvent('homepage_section_click', { section: 'about', destination: '/about', position: 5 })"
+      >
+        <div class="card-ambience" aria-hidden="true">
+          <img
+            class="card-ambience-media"
+            src="/homepage/about.png"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
 
-  <div class="card-premium-overlay" aria-hidden="true"></div>
+        <div class="card-premium-overlay" aria-hidden="true"></div>
 
-  <div class="card-copy">
-    <h2>About</h2>
-    <p>Who I am and where to find me.</p>
-  </div>
+        <div class="card-copy">
+          <h2>About</h2>
+          <p>Who I am and where to find me.</p>
+        </div>
 
-  <span class="card-arrow" aria-hidden="true">↗</span>
-</a>
-
+        <span class="card-arrow" aria-hidden="true">↗</span>
+      </a>
     </section>
   </main>
 
@@ -424,16 +421,24 @@ const homepageBreadcrumbs = [
     -webkit-backdrop-filter: blur(16px);
   }
 
-.wrap {
-  position: relative;
-  width: 100%;
-  max-width: var(--content-width, 1140px);
-  margin: 0 auto;
-  padding: 68px 28px 124px;
-  box-sizing: border-box;
-  isolation: isolate;
-  overflow-x: clip;
-}
+  :global(main.homepage-shell) {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    outline: 0 !important;
+  }
+
+  .wrap {
+    position: relative;
+    width: 100%;
+    max-width: var(--content-width, 1140px);
+    margin: 0 auto;
+    padding: 68px 28px 124px;
+    box-sizing: border-box;
+    isolation: isolate;
+    overflow-x: clip;
+  }
 
   .wrap::before {
     content: "";
@@ -532,15 +537,15 @@ const homepageBreadcrumbs = [
     max-width: 62ch;
   }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-areas:
-    "projects projects projects projects pm pm pm pm pm pm pm pm"
-    "finance finance finance finance concepts concepts concepts concepts about about about about";
-  gap: 14px;
-  align-items: stretch;
-}
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas:
+      "projects projects projects projects pm pm pm pm pm pm pm pm"
+      "finance finance finance finance concepts concepts concepts concepts about about about about";
+    gap: 14px;
+    align-items: stretch;
+  }
 
   .card {
     position: relative;
@@ -612,35 +617,35 @@ const homepageBreadcrumbs = [
       0 24px 56px rgba(5, 8, 14, 0.18);
   }
 
-.card-pm {
-  --card-accent: rgba(84, 150, 255, 0.12);
-  grid-area: pm;
-  min-height: 360px;
-}
+  .card-pm {
+    --card-accent: rgba(84, 150, 255, 0.12);
+    grid-area: pm;
+    min-height: 360px;
+  }
 
-.card-finance {
-  --card-accent: rgba(104, 214, 136, 0.11);
-  grid-area: finance;
-  min-height: 290px;
-}
+  .card-finance {
+    --card-accent: rgba(104, 214, 136, 0.11);
+    grid-area: finance;
+    min-height: 290px;
+  }
 
-.card-concepts {
-  --card-accent: rgba(110, 176, 255, 0.1);
-  grid-area: concepts;
-  min-height: 290px;
-}
+  .card-concepts {
+    --card-accent: rgba(110, 176, 255, 0.1);
+    grid-area: concepts;
+    min-height: 290px;
+  }
 
-.card-projects {
-  --card-accent: rgba(255, 184, 77, 0.1);
-  grid-area: projects;
-  min-height: 360px;
-}
+  .card-projects {
+    --card-accent: rgba(255, 184, 77, 0.1);
+    grid-area: projects;
+    min-height: 360px;
+  }
 
-.card-about {
-  --card-accent: rgba(180, 180, 255, 0.1);
-  grid-area: about;
-  min-height: 290px;
-}
+  .card-about {
+    --card-accent: rgba(180, 180, 255, 0.1);
+    grid-area: about;
+    min-height: 290px;
+  }
 
   .card-copy {
     position: relative;
@@ -923,14 +928,14 @@ const homepageBreadcrumbs = [
       max-width: 9ch;
     }
 
-.grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-areas:
-    "projects pm"
-    "finance concepts"
-    "about about";
-  gap: 12px;
-}
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-areas:
+        "projects pm"
+        "finance concepts"
+        "about about";
+      gap: 12px;
+    }
 
     .card {
       border-radius: 16px;
@@ -1015,16 +1020,16 @@ const homepageBreadcrumbs = [
       line-height: 1.62;
     }
 
-.grid {
-  grid-template-columns: 1fr;
-  grid-template-areas:
-    "projects"
-    "pm"
-    "finance"
-    "concepts"
-    "about";
-  gap: 10px;
-}
+    .grid {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "projects"
+        "pm"
+        "finance"
+        "concepts"
+        "about";
+      gap: 10px;
+    }
 
     .card,
     .card-premium {

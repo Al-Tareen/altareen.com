@@ -1,91 +1,1195 @@
 ---
 import PageShell from "../../components/PageShell.astro";
+import { getCollection } from "astro:content";
 
-const projects = [
-  {
-    title: "Enterprise AI Platform",
-    description: "Led product strategy for an AI-powered automation platform that reduced manual ops by 60% across 12 enterprise accounts.",
-    tags: ["AI", "Automation", "Enterprise"],
-    href: "#",
-  },
-  {
-    title: "Service Desk Cost Reduction",
-    description: "Designed automation workflows that cut tier-1 ticket volume by 40% and lowered per-ticket cost by 35%.",
-    tags: ["Automation", "Cost Reduction", "Product"],
-    href: "#",
-  },
-  {
-    title: "Multi-Agent AI Workflows",
-    description: "Product-led R&D for agent orchestration that improved task completion rates by 2x with human-in-the-loop guardrails.",
-    tags: ["AI", "Agents", "Product"],
-    href: "#",
-  },
-  {
-    title: "altareen.com",
-    description: "Portfolio site built with Astro—fast, accessible, and easy to maintain for showcasing product work.",
-    tags: ["Web", "Astro", "Product"],
-    href: "#",
-  },
+const CATEGORY_ORDER = [
+  "Product Platforms",
+  "AI Systems",
+  "Enterprise Systems",
+  "Software Engineering",
+  "Research & Leadership",
 ];
 
-const projectBreadcrumbs = [
+const projectsBreadcrumbs = [
   { name: "Home", path: "/" },
   { name: "Projects", path: "/projects/" },
 ];
+
+function slugify(str: string) {
+  return String(str || "")
+    .trim()
+    .toLowerCase()
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function stripMarkdown(raw = "") {
+  return String(raw)
+    .replace(/^---[\s\S]*?---/, "")
+    .replace(/^##\s.+$/gm, "")
+    .replace(/^#\s.+$/gm, "")
+    .replace(/^\-\s.+$/gm, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[*_`>#]/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function firstParagraph(raw = "") {
+  const cleaned = stripMarkdown(raw);
+  return (
+    cleaned
+      .split(/\n{2,}/)
+      .map((p) => p.replace(/\n/g, " ").trim())
+      .find(Boolean) || ""
+  );
+}
+
+function extFromUrl(url = "") {
+  const clean = String(url).split("?")[0].toLowerCase();
+  const match = clean.match(/\.[a-z0-9]{2,8}$/);
+  return match ? match[0] : "";
+}
+
+function isImageExt(ext = "") {
+  return [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".avif"].includes(ext);
+}
+
+function isPdfExt(ext = "") {
+  return ext === ".pdf";
+}
+
+const all = await getCollection("projects");
+
+const rawProjects = all.filter((item) => {
+  const dbTitle = String(item.data.dbTitle || "").trim().toLowerCase();
+  return dbTitle === "projects" || dbTitle === "project";
+});
+
+const normalized = rawProjects.map((item) => {
+  const title = String(
+    item.data.project ||
+      item.data.title ||
+      item.slug ||
+      "Untitled Project"
+  ).trim();
+
+  const primaryCategory = String(
+    item.data.primaryCategory ||
+      item.data.category ||
+      (Array.isArray(item.data.categories) && item.data.categories[0]) ||
+      "Uncategorized"
+  ).trim();
+
+  const tags = Array.isArray(item.data.tags)
+    ? item.data.tags.map(String).map((t) => t.trim()).filter(Boolean).slice(0, 3)
+    : [];
+
+  const files = Array.isArray(item.data.files)
+    ? item.data.files.filter((f) => f?.url)
+    : [];
+
+  const externalLink = String(item.data.url || item.data.link || "").trim();
+  const previewFile = files[0] || null;
+  const previewUrl = previewFile?.url || "";
+  const previewExt = extFromUrl(previewUrl);
+  const previewKind = isPdfExt(previewExt)
+    ? "pdf"
+    : isImageExt(previewExt)
+      ? "image"
+      : "file";
+
+  const logo = String(item.data.logo || item.data.cover || "").trim();
+
+  const description = String(
+    item.data.description ||
+      item.data.summary ||
+      item.data.excerpt ||
+      firstParagraph(item.body || "") ||
+      "Details coming soon."
+  )
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const comingSoon = item.data.comingSoon === true;
+  const position =
+    typeof item.data.position === "number"
+      ? item.data.position
+      : Number.isFinite(Number(item.data.position))
+        ? Number(item.data.position)
+        : 0;
+
+  return {
+    ...item,
+    slugId: slugify(title),
+    projectTitle: title,
+    primaryCategory,
+    tags,
+    externalLink,
+    previewUrl,
+    previewKind,
+    logo,
+    description,
+    comingSoon,
+    position,
+    sortKey: title.toLowerCase(),
+  };
+});
+
+const groupsMap = new Map<string, typeof normalized>();
+for (const category of CATEGORY_ORDER) groupsMap.set(category, []);
+
+const extraMap = new Map<string, typeof normalized>();
+
+for (const item of normalized) {
+  if (groupsMap.has(item.primaryCategory)) {
+    groupsMap.get(item.primaryCategory)!.push(item);
+  } else {
+    if (!extraMap.has(item.primaryCategory)) extraMap.set(item.primaryCategory, []);
+    extraMap.get(item.primaryCategory)!.push(item);
+  }
+}
+
+function sortProjects(list: typeof normalized) {
+  list.sort((a, b) => {
+    if (a.position !== b.position) return a.position - b.position;
+    return a.sortKey.localeCompare(b.sortKey);
+  });
+}
+
+for (const list of groupsMap.values()) sortProjects(list);
+for (const list of extraMap.values()) sortProjects(list);
+
+const groups = [
+  ...CATEGORY_ORDER.map((category) => ({
+    category,
+    items: groupsMap.get(category) || [],
+  })).filter((g) => g.items.length > 0),
+  ...Array.from(extraMap.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([category, items]) => ({ category, items })),
+];
+
+const categories = groups.map((g) => g.category);
+
+const projectsSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "Projects",
+  description:
+    "Selected work across AI systems, enterprise platforms, software engineering, and more.",
+  url: "https://altareen.com/projects/",
+  breadcrumb: {
+    "@type": "BreadcrumbList",
+    itemListElement: projectsBreadcrumbs.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: `https://altareen.com${item.path}`,
+    })),
+  },
+  mainEntity: {
+    "@type": "ItemList",
+    itemListElement: normalized.slice(0, 20).map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.projectTitle,
+      url: `https://altareen.com/projects/#${item.slugId}`,
+    })),
+  },
+};
 ---
 
 <PageShell
   title="Projects"
-  description="Selected work across AI Transformation, Product Management, and more."
-  keywords="Al Tareen projects, AI projects, product management projects, automation, enterprise transformation"
-breadcrumbs={projectBreadcrumbs}
+  hidePageHead={false}
+  description="Selected work across AI systems, enterprise platforms, software engineering, and more."
+  keywords="Al Tareen projects, AI product manager, AI systems, enterprise systems, product platforms, software engineering"
+  breadcrumbs={projectsBreadcrumbs}
+  schema={projectsSchema}
 >
-  <div class="projectsPage">
-    <div class="projectsGrid">
-      {
-        projects.map((project) => (
-          <article class="projectCard">
-            <div class="projectBody">
-              <div class="projectKicker">Selected Work</div>
-              <h2 class="projectTitle">{project.title}</h2>
-              <p class="projectDesc">{project.description}</p>
-            </div>
+  <div class="projectsPage projectsRoot">
+    <div class="controlsBar" role="search" aria-label="Search and filter projects">
+      <div class="field">
+        <span class="icon" aria-hidden="true">⌕</span>
+        <input id="q" class="input" type="search" placeholder="Search projects..." />
+      </div>
 
-            <div class="projectFooter">
-              <div class="projectTags">
-                {project.tags.map((tag) => (
-                  <span class="tag">{tag}</span>
+      <div class="selectWrap">
+        <select id="cat" class="select" aria-label="Filter by category">
+          <option value="">All categories</option>
+          {categories.map((c) => <option value={c}>{c}</option>)}
+        </select>
+        <span class="selectChevron" aria-hidden="true">⌄</span>
+      </div>
+
+      <div class="rightActions">
+        <div class="resultsInline" id="resultsText">Showing {normalized.length} projects</div>
+        <button id="clear" class="ghost" type="button">Clear</button>
+      </div>
+    </div>
+
+    <div id="empty" class="empty" hidden>
+      <div class="emptyTitle">No projects found</div>
+      <div class="emptyDesc">Try a different search term or clear filters.</div>
+      <button id="emptyClear" class="primary" type="button">Clear filters</button>
+    </div>
+
+    {groups.map((group) => (
+      <section
+        class="projectGroup"
+        id={slugify(group.category)}
+        data-rail-group
+        data-group={group.category}
+      >
+        <div class="groupHead">
+          <div class="groupTitleWrap">
+            <h2 class="groupTitle">
+              {group.category} <span class="count">({group.items.length})</span>
+            </h2>
+          </div>
+        </div>
+
+        <div class="railShell">
+          <div class="railMask">
+            <div class="railViewport" data-rail-viewport tabindex="0" aria-label={group.category}>
+              <div class="projectRail" data-rail>
+                {group.items.map((item) => (
+                  <article
+                    id={item.slugId}
+                    class={`projectCard${item.comingSoon ? " isComingSoon" : ""}`}
+                    data-project-card
+                    data-title={item.projectTitle}
+                    data-category={item.primaryCategory}
+                    data-desc={item.description}
+                    data-tags={item.tags.join(" ")}
+                  >
+                    {item.comingSoon && (
+                      <div class="comingChrome" aria-hidden="true">
+                        <div class="comingChromeTop">
+                          <div class="comingLabel">In Development</div>
+                          <div class="comingSignalWrap">
+                            <span class="comingSignal"></span>
+                          </div>
+                        </div>
+                        <div class="comingTrack">
+                          <span class="comingTrackFill"></span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div class="cardGlow" aria-hidden="true"></div>
+
+                    <div class="cardBody">
+                      <div class="cardTop">
+                        <h3 class="cardTitle">{item.projectTitle}</h3>
+                      </div>
+
+                      <p class="cardDesc">{item.description}</p>
+                    </div>
+
+                    <div class="cardFooter">
+                      <div class="bottomMeta">
+                        <div class="logoSlot">
+                          {item.logo ? (
+                            <img
+                              class="projectLogo"
+                              src={item.logo}
+                              alt={`${item.projectTitle} logo`}
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div class="logoFallback" aria-hidden="true">
+                              {item.projectTitle.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+
+                        <div class="projectTags">
+                          {item.tags.map((tag) => (
+                            <span class="tag">{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {item.comingSoon ? (
+                        <div class="cardActions comingActions" aria-hidden="true">
+                          <div class="comingNote">
+                            <div class="comingNoteLabel">Coming Soon</div>
+                            <div class="comingNoteText">Selected work now being refined for release.</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div class="cardActions">
+                          {item.externalLink ? (
+                            <a
+                              class="actionBtn primary projectActionBtn"
+                              href={item.externalLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              data-project-cta
+                              data-project={item.projectTitle}
+                              data-category={item.primaryCategory}
+                              data-position={item.position}
+                              data-destination="url"
+                            >
+                              <span class="actionBtnText">View</span>
+                              <span class="actionBtnIcon" aria-hidden="true">↗</span>
+                            </a>
+                          ) : item.previewUrl ? (
+                            <button
+                              class="actionBtn primary projectActionBtn"
+                              type="button"
+                              data-preview-open
+                              data-preview-title={item.projectTitle}
+                              data-preview-url={item.previewUrl}
+                              data-preview-kind={item.previewKind}
+                              data-project-cta
+                              data-project={item.projectTitle}
+                              data-category={item.primaryCategory}
+                              data-position={item.position}
+                              data-destination="file"
+                            >
+                              <span class="actionBtnText">View</span>
+                              <span class="actionBtnIcon" aria-hidden="true">↗</span>
+                            </button>
+                          ) : (
+                            <div class="cardActions isEmpty" aria-hidden="true"></div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </article>
                 ))}
               </div>
-
-              <a class="btnPrimary" href={project.href}>
-                <span>View Details</span>
-                <span class="btnIcon" aria-hidden="true">↗</span>
-              </a>
             </div>
-          </article>
-        ))
-      }
+          </div>
+
+          <div class="railFade" aria-hidden="true"></div>
+
+          <button
+            class="railFloat railFloatPrev"
+            type="button"
+            data-rail-prev
+            aria-label={`Scroll ${group.category} left`}
+          >
+            <img class="railArrow railArrowPrev" src="/homepage/downarrow.png" alt="" aria-hidden="true" />
+          </button>
+
+          <button
+            class="railFloat railFloatNext"
+            type="button"
+            data-rail-next
+            aria-label={`Scroll ${group.category} right`}
+          >
+            <img class="railArrow railArrowNext" src="/homepage/downarrow.png" alt="" aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+    ))}
+
+    <div class="previewModal" id="projectPreviewModal" hidden>
+      <div class="previewBackdrop" data-preview-close></div>
+
+      <div
+        class="previewPanel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="projectPreviewTitle"
+      >
+        <div class="previewHead">
+          <div class="previewHeadCopy">
+            <div class="previewEyebrow">Project Preview</div>
+            <h3 class="previewTitle" id="projectPreviewTitle">Preview</h3>
+          </div>
+
+          <div class="previewTools" id="previewTools" hidden>
+            <button class="previewToolBtn" id="zoomOutBtn" type="button" aria-label="Zoom out">−</button>
+            <button class="previewToolBtn" id="zoomResetBtn" type="button" aria-label="Reset zoom">100%</button>
+            <button class="previewToolBtn" id="zoomInBtn" type="button" aria-label="Zoom in">+</button>
+          </div>
+
+          <button
+            class="previewClose"
+            type="button"
+            data-preview-close
+            aria-label="Close preview"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="previewBody" id="projectPreviewBody"></div>
+
+        <div class="previewFoot">
+          <a
+            class="actionBtn projectSecondaryBtn"
+            id="projectPreviewOpenNew"
+            href="#"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open in new tab
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </PageShell>
+
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", () => {
+    const q = document.getElementById("q");
+    const cat = document.getElementById("cat");
+    const clear = document.getElementById("clear");
+    const empty = document.getElementById("empty");
+    const emptyClear = document.getElementById("emptyClear");
+    const resultsText = document.getElementById("resultsText");
+    const railGroups = Array.from(document.querySelectorAll("[data-rail-group]"));
+
+    function normalize(s) {
+      return (s || "").toLowerCase().trim();
+    }
+
+    function countVisibleCards() {
+      return document.querySelectorAll("[data-project-card]:not(.isHidden)").length;
+    }
+
+    function updateRailButtons(group) {
+      const viewport = group.querySelector("[data-rail-viewport]");
+      const prev = group.querySelector("[data-rail-prev]");
+      const next = group.querySelector("[data-rail-next]");
+      const fade = group.querySelector(".railFade");
+
+      if (!viewport || !prev || !next) return;
+
+      if (group.classList.contains("isHidden")) {
+        prev.hidden = true;
+        next.hidden = true;
+        if (fade) fade.hidden = true;
+        return;
+      }
+
+      const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+      const canScroll = maxScroll > 12;
+      const canPrev = canScroll && viewport.scrollLeft > 6;
+      const canNext = canScroll && viewport.scrollLeft < maxScroll - 6;
+
+      prev.hidden = !canPrev;
+      next.hidden = !canNext;
+      if (fade) fade.hidden = !canNext;
+    }
+
+    function scrollRail(group, direction) {
+      const viewport = group.querySelector("[data-rail-viewport]");
+      if (!viewport) return;
+
+      const step = Math.max(viewport.clientWidth * 0.86, 320);
+      viewport.scrollBy({
+        left: direction * step,
+        behavior: "smooth",
+      });
+    }
+
+    railGroups.forEach((group) => {
+      const viewport = group.querySelector("[data-rail-viewport]");
+      const prev = group.querySelector("[data-rail-prev]");
+      const next = group.querySelector("[data-rail-next]");
+
+      prev?.addEventListener("click", () => scrollRail(group, -1));
+      next?.addEventListener("click", () => scrollRail(group, 1));
+
+      viewport?.addEventListener("scroll", () => updateRailButtons(group), {
+        passive: true,
+      });
+
+      updateRailButtons(group);
+    });
+
+    window.addEventListener("resize", () => {
+      railGroups.forEach(updateRailButtons);
+    });
+
+    function applyFilter() {
+      const query = normalize(q?.value);
+      const selected = cat?.value || "";
+      const sections = document.querySelectorAll("[data-rail-group]");
+
+      sections.forEach((section) => {
+        const cards = section.querySelectorAll("[data-project-card]");
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+          const title = normalize(card.getAttribute("data-title"));
+          const category = card.getAttribute("data-category") || "";
+          const desc = normalize(card.getAttribute("data-desc"));
+          const tags = normalize(card.getAttribute("data-tags"));
+
+          const matchText =
+            !query ||
+            title.includes(query) ||
+            desc.includes(query) ||
+            tags.includes(query) ||
+            normalize(category).includes(query);
+
+          const matchCat = !selected || category === selected;
+          const show = matchText && matchCat;
+
+          card.classList.toggle("isHidden", !show);
+          if (show) visibleCount++;
+        });
+
+        section.classList.toggle("isHidden", visibleCount === 0);
+      });
+
+      const totalVisible = countVisibleCards();
+      if (empty) empty.hidden = totalVisible !== 0;
+
+      if (resultsText) {
+        const suffix = totalVisible === 1 ? "project" : "projects";
+        resultsText.textContent = `Showing ${totalVisible} ${suffix}`;
+      }
+
+      requestAnimationFrame(() => {
+        railGroups.forEach(updateRailButtons);
+      });
+    }
+
+    function clearFilters() {
+      if (q) q.value = "";
+      if (cat) cat.value = "";
+      applyFilter();
+      q?.focus();
+    }
+
+    q?.addEventListener("input", applyFilter);
+    cat?.addEventListener("change", applyFilter);
+    clear?.addEventListener("click", clearFilters);
+    emptyClear?.addEventListener("click", clearFilters);
+    applyFilter();
+
+    document.querySelectorAll("[data-project-cta]").forEach((el) => {
+      el.addEventListener("click", () => {
+        const payload = {
+          project: el.getAttribute("data-project") || "",
+          category: el.getAttribute("data-category") || "",
+          position: Number(el.getAttribute("data-position") || 0),
+          destination: el.getAttribute("data-destination") || "",
+          page: "projects_index",
+        };
+
+        if (typeof window.trackEvent === "function") {
+          window.trackEvent("project_view_click", payload);
+        }
+      });
+    });
+
+    const modal = document.getElementById("projectPreviewModal");
+    const modalTitle = document.getElementById("projectPreviewTitle");
+    const modalBody = document.getElementById("projectPreviewBody");
+    const openNew = document.getElementById("projectPreviewOpenNew");
+    const openButtons = document.querySelectorAll("[data-preview-open]");
+    const closeButtons = document.querySelectorAll("[data-preview-close]");
+    const previewTools = document.getElementById("previewTools");
+    const zoomOutBtn = document.getElementById("zoomOutBtn");
+    const zoomInBtn = document.getElementById("zoomInBtn");
+    const zoomResetBtn = document.getElementById("zoomResetBtn");
+
+    const canUseZoom = typeof CSS !== "undefined" && CSS.supports?.("zoom", "1");
+
+    let currentImage = null;
+    let currentPdfFrame = null;
+    let currentZoomTarget = null;
+    let currentScale = 1;
+    let currentPreviewKind = "";
+
+    function buildPdfPreviewUrl(baseUrl, scale = 1) {
+      const zoomValue = scale === 1 ? "page-width" : `${Math.round(scale * 100)}`;
+      return `${baseUrl}#toolbar=1&navpanes=0&pagemode=none&zoom=${zoomValue}&view=FitH`;
+    }
+
+    function applyCurrentScale() {
+      if (currentPreviewKind === "pdf" && currentPdfFrame) {
+        const baseUrl = currentPdfFrame.dataset.baseUrl || "";
+        if (baseUrl) {
+          const nextSrc = buildPdfPreviewUrl(baseUrl, currentScale);
+          if (currentPdfFrame.dataset.activeSrc !== nextSrc) {
+            currentPdfFrame.dataset.activeSrc = nextSrc;
+            currentPdfFrame.src = nextSrc;
+          }
+        }
+      } else if (currentZoomTarget) {
+        if (canUseZoom) {
+          currentZoomTarget.style.zoom = String(currentScale);
+          currentZoomTarget.style.transform = "";
+        } else {
+          currentZoomTarget.style.zoom = "";
+          currentZoomTarget.style.transform = `scale(${currentScale})`;
+        }
+      }
+
+      if (zoomResetBtn) {
+        zoomResetBtn.textContent = `${Math.round(currentScale * 100)}%`;
+      }
+    }
+
+    function setPreviewScale(next) {
+      currentScale = Math.min(3, Math.max(0.75, next));
+      applyCurrentScale();
+    }
+
+    function buildPreview(kind, url, title) {
+      if (!modalBody) return;
+
+      modalBody.innerHTML = "";
+      modalBody.dataset.kind = kind;
+      currentImage = null;
+      currentPdfFrame = null;
+      currentZoomTarget = null;
+      currentPreviewKind = kind;
+      currentScale = 1;
+
+      if (previewTools) {
+        previewTools.hidden = !(kind === "image" || kind === "pdf");
+      }
+
+      if (kind === "pdf") {
+        const stage = document.createElement("div");
+        stage.className = "previewPdfStage";
+
+        const canvas = document.createElement("div");
+        canvas.className = "previewPdfCanvas";
+
+        const frame = document.createElement("iframe");
+        frame.className = "previewFrame";
+        frame.dataset.baseUrl = url;
+        frame.dataset.activeSrc = buildPdfPreviewUrl(url, 1);
+        frame.src = frame.dataset.activeSrc;
+        frame.title = title;
+        frame.loading = "lazy";
+
+        canvas.appendChild(frame);
+        stage.appendChild(canvas);
+        modalBody.appendChild(stage);
+
+        currentPdfFrame = frame;
+        currentZoomTarget = frame;
+        setPreviewScale(1);
+        return;
+      }
+
+      if (kind === "image") {
+        const stage = document.createElement("div");
+        stage.className = "previewImageStage";
+
+        const canvas = document.createElement("div");
+        canvas.className = "previewImageCanvas";
+
+        const img = document.createElement("img");
+        img.className = "previewImage";
+        img.src = url;
+        img.alt = title;
+        img.loading = "lazy";
+
+        canvas.appendChild(img);
+        stage.appendChild(canvas);
+        modalBody.appendChild(stage);
+
+        currentImage = img;
+        currentZoomTarget = img;
+        setPreviewScale(1);
+        return;
+      }
+
+      const fallback = document.createElement("div");
+      fallback.className = "previewFallback";
+      fallback.innerHTML = `
+        <div class="previewFallbackTitle">Preview unavailable in modal</div>
+        <p class="previewFallbackDesc">Use the button below to open the file in a new tab.</p>
+      `;
+      modalBody.appendChild(fallback);
+    }
+
+    function lockPreviewScroll() {
+      const scrollbarComp = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+      document.documentElement.style.setProperty("--preview-scrollbar-comp", `${scrollbarComp}px`);
+      document.body.style.paddingRight = `${scrollbarComp}px`;
+      document.documentElement.classList.add("previewIsOpen");
+      document.body.classList.add("previewIsOpen");
+    }
+
+    function unlockPreviewScroll() {
+      document.documentElement.classList.remove("previewIsOpen");
+      document.body.classList.remove("previewIsOpen");
+      document.documentElement.style.removeProperty("--preview-scrollbar-comp");
+      document.body.style.paddingRight = "";
+    }
+
+    function openPreview(title, url, kind) {
+      if (!modal || !modalTitle || !modalBody || !openNew) return;
+
+      modalTitle.textContent = title || "Preview";
+      buildPreview(kind, url, title || "Preview");
+      openNew.href = url;
+      modal.hidden = false;
+      if (typeof modal.scrollTo === "function") {
+        modal.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      } else {
+        modal.scrollTop = 0;
+      }
+      if (modalBody) {
+        modalBody.scrollTop = 0;
+        modalBody.scrollLeft = 0;
+      }
+      lockPreviewScroll();
+    }
+
+    function closePreview() {
+      if (!modal || !modalBody) return;
+      modal.hidden = true;
+      modalBody.innerHTML = "";
+      modalBody.removeAttribute("data-kind");
+      currentImage = null;
+      currentPdfFrame = null;
+      currentZoomTarget = null;
+      currentPreviewKind = "";
+      currentScale = 1;
+      if (previewTools) previewTools.hidden = true;
+      unlockPreviewScroll();
+    }
+
+    zoomOutBtn?.addEventListener("click", () => setPreviewScale(currentScale - 0.2));
+    zoomInBtn?.addEventListener("click", () => setPreviewScale(currentScale + 0.2));
+    zoomResetBtn?.addEventListener("click", () => setPreviewScale(1));
+
+    openButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const title = btn.getAttribute("data-preview-title") || "Preview";
+        const url = btn.getAttribute("data-preview-url") || "";
+        const kind = btn.getAttribute("data-preview-kind") || "file";
+        if (!url) return;
+        openPreview(title, url, kind);
+      });
+    });
+
+    closeButtons.forEach((btn) => {
+      btn.addEventListener("click", closePreview);
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && modal && !modal.hidden) {
+        closePreview();
+      }
+    });
+  });
+</script>
 
 <style>
   .projectsPage {
     width: 100%;
     padding-top: 10px;
-    padding-bottom: 82px;
+    padding-bottom: 96px;
+    position: relative;
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    isolation: isolate;
+    overflow-x: clip;
+    background: transparent;
+    --card-radius: 18px;
+    --card-radius-sm: 12px;
+    --rail-gap: 16px;
+    --rail-peek: 60px;
+    --category-ink: rgb(5, 35, 80);
   }
 
-  .projectsGrid {
+  .controlsBar,
+  .empty,
+  .projectGroup,
+  .previewModal {
+    position: relative;
+    z-index: 1;
+  }
+
+  .isHidden {
+    display: none !important;
+  }
+
+  .controlsBar {
+    position: sticky;
+    top: calc(var(--siteHeaderH, 64px) + 8px);
+    z-index: 40;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 14px 16px;
+    min-height: 56px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        rgb(from var(--surface) r g b / 0.72),
+        rgb(from var(--surface) r g b / 0.64)
+      );
+    backdrop-filter: blur(14px) saturate(118%);
+    -webkit-backdrop-filter: blur(14px) saturate(118%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.7) inset,
+      0 16px 34px rgba(0,0,0,0.035);
+    margin: 0 0 30px;
+    transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+
+  .controlsBar:focus-within {
+    border-color: color-mix(in srgb, var(--border) 90%, transparent);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.78) inset,
+      0 20px 40px rgba(0,0,0,0.045);
+  }
+
+  .field {
+    flex: 1;
+    min-width: 260px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 13px;
+    border-radius: 13px;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    background: color-mix(in srgb, var(--surface) 99%, black 1%);
+    transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
+  }
+
+  .field:hover {
+    border-color: color-mix(in srgb, var(--border) 88%, transparent);
+  }
+
+  .field:focus-within {
+    border-color: color-mix(in srgb, var(--border) 94%, transparent);
+    background: var(--surface);
+  }
+
+  .icon {
+    opacity: 0.58;
+    font-size: 14px;
+    user-select: none;
+    color: var(--ink-muted);
+    pointer-events: none;
+  }
+
+  .input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.2;
+    font-family: var(--font-sans);
+    min-width: 0;
+  }
+
+  .input::placeholder {
+    color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
+  }
+
+  .selectWrap {
+    position: relative;
+    flex: 0 0 214px;
+    min-width: 214px;
+    max-width: 248px;
+  }
+
+  .select {
+    min-width: 214px;
+    max-width: 248px;
+    width: 100%;
+    padding: 11px 40px 11px 13px;
+    border-radius: 13px;
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    background-color: color-mix(in srgb, var(--surface) 99%, black 1%);
+    background-image: url("/homepage/downarrow.png");
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+    background-position: right 14px center;
+    color: var(--ink);
+    font-size: 14px;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.18s var(--ease), background-color 0.18s var(--ease);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+
+  .select:hover {
+    border-color: color-mix(in srgb, var(--border) 88%, transparent);
+  }
+
+  .selectChevron {
+    display: none;
+  }
+
+  .input:focus,
+  .select:focus {
+    outline: none;
+  }
+
+  .rightActions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .resultsInline {
+    color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 0 2px;
+  }
+
+  .ghost,
+  .primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 12px;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 550;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition:
+      background-color 0.18s var(--ease),
+      border-color 0.18s var(--ease),
+      transform 0.18s var(--ease);
+  }
+
+  .ghost {
+    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    background: color-mix(in srgb, var(--surface) 98%, black 2%);
+    color: var(--ink);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.62) inset;
+  }
+
+  .ghost:hover,
+  .primary:hover {
+    transform: translateY(-1px);
+  }
+
+  .ghost:hover {
+    background: color-mix(in srgb, var(--surface) 95%, black 2%);
+    border-color: color-mix(in srgb, var(--border) 92%, transparent);
+  }
+
+  .primary {
+    border: 1px solid color-mix(in srgb, var(--ink) 96%, black 4%);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--ink) 100%, white 0%),
+        color-mix(in srgb, var(--ink) 92%, black 8%)
+      );
+    color: white;
+  }
+
+  .empty {
+    padding: 20px 0 6px;
+  }
+
+  .emptyTitle {
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+
+  .emptyDesc {
+    margin-top: 6px;
+    color: color-mix(in srgb, var(--ink-muted) 86%, var(--ink) 14%);
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .empty .primary {
+    margin-top: 12px;
+  }
+
+  .projectGroup {
+    scroll-margin-top: 110px;
+    padding-top: 2px;
+  }
+
+  .projectGroup + .projectGroup {
+    margin-top: 64px;
+  }
+
+  .groupHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .groupHead::after {
+    content: "";
+    flex: 1 1 auto;
+    min-width: 48px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--border) 72%, transparent),
+      transparent 82%
+    );
+    opacity: 0.8;
+  }
+
+  .groupTitleWrap {
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .groupTitle {
+    margin: 0;
+    color: var(--category-ink);
+    font-size: 1rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .groupTitle .count {
+    font-weight: 500;
+    color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
+    font-size: 0.9em;
+  }
+
+  .railShell {
+    position: relative;
+  }
+
+  .railMask {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0;
+  }
+
+  .railViewport {
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 2px 0 8px 0;
+  }
+
+  .railViewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .projectRail {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 14px;
-    row-gap: 18px;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - (var(--rail-gap) * 3) - var(--rail-peek)) / 3);
+    gap: var(--rail-gap);
     align-items: stretch;
+  }
+
+  .railFade {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: calc(var(--rail-peek) + 32px);
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0),
+      color-mix(in srgb, var(--surface) 100%, white 0%) 80%
+    );
+  }
+
+  .railFloat {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        rgb(from var(--surface) r g b / 0.94),
+        rgb(from var(--surface) r g b / 0.84)
+      );
+    backdrop-filter: blur(12px) saturate(118%);
+    -webkit-backdrop-filter: blur(12px) saturate(118%);
+    color: var(--ink);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.76) inset,
+      0 14px 24px rgba(15, 23, 42, 0.07);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      transform 0.18s var(--ease),
+      box-shadow 0.18s var(--ease),
+      opacity 0.18s var(--ease);
+  }
+
+  .railFloat:hover {
+    transform: translateY(calc(-50% - 1px));
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.82) inset,
+      0 18px 28px rgba(15, 23, 42, 0.1);
+  }
+
+  .railFloat[hidden] {
+    display: none !important;
+  }
+
+  .railFloatPrev {
+    left: -10px;
+  }
+
+  .railFloatNext {
+    right: max(-2px, calc(var(--rail-peek) - 21px));
+  }
+
+  .railArrow {
+    width: 14px;
+    height: 14px;
+    display: block;
+    object-fit: contain;
+    opacity: 0.98;
+  }
+
+  .railArrowPrev {
+    transform: rotate(90deg);
+  }
+
+  .railArrowNext {
+    transform: rotate(-90deg);
   }
 
   .projectCard {
@@ -93,237 +1197,908 @@ breadcrumbs={projectBreadcrumbs}
     display: grid;
     grid-template-rows: 1fr auto;
     min-height: 100%;
-    padding: 22px 22px 20px;
-    border-radius: 20px;
-    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+    padding: 20px 20px 18px;
+    border-radius: var(--card-radius);
+    border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
     background:
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--surface) 99%, white 1%),
-        color-mix(in srgb, var(--surface) 98%, black 2%)
+        rgba(255,255,255,1),
+        rgba(251,251,252,0.985) 100%
       );
     box-shadow:
-      0 1px 0 rgba(255,255,255,0.68) inset,
-      0 10px 24px rgba(15, 23, 42, 0.026);
-    transition:
-      transform 0.2s var(--ease),
-      box-shadow 0.2s var(--ease),
-      border-color 0.2s var(--ease);
-    box-sizing: border-box;
+      0 1px 0 rgba(255,255,255,0.78) inset,
+      0 18px 36px rgba(15, 23, 42, 0.032);
     overflow: hidden;
     isolation: isolate;
+    transition:
+      transform 0.22s var(--ease),
+      border-color 0.22s var(--ease),
+      box-shadow 0.22s var(--ease);
   }
 
-  .projectCard::before {
-    content: "";
+  .projectCard:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--border) 88%, transparent);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.84) inset,
+      0 24px 44px rgba(15, 23, 42, 0.045);
+  }
+
+  .projectCard.isComingSoon {
+    grid-template-rows: auto 1fr auto;
+    border-color: rgba(84, 84, 92, 0.34);
+    background:
+      radial-gradient(circle at 88% 14%, rgba(255,255,255,0.08), transparent 24%),
+      radial-gradient(circle at 16% 0%, rgba(255,255,255,0.06), transparent 24%),
+      linear-gradient(160deg, rgba(21, 21, 25, 0.988), rgba(11, 11, 14, 0.992) 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.05) inset,
+      0 26px 46px rgba(8, 8, 10, 0.22);
+  }
+
+  .comingChrome {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .comingChromeTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 16px;
+  }
+
+  .comingLabel {
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 0.62rem;
+    font-weight: 720;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .comingSignalWrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 30px;
+    height: 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.045);
+    padding: 0 4px;
+    box-sizing: border-box;
+  }
+
+  .comingSignal {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.92);
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.06), 0 0 12px rgba(255,255,255,0.14);
+  }
+
+  .comingTrack {
+    position: relative;
+    width: 100%;
+    height: 1px;
+    background: rgba(255,255,255,0.09);
+    overflow: hidden;
+  }
+
+  .comingTrackFill {
+    display: block;
+    width: 42%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.88), rgba(255,255,255,0));
+  }
+
+  .cardGlow {
     position: absolute;
     inset: 0;
     pointer-events: none;
     background:
       linear-gradient(
         180deg,
-        rgba(255,255,255,0.18) 0%,
-        rgba(255,255,255,0.04) 18%,
-        rgba(255,255,255,0) 42%
+        rgba(255,255,255,0.16) 0%,
+        rgba(255,255,255,0.05) 18%,
+        rgba(255,255,255,0) 44%
       );
     z-index: 0;
   }
 
-  .projectCard:hover {
-    transform: translateY(-2px);
-    border-color: color-mix(in srgb, var(--border) 92%, transparent);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.78) inset,
-      0 16px 32px rgba(15, 23, 42, 0.04);
+  .projectCard.isComingSoon .cardGlow {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255,255,255,0.12) 0%,
+        rgba(255,255,255,0.04) 20%,
+        rgba(255,255,255,0) 46%
+      );
   }
 
-  .projectBody,
-  .projectFooter {
+  .cardBody,
+  .cardFooter {
     position: relative;
     z-index: 1;
   }
 
-  .projectBody {
+  .cardBody {
     display: flex;
     flex-direction: column;
-    gap: 10px;
     min-width: 0;
   }
 
-  .projectKicker {
-    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
-    font-size: 10px;
-    line-height: 1.1;
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
+  .cardTop {
+    margin-bottom: 10px;
   }
 
-  .projectTitle {
+  .projectCard.isComingSoon .cardBody {
+    justify-content: center;
+    align-self: stretch;
+    padding-block: 6px 4px;
+  }
+
+  .projectCard.isComingSoon .cardTop {
+    padding-top: 0;
+    margin-bottom: 12px;
+  }
+
+  .cardTitle {
     margin: 0;
     color: var(--ink);
-    font-size: 1.24rem;
-    font-weight: 660;
+    font-size: 1rem;
+    font-weight: 670;
     letter-spacing: -0.028em;
     line-height: 1.08;
     text-wrap: balance;
-    max-width: 18ch;
+    max-width: 19ch;
   }
 
-  .projectDesc {
+  .projectCard.isComingSoon .cardTitle {
+    color: rgba(255,255,255,0.98);
+  }
+
+  .cardDesc {
     margin: 0;
     color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
-    font-size: 0.95rem;
-    line-height: 1.62;
-    max-width: 58ch;
+    font-size: 0.86rem;
+    line-height: 1.56;
+    max-width: 56ch;
   }
 
-  .projectFooter {
+  .projectCard.isComingSoon .cardDesc {
+    color: rgba(239, 244, 252, 0.84);
+    max-width: 24ch;
+  }
+
+  .cardFooter {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 12px;
     margin-top: 18px;
     padding-top: 14px;
-    border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-    display: flex;
-    flex-direction: column;
+    border-top: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
+    min-height: 136px;
+  }
+
+  .projectCard.isComingSoon .cardFooter {
+    border-top-color: rgba(255,255,255,0.08);
+  }
+
+  .comingActions {
+    min-width: 148px;
+    align-self: stretch;
+  }
+
+  .comingNote {
+    margin-left: auto;
+    display: grid;
+    gap: 5px;
+    justify-items: end;
+    text-align: right;
+    align-self: end;
+  }
+
+  .comingNoteLabel {
+    color: rgba(255,255,255,0.9);
+    font-size: 0.66rem;
+    font-weight: 720;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .comingNoteText {
+    color: rgba(255,255,255,0.68);
+    font-size: 0.76rem;
+    line-height: 1.48;
+    max-width: 17ch;
+  }
+
+  .bottomMeta {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    align-content: start;
     gap: 12px;
+    min-width: 0;
+    min-height: 100%;
+  }
+
+  .logoSlot {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    min-width: 100px;
+  }
+
+  .projectLogo {
+    display: block;
+    max-width: 100%;
+    max-height: 34px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: left center;
+    filter: saturate(0.96) contrast(1.01);
+  }
+
+  .logoFallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--surface) 98%, white 2%),
+        color-mix(in srgb, var(--surface) 95%, black 5%)
+      );
+    color: var(--ink);
+    font-size: 10px;
+    font-weight: 760;
+    letter-spacing: 0.06em;
+  }
+
+  .projectCard.isComingSoon .logoFallback {
+    background: rgba(255,255,255,0.045);
+    border-color: rgba(255,255,255,0.12);
+    color: white;
   }
 
   .projectTags {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 6px;
-    align-content: flex-start;
+    min-height: 76px;
   }
 
   .tag {
     display: inline-flex;
     align-items: center;
-    padding: 5px 8px;
+    min-height: 23px;
+    padding: 0 9px;
     border-radius: 999px;
     border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
     background: color-mix(in srgb, var(--surface) 98%, black 2%);
-    color: color-mix(in srgb, var(--ink-muted) 80%, var(--ink) 20%);
-    font-size: 11px;
-    font-weight: 600;
+    color: color-mix(in srgb, var(--ink-muted) 82%, var(--ink) 18%);
+    font-size: 9.5px;
+    font-weight: 620;
     line-height: 1;
     letter-spacing: -0.01em;
     white-space: nowrap;
   }
 
-  .btnPrimary {
+  .projectCard.isComingSoon .tag {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: rgba(245, 248, 255, 0.9);
+  }
+
+  .cardActions {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    align-self: end;
+    flex: 0 0 auto;
+  }
+
+  .cardActions.isEmpty {
+    min-width: 110px;
+    min-height: 40px;
+  }
+
+  .actionBtn {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    align-self: flex-start;
-    min-height: 38px;
-    padding: 0 14px;
-    border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--ink) 94%, black 6%);
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--ink) 96%, white 4%),
-      var(--ink)
-    );
-    color: var(--surface);
+    gap: 10px;
+    min-height: 40px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ink);
     text-decoration: none;
-    font-size: 13px;
-    font-weight: 560;
-    line-height: 1;
-    letter-spacing: 0.003em;
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.12) inset,
-      0 12px 24px rgba(0,0,0,0.06);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.62) inset;
     transition:
-      background-color 0.18s var(--ease),
-      border-color 0.18s var(--ease),
-      box-shadow 0.18s var(--ease),
-      transform 0.18s var(--ease);
+      transform 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      background 0.2s var(--ease);
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    appearance: none;
   }
 
-  .btnPrimary:hover {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--ink) 90%, white 10%),
-      color-mix(in srgb, var(--ink) 94%, black 6%)
-    );
-    border-color: color-mix(in srgb, var(--ink) 90%, black 10%);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.14) inset,
-      0 14px 28px rgba(0,0,0,0.08);
+  .actionBtn:hover {
     transform: translateY(-1px);
+    border-color: var(--border-strong);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
+    background: #fff;
   }
 
-  .btnPrimary:active {
+  .actionBtn:active:not(:disabled) {
     transform: translateY(0);
   }
 
-  .btnIcon {
-    font-size: 12px;
+  .actionBtn.primary {
+    background: var(--ink);
+    color: var(--surface);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    font-weight: 600;
+  }
+
+  .actionBtn.primary:hover {
+    background: #202024;
+    border-color: rgba(0, 0, 0, 0.14);
+  }
+
+  .actionBtnIcon {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
     line-height: 1;
-    opacity: 0.95;
+    color: currentColor;
+  }
+
+  .actionBtnText {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 550;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: inherit;
+  }
+
+  .projectActionBtn,
+  .projectSecondaryBtn {
+    width: auto;
+    min-width: 96px;
+    min-height: 40px;
+    justify-content: center;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .projectActionBtn .actionBtnText,
+  .projectSecondaryBtn .actionBtnText {
+    flex: 0 1 auto;
+    text-align: center;
+  }
+
+  .projectSecondaryBtn {
+    border-color: color-mix(in srgb, var(--border) 82%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--surface) 99%, white 1%),
+        color-mix(in srgb, var(--surface) 97%, black 3%)
+      );
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.62) inset,
+      0 8px 16px rgba(0, 0, 0, 0.03);
+  }
+
+  :where(.actionBtn, .ghost, .primary, .previewToolBtn, .previewClose, .railFloat):focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--border) 92%, transparent);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+  }
+
+  .previewModal[hidden] {
+    display: none !important;
+  }
+
+  .previewModal {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: grid;
+    align-items: start;
+    justify-items: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding:
+      calc(var(--siteHeaderH, 64px) + 12px)
+      14px
+      max(18px, calc(env(safe-area-inset-bottom, 0px) + 12px));
+    box-sizing: border-box;
+  }
+
+  .previewBackdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(7, 12, 20, 0.56);
+    backdrop-filter: blur(12px) saturate(110%);
+    -webkit-backdrop-filter: blur(12px) saturate(110%);
+  }
+
+  .previewPanel {
+    position: relative;
+    z-index: 1;
+    width: min(1360px, calc(100vw - 28px - var(--preview-scrollbar-comp, 0px)));
+    height: min(
+      calc(100dvh - (var(--siteHeaderH, 64px) + 32px) - max(18px, calc(env(safe-area-inset-bottom, 0px) + 12px))),
+      1080px
+    );
+    max-height: calc(
+      100dvh - (var(--siteHeaderH, 64px) + 32px) - max(18px, calc(env(safe-area-inset-bottom, 0px) + 12px))
+    );
+    margin: 0 auto;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    border-radius: 22px;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--surface) 99%, white 1%),
+        color-mix(in srgb, var(--surface) 96%, black 4%)
+      );
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.72) inset,
+      0 30px 70px rgba(15, 23, 42, 0.18);
+    overflow: hidden;
+  }
+
+  .previewHead,
+  .previewFoot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 16px 18px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
+  }
+
+  .previewFoot {
+    border-bottom: 0;
+    border-top: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
+    justify-content: flex-end;
+  }
+
+  .previewHeadCopy {
+    min-width: 0;
+  }
+
+  .previewEyebrow {
+    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .previewTitle {
+    margin: 0;
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 675;
+    letter-spacing: -0.03em;
+  }
+
+  .previewTools {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .previewToolBtn,
+  .previewClose {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    background: color-mix(in srgb, var(--surface) 98%, black 2%);
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 650;
+    cursor: pointer;
+  }
+
+  .previewBody {
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    background: linear-gradient(180deg, rgba(248,248,249,0.98), rgba(242,242,244,0.98));
+    padding: 0;
+  }
+
+  .previewBody[data-kind="pdf"] {
+    background: #f6f6f7;
+  }
+
+  .previewBody[data-kind="image"] {
+    background: linear-gradient(180deg, rgba(248,248,249,0.98), rgba(242,242,244,0.98));
+  }
+
+  .previewPdfStage,
+  .previewImageStage {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .previewPdfStage {
+    padding: 0;
+    background: #f6f6f7;
+  }
+
+  .previewPdfCanvas {
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  .previewFrame {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 100%;
+    border: 0;
+    border-radius: 0;
+    background: white;
+    box-shadow: none;
+    transform-origin: top center;
+  }
+
+  .previewImageStage {
+    padding: clamp(8px, 0.9vw, 12px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,245,246,0.98));
+  }
+
+  .previewImageCanvas {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .previewImage {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    transform-origin: center top;
+    transition: transform 0.18s ease;
+    box-shadow: 0 18px 32px rgba(15, 23, 42, 0.08);
+    border-radius: clamp(12px, 1vw, 16px);
+  }
+
+  .previewFallback {
+    min-height: 260px;
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--surface) 99%, white 1%),
+        color-mix(in srgb, var(--surface) 97%, black 3%)
+      );
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .previewFallbackTitle {
+    color: var(--ink);
+    font-size: 0.96rem;
+    font-weight: 670;
+    letter-spacing: -0.02em;
+  }
+
+  .previewFallbackDesc {
+    margin: 8px 0 0;
+    color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .previewIsOpen {
+    overflow: hidden;
+  }
+
+  @media (max-width: 1120px) {
+    .projectsPage {
+      --rail-peek: 48px;
+    }
+
+    .previewPanel {
+      width: calc(100vw - 24px - var(--preview-scrollbar-comp, 0px));
+      height: calc(100dvh - (var(--siteHeaderH, 64px) + 24px) - max(14px, calc(env(safe-area-inset-bottom, 0px) + 8px)));
+      max-height: calc(100dvh - (var(--siteHeaderH, 64px) + 24px) - max(14px, calc(env(safe-area-inset-bottom, 0px) + 8px)));
+    }
+
+    .previewImage {
+      width: 100%;
+    }
   }
 
   @media (max-width: 980px) {
-    .projectsGrid {
-      grid-template-columns: 1fr;
-      row-gap: 16px;
+    .projectsPage {
+      --rail-peek: 40px;
     }
 
-    .projectTitle {
-      max-width: 22ch;
+    .projectRail {
+      grid-auto-columns: calc((100% - var(--rail-gap) - var(--rail-peek)) / 2);
+    }
+  }
+
+  @media (max-width: 840px) {
+    .controlsBar {
+      padding: 12px 13px;
+      border-radius: 16px;
+    }
+
+    .projectGroup + .projectGroup {
+      margin-top: 48px;
+    }
+
+    .projectCard {
+      padding: 17px;
+    }
+
+    .cardFooter {
+      min-height: 130px;
     }
   }
 
   @media (max-width: 720px) {
     .projectsPage {
-      padding-bottom: 56px;
+      padding-bottom: 72px;
+      --rail-peek: 0px;
     }
 
-    .projectsGrid {
-      row-gap: 12px;
+    .controlsBar {
+      top: calc(var(--siteHeaderH, 64px) + 4px);
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
-    .projectCard {
-      padding: 16px 16px 15px;
-      border-radius: 16px;
+    .field {
+      flex-basis: 100%;
+      min-width: 0;
     }
 
-    .projectBody {
-      gap: 8px;
-    }
-
-    .projectTitle {
-      font-size: 1.04rem;
-      line-height: 1.12;
+    .selectWrap {
+      flex: 1 1 100%;
+      min-width: 0;
       max-width: none;
     }
 
-    .projectDesc {
-      font-size: 0.89rem;
-      line-height: 1.54;
+    .select {
+      max-width: none;
     }
 
-    .projectFooter {
-      margin-top: 14px;
-      padding-top: 12px;
-      gap: 10px;
+    .rightActions {
+      width: 100%;
+      justify-content: space-between;
+      margin-left: 0;
     }
 
-    .btnPrimary {
-      min-height: 36px;
-      padding: 0 13px;
-      font-size: 12px;
+    .projectRail {
+      grid-auto-columns: minmax(86%, 86%);
+      gap: 12px;
+    }
+
+    .projectGroup + .projectGroup {
+      margin-top: 38px;
+    }
+
+    .groupHead {
+      margin-bottom: 14px;
+    }
+
+    .groupHead::after {
+      min-width: 28px;
+    }
+
+    .railFade,
+    .railFloat {
+      display: none !important;
+    }
+
+    .cardFooter {
+      grid-template-columns: 1fr;
+      align-items: start;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .bottomMeta {
+      max-width: 100%;
+    }
+
+    .projectTags {
+      min-height: 0;
+    }
+
+    .cardActions,
+    .cardActions.isEmpty {
+      width: 100%;
+      justify-content: flex-start;
+      min-width: 0;
+    }
+
+    .previewModal {
+      padding:
+        calc(var(--siteHeaderH, 64px) + 10px)
+        8px
+        max(12px, calc(env(safe-area-inset-bottom, 0px) + 8px));
+    }
+
+    .previewPanel {
+      width: calc(100vw - 16px - var(--preview-scrollbar-comp, 0px));
+      height: calc(100dvh - (var(--siteHeaderH, 64px) + 18px) - max(10px, calc(env(safe-area-inset-bottom, 0px) + 8px)));
+      max-height: calc(100dvh - (var(--siteHeaderH, 64px) + 18px) - max(10px, calc(env(safe-area-inset-bottom, 0px) + 8px)));
+      border-radius: 18px;
+    }
+
+    .previewHead,
+    .previewFoot {
+      padding: 14px 15px;
+    }
+
+    .previewHead {
+      flex-wrap: wrap;
+    }
+
+    .previewTools {
+      margin-left: 0;
+      order: 3;
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .previewBody {
+      padding: 0;
+    }
+
+    .previewPdfStage {
+      padding: 0;
+    }
+
+    .previewImageStage {
+      padding: 4px;
+    }
+
+    .previewFrame {
+      min-height: calc(100dvh - 162px);
+      border-radius: 0;
+    }
+
+    .previewImageStage {
+      min-width: 100%;
+      min-height: calc(100dvh - 204px);
+      border-radius: 12px;
+    }
+
+    .previewImageCanvas {
+      padding: 0;
+    }
+
+    .previewImage {
+      width: 100%;
+      max-width: 100%;
+      min-width: 100%;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .resultsInline {
+      display: none;
+    }
+
+    .controlsBar {
+      padding: 12px;
+      top: calc(var(--siteHeaderH, 64px) - 8px + env(safe-area-inset-top, 0px));
+      border-radius: 16px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
+    * {
+      scroll-behavior: auto !important;
+    }
+
     .projectCard,
-    .btnPrimary {
+    .actionBtn,
+    .ghost,
+    .primary,
+    .railFloat,
+    .previewToolBtn,
+    .previewClose {
       transition: none !important;
     }
 
     .projectCard:hover,
-    .btnPrimary:hover {
+    .actionBtn:hover,
+    .ghost:hover,
+    .primary:hover,
+    .railFloat:hover {
       transform: none !important;
     }
   }
