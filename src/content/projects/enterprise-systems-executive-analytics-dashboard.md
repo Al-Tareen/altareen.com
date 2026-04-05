@@ -9,8 +9,8 @@ dbTitle: "Projects"
 notionId: "33739950-eddd-8011-a8a3-e6ed62e08cf2"
 link: "https://altareen.com/executive-dashboard"
 url: "https://altareen.com/executive-dashboard"
-logo: "/project-logos/enterprise-systems-executive-analytics-dashboard--logo--logo-png.png"
-cover: "/project-logos/enterprise-systems-executive-analytics-dashboard--logo--logo-png.png"
+logo: "/project-logos/enterprise-systems-executive-analytics-dashboard--logo--untitled-design-png.png"
+cover: "/project-logos/enterprise-systems-executive-analytics-dashboard--logo--untitled-design-png.png"
 files: []
 tags: ["Product Intelligence","Analytics","Data Integrations"]
 comingSoon: true
