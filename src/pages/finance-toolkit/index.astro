@@ -48,12 +48,13 @@ const financeBreadcrumbs = [
   title="Finance Toolkit"
   description="Financial models for founders and finance professionals."
   keywords="finance toolkit, financial models, founder finance tools, business models, finance frameworks, Altareen"
-breadcrumbs={financeBreadcrumbs}
+  breadcrumbs={financeBreadcrumbs}
 >
+  <div class="toolkit">
  
 
     {featured.length > 0 && (
-      <section class="featuredBlock" id="__featured" data-group="__featured" data-expanded="false">
+      <section class="featuredBlock" id="__featured" data-group="__featured" data-expanded="true">
         <div class="groupHead">
           <div class="groupTitleWrap">
             <h2 class="groupTitle">
@@ -124,7 +125,7 @@ breadcrumbs={financeBreadcrumbs}
             type="button"
             data-expand-toggle
             hidden
-            aria-expanded="false"
+            aria-expanded="true"
             aria-label="View all models in this section"
           >
 <span class="groupTogglePill" aria-hidden="true">
@@ -141,20 +142,20 @@ breadcrumbs={financeBreadcrumbs}
       <button id="emptyClear" class="primary" type="button">Clear filters</button>
     </div>
 
-    {groups.map((g) => (
-      <section class="group" id={catId(g.category)} data-group={g.category} data-expanded="false">
-        <div class="groupHead">
-          <div class="groupTitleWrap">
-            <h2 class="groupTitle">
-              {g.category} <span class="count">({g.items.length})</span>
-            </h2>
-            <div class="groupRule" aria-hidden="true"></div>
-          </div>
-        </div>
+{groups.map((g) => (
+  <section class="group" id={catId(g.category)} data-group={g.category} data-expanded="true">
+    <div class="groupHead">
+      <div class="groupTitleWrap">
+        <h2 class="groupTitle">
+          {g.category} <span class="count">({g.items.length})</span>
+        </h2>
+        <div class="groupRule" aria-hidden="true"></div>
+      </div>
+    </div>
 
-        <div class="groupReveal" data-expand-wrap>
-          <div class="grid" data-expand-grid>
-            {g.items.map((item) => (
+    <div class="groupReveal" data-expand-wrap>
+      <div class="grid" data-expand-grid>
+        {g.items.map((item) => (
 <a
   class="card"
   href={item.data.link || `/toolkit/${item.slug}/`}
@@ -208,13 +209,13 @@ breadcrumbs={financeBreadcrumbs}
 
         <div class="groupFooter">
           <button
-            class="groupToggle"
-            type="button"
-            data-expand-toggle
-            hidden
-            aria-expanded="false"
-            aria-label="View all models in this section"
-          >
+  class="groupToggle"
+  type="button"
+  data-expand-toggle
+  hidden
+  aria-expanded="true"
+  aria-label="View all models in this section"
+>
 <span class="groupTogglePill" aria-hidden="true">
   <img class="groupToggleIcon" src="/homepage/downarrow.png" alt="" />
 </span>
@@ -224,8 +225,8 @@ breadcrumbs={financeBreadcrumbs}
     ))}
 
     <button id="toTop" class="toTop" type="button" aria-label="Back to top">↑ Top</button>
-
-    <script is:inline>
+    
+       <script is:inline>
       window.addEventListener("DOMContentLoaded", () => {
         try {
           const root = document.querySelector(".toolkit");
@@ -238,7 +239,6 @@ breadcrumbs={financeBreadcrumbs}
 
           const viewGrid = document.getElementById("viewGrid");
           const viewCompact = document.getElementById("viewCompact");
-
           const toTop = document.getElementById("toTop");
 
           const jumpChips = document.getElementById("jumpChips");
@@ -338,8 +338,8 @@ breadcrumbs={financeBreadcrumbs}
             );
           }
 
-function refreshExpandableSections(forceExpand = false) {
-  const isCompact = root?.dataset.view === "compact";
+          function refreshExpandableSections(forceExpand = false) {
+            const isCompact = root?.dataset.view === "compact";
 
             expandableSections.forEach((section) => {
               const wrap = section.querySelector("[data-expand-wrap]");
@@ -356,8 +356,6 @@ function refreshExpandableSections(forceExpand = false) {
                 wrap.style.removeProperty("--collapsed-h");
                 return;
               }
-
-
 
               const cards = getVisibleCardsInSection(section);
 
@@ -415,9 +413,7 @@ function refreshExpandableSections(forceExpand = false) {
                 expanded ? "Show fewer models in this section" : "View all models in this section"
               );
             });
-}
-            
-          
+          }
 
           function applyFilter() {
             const query = normalize(q?.value);
@@ -492,27 +488,28 @@ function refreshExpandableSections(forceExpand = false) {
             if (saved === "compact" || saved === "grid") setView(saved);
           } catch {}
 
-window.addEventListener("scroll", queueStickyControlBarSync, { passive: true });
-window.addEventListener("resize", queueStickyControlBarSync);
-window.visualViewport?.addEventListener("resize", queueStickyControlBarSync);
-window.visualViewport?.addEventListener("scroll", queueStickyControlBarSync);
+          window.addEventListener("scroll", queueStickyControlBarSync, { passive: true });
+          window.addEventListener("resize", queueStickyControlBarSync);
+          window.visualViewport?.addEventListener("resize", queueStickyControlBarSync);
+          window.visualViewport?.addEventListener("scroll", queueStickyControlBarSync);
 
-viewGrid?.addEventListener("click", () => setView("grid"));
-viewCompact?.addEventListener("click", () => setView("compact"));
+          viewGrid?.addEventListener("click", () => setView("grid"));
+          viewCompact?.addEventListener("click", () => setView("compact"));
 
-q?.addEventListener("input", applyFilter);
+          q?.addEventListener("input", applyFilter);
 
-cat?.addEventListener("change", () => {
-  trackEvent("toolkit_category_select", {
-    category_name: cat.value || "All categories",
-    source: "finance_toolkit",
-  });
+          cat?.addEventListener("change", () => {
+            if (typeof window.trackEvent === "function") {
+              window.trackEvent("toolkit_category_select", {
+                category_name: cat.value || "All categories",
+                source: "finance_toolkit",
+              });
+            }
+            applyFilter();
+          });
 
-  applyFilter();
-});
-
-clear?.addEventListener("click", clearFilters);
-emptyClear?.addEventListener("click", clearFilters);
+          clear?.addEventListener("click", clearFilters);
+          emptyClear?.addEventListener("click", clearFilters);
 
           document.querySelectorAll("[data-jump]").forEach((btn) => {
             btn.addEventListener("click", () => {
@@ -623,13 +620,11 @@ emptyClear?.addEventListener("click", clearFilters);
         } catch (e) {
           console.error("[finance-toolkit] init failed:", e);
         }
-        
-        
-
       });
     </script>
 
 <style>
+  <style>
   .toolkit {
     width: 100%;
     padding-top: 10px;
@@ -640,6 +635,57 @@ emptyClear?.addEventListener("click", clearFilters);
     --tk-radius: 18px;
     --tk-radius-sm: 12px;
   }
+
+.toTop {
+  position: fixed;
+  right: 22px;
+bottom: max(48px, calc(env(safe-area-inset-bottom, 0px) + 24px));  
+z-index: 200;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(79, 101, 145, 0.34);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(20, 30, 55, 0.92) 0%, rgba(10, 17, 33, 0.96) 100%);
+  color: rgba(248, 250, 255, 0.94);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.08) inset,
+    0 12px 26px rgba(4, 9, 18, 0.24),
+    0 24px 46px rgba(4, 9, 18, 0.12);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition:
+    opacity 0.2s var(--ease),
+    transform 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+}
+
+.toTop.isVisible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.toTop:hover {
+  border-color: rgba(116, 145, 206, 0.48);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.1) inset,
+    0 16px 30px rgba(4, 9, 18, 0.28),
+    0 30px 56px rgba(4, 9, 18, 0.16);
+}
 
   .group,
   .featuredBlock {
@@ -875,7 +921,7 @@ emptyClear?.addEventListener("click", clearFilters);
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-    margin-bottom: 12px;
+    margin-bottom: 18px;
   }
 
   .groupTitleWrap {
@@ -1291,42 +1337,6 @@ emptyClear?.addEventListener("click", clearFilters);
     transform: translateY(-1px);
   }
 
-  .toTop {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 60;
-    min-height: 36px;
-    padding: 0 12px;
-    border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-    background: color-mix(in srgb, var(--surface) 96%, white 4%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.62) inset,
-      0 10px 20px rgba(0,0,0,0.05);
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(8px);
-    pointer-events: none;
-    transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), border-color 0.2s var(--ease);
-    font-size: 12px;
-    font-weight: 600;
-    color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
-  }
-
-  .toTop.isVisible {
-    opacity: 0.98;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-
-  .toTop:hover {
-    color: var(--ink);
-    border-color: color-mix(in srgb, var(--border) 92%, transparent);
-  }
-
   .ghost:active,
   .toggleBtn:active {
     transform: translateY(0);
@@ -1436,10 +1446,10 @@ emptyClear?.addEventListener("click", clearFilters);
       width: 138px;
     }
 
-    .toTop {
-      right: 14px;
-      bottom: 14px;
-    }
+  .toTop {
+    right: 14px;
+    bottom: max(84px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+  }
   }
 
   @media (max-width: 640px) {
@@ -1537,4 +1547,5 @@ emptyClear?.addEventListener("click", clearFilters);
 </style>
 
   </div>
+
 </PageShell>
