@@ -1,6 +1,8 @@
 name: Deploy to PROD (altareen.com)
 
 on:
+  schedule:
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 jobs:
