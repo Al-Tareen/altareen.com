@@ -178,14 +178,42 @@ async function getMostLikedFramework() {
   };
 }
 
+async function getTopCategory() {
+  const rows = await runReport({
+    dimensions: [{ name: "customEvent:category" }],
+    metrics: [{ name: "eventCount" }],
+    dateRanges: [{ startDate: "1daysAgo", endDate: "today" }],
+    dimensionFilter: {
+      filter: {
+        fieldName: "eventName",
+        stringFilter: {
+          matchType: "EXACT",
+          value: "framework_click",
+        },
+      },
+    },
+    limit: 100,
+  });
+
+  const ranked = sortEntriesDesc(toMap(rows));
+  const [categoryName = "—", metricValue = 0] = ranked[0] || [];
+
+  return {
+    categoryName,
+    metricValue: String(metricValue),
+  };
+}
+
 async function main() {
-  const [mostPopular, mostDownloaded, mostLiked] = await Promise.all([
+  const [topCategory, mostPopular, mostDownloaded, mostLiked] = await Promise.all([
+    getTopCategory(),
     getMostPopularFramework(),
     getMostDownloadedFramework(),
     getMostLikedFramework(),
   ]);
 
   const payload = {
+    topCategory,
     mostPopular,
     mostDownloaded,
     mostLiked,
