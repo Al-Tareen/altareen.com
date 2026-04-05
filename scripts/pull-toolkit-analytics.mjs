@@ -61,7 +61,7 @@ async function getMostPopularFramework() {
   const rows = await runReport({
     dimensions: [{ name: "customEvent:framework" }],
     metrics: [{ name: "eventCount" }],
-    dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+    dateRanges: [{ startDate: "1daysAgo", endDate: "today" }],
     dimensionFilter: {
       filter: {
         fieldName: "eventName",
@@ -89,7 +89,7 @@ async function getMostDownloadedFramework() {
       { name: "customEvent:framework" },
     ],
     metrics: [{ name: "eventCount" }],
-    dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+    dateRanges: [{ startDate: "1daysAgo", endDate: "today" }],
     dimensionFilter: {
       orGroup: {
         expressions: [
@@ -142,7 +142,7 @@ async function getMostLikedFramework() {
       { name: "customEvent:action" },
     ],
     metrics: [{ name: "eventCount" }],
-    dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+    dateRanges: [{ startDate: "1daysAgo", endDate: "today" }],
     dimensionFilter: {
       andGroup: {
         expressions: [
@@ -191,7 +191,7 @@ async function main() {
     mostLiked,
     generatedAt: new Date().toISOString(),
     propertyId: PROPERTY_ID,
-    range: "30daysAgo:today",
+    range: "1daysAgo:today",
   };
 
   await fs.writeFile(OUTPUT_PATH, JSON.stringify(payload, null, 2) + "\n", "utf8");
