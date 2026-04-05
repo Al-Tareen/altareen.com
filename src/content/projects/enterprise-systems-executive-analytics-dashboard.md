@@ -12,7 +12,7 @@ url: "https://altareen.com/executive-dashboard"
 logo: "/project-logos/enterprise-systems-executive-analytics-dashboard--logo--untitled-design-png.png"
 cover: "/project-logos/enterprise-systems-executive-analytics-dashboard--logo--untitled-design-png.png"
 files: []
-tags: ["Product Intelligence","Analytics","Data Integrations"]
+tags: ["Product Intelligence","Data Analytics","Data Fusion"]
 comingSoon: true
 position: 1
 ---
