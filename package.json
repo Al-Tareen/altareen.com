@@ -4,14 +4,14 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-"build": "npm run toolkit:analytics && astro build",
+    "build": "npm run toolkit:analytics && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "sync:toolkit": "node scripts/notion-sync-toolkit.mjs",
     "toolkit:analytics": "node ./scripts/pull-toolkit-analytics.mjs"
   },
   "dependencies": {
-    "@astrojs/node": "^9.5.4",
+    "@astrojs/node": "^10.0.4",
     "@astrojs/sitemap": "^3.7.2",
     "@google-analytics/data": "^5.2.1",
     "@notionhq/client": "^5.9.0",
