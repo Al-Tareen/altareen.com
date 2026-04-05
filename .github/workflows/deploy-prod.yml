@@ -20,7 +20,12 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Create GA4 credentials file
+        run: echo '${{ secrets.GA4_KEY_JSON }}' > ga4-key.json
+
       - name: Build
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/ga4-key.json
         run: npm run build
 
       - name: Add SSH key
