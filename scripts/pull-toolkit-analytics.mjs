@@ -1,3 +1,4 @@
+import "dotenv/config";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -21,9 +22,10 @@ const client = new BetaAnalyticsDataClient({
     scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
   });
 
-function cleanValue(value) {
-  return String(value || "").trim();
-}
+  function cleanValue(value) {
+    const v = String(value || "").trim();
+    return v === "(not set)" ? "" : v;
+  }
 
 function toMap(rows = [], dimensionKeyIndex = 0, metricValueIndex = 0) {
   const map = new Map();

@@ -51,33 +51,7 @@ const financeBreadcrumbs = [
 breadcrumbs={financeBreadcrumbs}
 >
  
-<div class="toolkit" data-view="grid">
-  <div class="controlsBar" role="search" aria-label="Search and filter financial models">
-    <div class="field">
-      <span class="icon" aria-hidden="true">⌕</span>
-      <input id="q" class="input" type="search" placeholder="Search models…" />
-    </div>
 
-    <select id="cat" class="select" aria-label="Filter by category">
-      <option value="">All categories</option>
-      {categories.map((c) => <option value={c}>{c}</option>)}
-    </select>
-
-    <div class="rightActions">
-      <div class="resultsInline" id="resultsText">Showing {items.length} models</div>
-
-      <div class="viewToggle" role="group" aria-label="View toggle">
-        <button id="viewGrid" class="toggleBtn isActive" type="button" aria-pressed="true">
-          Grid
-        </button>
-        <button id="viewCompact" class="toggleBtn" type="button" aria-pressed="false">
-          Compact
-        </button>
-      </div>
-
-      <button id="clear" class="ghost" type="button">Clear</button>
-    </div>
-  </div>
     {featured.length > 0 && (
       <section class="featuredBlock" id="__featured" data-group="__featured" data-expanded="false">
         <div class="groupHead">
@@ -1059,7 +1033,7 @@ emptyClear?.addEventListener("click", clearFilters);
   display: grid;
   column-gap: 12px;
   row-gap: 16px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: stretch;
 }
 

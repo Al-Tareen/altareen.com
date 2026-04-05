@@ -9,8 +9,8 @@ dbTitle: "Projects"
 notionId: "33739950-eddd-8031-9b76-e3f47003960a"
 link: "https://www.kbr.com/en/what-we-do/mission-technology-solutions"
 url: "https://www.kbr.com/en/what-we-do/mission-technology-solutions"
-logo: "/project-logos/enterprise-systems-corporate-applications-operations-dashboard--logo--servicenow-png.png"
-cover: "/project-logos/enterprise-systems-corporate-applications-operations-dashboard--logo--servicenow-png.png"
+logo: "/project-logos/enterprise-systems-corporate-applications-operations-dashboard--logo--kbr-svg.svg"
+cover: "/project-logos/enterprise-systems-corporate-applications-operations-dashboard--logo--kbr-svg.svg"
 files: []
 tags: ["ITIL / ServiceNow","Operational Intelligence","Cybersecurity"]
 comingSoon: false

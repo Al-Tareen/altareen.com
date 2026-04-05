@@ -1,14 +1,17 @@
 {
-    "mostPopular": {
-      "frameworkName": "Abuse / Misuse Threat Model",
-      "metricValue": "142"
-    },
-    "mostDownloaded": {
-      "frameworkName": "AI Incident Response Runbook",
-      "metricValue": "38"
-    },
-    "mostLiked": {
-      "frameworkName": "AI Risk Assessment Checklist",
-      "metricValue": "17"
-    }
-  }
+  "mostPopular": {
+    "frameworkName": "ai-product-quality-risk-safety-abuse-misuse-threat-model",
+    "metricValue": "12"
+  },
+  "mostDownloaded": {
+    "frameworkName": "ai-product-quality-risk-safety-abuse-misuse-threat-model",
+    "metricValue": "4"
+  },
+  "mostLiked": {
+    "frameworkName": "ai-product-quality-risk-safety-abuse-misuse-threat-model",
+    "metricValue": "4"
+  },
+  "generatedAt": "2026-04-03T18:40:54.998Z",
+  "propertyId": "530034293",
+  "range": "30daysAgo:today"
+}

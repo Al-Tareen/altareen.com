@@ -4,10 +4,11 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+"build": "npm run toolkit:analytics && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "sync:toolkit": "node scripts/notion-sync-toolkit.mjs"
+    "sync:toolkit": "node scripts/notion-sync-toolkit.mjs",
+    "toolkit:analytics": "node ./scripts/pull-toolkit-analytics.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^9.5.4",

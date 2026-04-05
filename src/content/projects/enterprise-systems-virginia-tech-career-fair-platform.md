@@ -3,8 +3,8 @@ title: "Virginia Tech Career Fair Platform"
 project: "Virginia Tech Career Fair Platform"
 primaryCategory: "Enterprise Systems"
 categories: ["Enterprise Systems"]
-description: "Developed the admin area UI/functionality for a Virginia Tech career fair platform (expo.sec.vt.edu), focusing on platform operations and administrative workflows."
-summary: "Developed the admin area UI/functionality for a Virginia Tech career fair platform (expo.sec.vt.edu), focusing on platform operations and administrative workflows."
+description: "Developed the admin UI/functionality for Virginia Tech Career Fair platform focusing on event operations and administrative workflows."
+summary: "Developed the admin UI/functionality for Virginia Tech Career Fair platform focusing on event operations and administrative workflows."
 dbTitle: "Projects"
 notionId: "33739950-eddd-8076-b13b-df7d29f60e90"
 link: "https://www.sec.vt.edu/expo.html "
@@ -16,4 +16,4 @@ tags: ["C#","Platform Operations","Python"]
 comingSoon: false
 position: 4
 ---
-Developed the admin area UI/functionality for a Virginia Tech career fair platform (expo.sec.vt.edu), focusing on platform operations and administrative workflows.
+Developed the admin UI/functionality for Virginia Tech Career Fair platform focusing on event operations and administrative workflows.

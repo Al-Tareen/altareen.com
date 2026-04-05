@@ -24,34 +24,32 @@ const conceptPool = all
   .filter((item) => CONCEPT_CATEGORIES.has((item.data.primaryCategory || "Uncategorized").trim()))
   .filter(hasCover);
 
-function hashString(value) {
-  let hash = 0;
-  for (let i = 0; i < value.length; i += 1) {
-    hash = (hash << 5) - hash + value.charCodeAt(i);
-    hash |= 0;
+function randomizeItems(items, seed = Math.random()) {
+  const list = [...items];
+  let state = Math.floor((seed % 1) * 2147483647);
+
+  if (!state) state = 104729;
+
+  function next() {
+    state = (state * 48271) % 2147483647;
+    return state / 2147483647;
   }
-  return Math.abs(hash);
+
+  for (let i = list.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(next() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+
+  return list;
 }
 
-function pickPreviewItems(items, count, seed) {
-  return [...items]
-    .map((item) => ({
-      item,
-      score: hashString(`${seed}:${item.slug}`),
-    }))
-    .sort((a, b) => {
-      if (a.score !== b.score) return a.score - b.score;
-      return String(a.item.data.title || "").localeCompare(String(b.item.data.title || ""));
-    })
+function buildPreviewItems(items, count, seed = Math.random()) {
+  return randomizeItems(items, seed)
     .slice(0, count)
-    .map(({ item }) => item);
-}
-
-function buildPreviewItems(items, count, seed) {
-  return pickPreviewItems(items, count, seed).map((item) => ({
-    slug: item.slug,
-    cover: item.data.cover,
-  }));
+    .map((item) => ({
+      slug: item.slug,
+      cover: item.data.cover,
+    }));
 }
 
 function chunkItems(items, size) {
@@ -62,8 +60,18 @@ function chunkItems(items, size) {
   return chunks.filter((chunk) => chunk.length > 0);
 }
 
-const pmPages = chunkItems(buildPreviewItems(frameworkPool, 12, "pm"), 4);
-const financePages = chunkItems(buildPreviewItems(financePool, 4, "finance"), 2);
+const homepagePreviewSeed = Math.random();
+
+const pmPages = chunkItems(
+  buildPreviewItems(frameworkPool, 12, homepagePreviewSeed + 0.101),
+  4
+);
+
+const financePages = chunkItems(
+  buildPreviewItems(financePool, 4, homepagePreviewSeed + 0.202),
+  2
+);
+
 const conceptPages = chunkItems(buildPreviewItems(conceptPool, 2, "concepts"), 2);
 
 const homepageSchema = [
@@ -113,7 +121,7 @@ const homepageBreadcrumbs = [
       <h1 id="home-title">Al Tareen</h1>
 
       <p class="lead">
-        Welcome to my website. Explore selected Projects, a PM Toolkit for effective decision-making, a Finance Toolkit containing various models, Concepts that reflect how I think through new opportunities, and more.
+        Welcome to my website. Explore selected Projects, a PM Toolkit for effective decision-making, a Finance Toolkit containing various models. and Concepts that reflect how I think through new opportunities.
       </p>
     </section>
 
@@ -314,7 +322,7 @@ const homepageBreadcrumbs = [
 
         <div class="card-copy">
           <h2>Projects</h2>
-          <p>Selected work across AI Transformation, Product Management, and more.</p>
+          <p>Selected work across AI systems, enterprise platforms and more.</p>
         </div>
 
         <span class="card-arrow" aria-hidden="true">↗</span>

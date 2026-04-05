@@ -961,12 +961,12 @@ safeTrackEvent("concept_view", {
         display: none !important;
       }
 
-      .heroGrid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 300px;
-        gap: 18px;
-        align-items: start;
-      }
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: start;
+}
 
       .heroRail {
         display: flex;
@@ -1014,7 +1014,7 @@ safeTrackEvent("concept_view", {
 .coverFrame {
   position: relative;
   border-radius: var(--radius-xl);
-  padding: 0 0 18px 0; /* no top/left/right padding */
+  padding: 0 0 18px 0;
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
@@ -1051,20 +1051,19 @@ safeTrackEvent("concept_view", {
 
 .coverWrap {
   position: relative;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0; /* flush top corners */
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   overflow: hidden;
   background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--border);
 }
 
-      .cover {
-        width: 100%;
-        height: auto;
-        display: block;
-        object-fit: contain;
-        transition: transform 0.35s var(--ease);
-        transform-origin: 50% 45%;
-      }
+.cover {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.35s var(--ease);
+  transform-origin: 50% 45%;
+}
 
       .coverFeedback {
         position: absolute;

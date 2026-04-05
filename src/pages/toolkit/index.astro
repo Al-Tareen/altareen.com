@@ -49,25 +49,79 @@ const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 
 const getFrameworkName = (item) => item?.data?.title || "—";
 
+function prettifyFrameworkName(value) {
+  return String(value || "")
+    .replace(/^ai-product-quality-risk-safety-/i, "")
+    .replace(/^ai-/, "")
+    .replace(/^pm-/, "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase())
+    .trim();
+}
+
+function findToolkitItemBySlugOrTitle(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) return null;
+
+  return (
+    items.find((item) => item.slug.toLowerCase() === normalized) ||
+    items.find((item) => item.data.title.toLowerCase() === normalized) ||
+    null
+  );
+}
+
+function buildAnalyticsCard(title, rawFrameworkName, metricLabel, metricValue, theme) {
+  const matchedItem = findToolkitItemBySlugOrTitle(rawFrameworkName);
+
+  return {
+    title,
+    frameworkName: matchedItem
+      ? matchedItem.data.title
+      : prettifyFrameworkName(rawFrameworkName) || "—",
+    frameworkCategory: matchedItem
+      ? (matchedItem.data.primaryCategory || "Uncategorized")
+      : null,
+    href: matchedItem ? `/toolkit/${matchedItem.slug}/` : null,
+    metricLabel,
+    metricValue: metricValue ?? 0,
+    theme,
+  };
+}
+
 const analyticsCards = [
   {
-    title: "Most Popular Framework",
-    frameworkName: analyticsData.mostPopular.frameworkName,
+    title: "Top Category",
+    frameworkName:
+      analyticsData?.topCategory?.categoryName ||
+      analyticsData?.topCategory?.frameworkName ||
+      "—",
+    frameworkCategory: "Most engaged category",
+    href: null,
     metricLabel: "Views",
-    metricValue: analyticsData.mostPopular.metricValue,
+    metricValue: analyticsData?.topCategory?.metricValue ?? 0,
+    theme: "category",
   },
-  {
-    title: "Most Downloaded Framework",
-    frameworkName: analyticsData.mostDownloaded.frameworkName,
-    metricLabel: "Downloads",
-    metricValue: analyticsData.mostDownloaded.metricValue,
-  },
-  {
-    title: "Most Liked Framework",
-    frameworkName: analyticsData.mostLiked.frameworkName,
-    metricLabel: "Likes",
-    metricValue: analyticsData.mostLiked.metricValue,
-  },
+  buildAnalyticsCard(
+    "Most Popular Framework",
+    analyticsData?.mostPopular?.frameworkName,
+    "Views",
+    analyticsData?.mostPopular?.metricValue,
+    "popular"
+  ),
+  buildAnalyticsCard(
+    "Most Downloaded Framework",
+    analyticsData?.mostDownloaded?.frameworkName,
+    "Downloads",
+    analyticsData?.mostDownloaded?.metricValue,
+    "downloaded"
+  ),
+  buildAnalyticsCard(
+    "Most Liked Framework",
+    analyticsData?.mostLiked?.frameworkName,
+    "Likes",
+    analyticsData?.mostLiked?.metricValue,
+    "liked"
+  ),
 ];
 
 const pmtoolkitBreadcrumbs = [
@@ -90,10 +144,14 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       <input id="q" class="input" type="search" placeholder="Search frameworks…" />
     </div>
 
-    <select id="cat" class="select" aria-label="Filter by category">
-      <option value="">All categories</option>
-      {categories.map((c) => <option value={c}>{c}</option>)}
-    </select>
+<div class="selectWrap">
+  <select id="cat" class="select" aria-label="Filter by category">
+    <option value="">All categories</option>
+    {categories.map((c) => <option value={c}>{c}</option>)}
+  </select>
+<span class="selectChevron" aria-hidden="true">
+  <img class="selectChevronIcon" src="/homepage/downarrow.png" alt="" />
+</span></div>
 
     <div class="rightActions">
       <div class="resultsInline" id="resultsText">Showing {items.length} frameworks</div>
@@ -111,23 +169,48 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     </div>
   </div> 
 
-    {analyticsCards.length > 0 && (
-      <section class="analyticsStrip" aria-label="Framework performance overview">
-        <div class="analyticsGrid">
-          {analyticsCards.map((card) => (
-            <article class="analyticsCard">
-              <div class="analyticsTitle">{card.title}</div>
-              <div class="analyticsFrameworkName">{card.frameworkName}</div>
+{analyticsCards.length > 0 && (
+  <section class="analyticsStrip" aria-label="Framework performance overview">
+    <div class="analyticsGrid">
+      {analyticsCards.map((card) => (
+        <article class={`analyticsCard analyticsCard--${card.theme}`}>
+          <div class="analyticsCardGlow" aria-hidden="true"></div>
 
-              <div class="analyticsEventRow">
-                <span class="analyticsEventLabel">{card.metricLabel}</span>
-                <span class="analyticsEventValue">{card.metricValue}</span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-    )}
+          <div class="analyticsBody">
+            <div class="analyticsTop">
+              <div class="analyticsTitle">{card.title}</div>
+            </div>
+
+            <div class={`analyticsCenter ${card.theme === "category" ? "analyticsCenter--category" : ""}`}>
+              {card.href ? (
+                <a class="analyticsFrameworkName analyticsFrameworkLink" href={card.href}>
+                  {card.frameworkName}
+                </a>
+              ) : (
+                <div class="analyticsFrameworkName">{card.frameworkName}</div>
+              )}
+
+              {card.frameworkCategory && card.theme !== "category" && (
+                <div class="analyticsCategoryMeta">{card.frameworkCategory}</div>
+              )}
+
+              {card.theme === "category" && (
+                <div class="analyticsCategoryMeta analyticsCategoryMeta--category">
+                  
+                </div>
+              )}
+            </div>
+
+            <div class="analyticsBottomRow">
+              <div class="analyticsMetricValue">{card.metricValue}</div>
+              <div class="analyticsMetricSuffix">{card.metricLabel}</div>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+)}
 
            <!-- Featured -->
     {featured.length > 0 && (
@@ -550,7 +633,12 @@ breadcrumbs={pmtoolkitBreadcrumbs}
   });
 </script>
 
+
 <style>
+  /* =========================================================
+     1) ROOT / TOKENS
+     ========================================================= */
+
   .toolkit {
     width: 100%;
     overflow-x: visible;
@@ -563,7 +651,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     --tk-radius-sm: 12px;
   }
 
-    .group,
+  .group,
   .featuredBlock,
   .spotlightBlock {
     scroll-margin-top: 102px;
@@ -573,276 +661,9 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     display: none !important;
   }
 
-  .controlsBar {
-    position: sticky;
-    top: calc(var(--siteHeaderH, 64px) + 8px);
-    z-index: 40;
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-    padding: 14px 16px;
-    min-height: 56px;
-    width: 100%;
-    box-sizing: border-box;
-    border-radius: 18px;
-    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
-    background:
-      linear-gradient(
-        180deg,
-        rgb(from var(--surface) r g b / 0.72),
-        rgb(from var(--surface) r g b / 0.64)
-      );
-    backdrop-filter: blur(14px) saturate(118%);
-    -webkit-backdrop-filter: blur(14px) saturate(118%);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.7) inset,
-      0 16px 34px rgba(0,0,0,0.035);
-    margin: 0 0 14px;
-    transition:
-      box-shadow 0.2s var(--ease),
-      border-color 0.2s var(--ease),
-      border-radius 0.22s var(--ease),
-      margin 0.22s var(--ease),
-      padding 0.22s var(--ease),
-      width 0.22s var(--ease);
-  }
-
-  .controlsBar:focus-within {
-    border-color: color-mix(in srgb, var(--border) 90%, transparent);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.78) inset,
-      0 20px 40px rgba(0,0,0,0.045);
-  }
-
-  .controlsBar.isStickyMobile {
-    width: auto;
-    max-width: none;
-    margin-left: calc(var(--sticky-expand-left, 0px) * -1);
-    margin-right: calc(var(--sticky-expand-right, 0px) * -1);
-    border-radius: 0;
-    border-left-color: transparent;
-    border-right-color: transparent;
-    padding-left: max(18px, env(safe-area-inset-left, 0px));
-    padding-right: max(18px, env(safe-area-inset-right, 0px));
-  }
-
-  .analyticsStrip {
-    margin-bottom: 18px;
-  }
-
-  .analyticsGrid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-  }
-
-  .analyticsCard {
-    position: relative;
-    min-width: 0;
-    padding: 18px 18px 16px;
-    border-radius: 20px;
-    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--surface) 99%, white 1%), color-mix(in srgb, var(--surface) 97%, black 3%));
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.74) inset,
-      0 18px 32px rgba(15, 23, 42, 0.05);
-  }
-
-
-  .analyticsTitle {
-    color: var(--ink);
-    font-size: 1.02rem;
-    font-weight: 650;
-    letter-spacing: -0.022em;
-    line-height: 1.2;
-    margin-bottom: 8px;
-  }
-
-  .analyticsFrameworkName {
-    color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: -0.015em;
-    line-height: 1.35;
-    min-height: 1.35em;
-    margin-bottom: 18px;
-  }
-
-  .analyticsEventRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding-top: 14px;
-    border-top: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
-  }
-
-  .analyticsEventLabel {
-    flex: 0 0 auto;
-    padding-inline: 0;
-    min-height: 0;
-    border-radius: 0;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    background: transparent;
-    border: 0;
-    color: color-mix(in srgb, var(--ink-muted) 82%, var(--ink) 18%);
-  }
-
-  .analyticsEventValue {
-    min-width: 0;
-    color: var(--ink);
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    text-align: right;
-  }
-
-  .field {
-    flex: 1;
-    min-width: 260px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 13px;
-    border-radius: 13px;
-    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
-    background: color-mix(in srgb, var(--surface) 99%, black 1%);
-    transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
-  }
-
-  .field:hover {
-    border-color: color-mix(in srgb, var(--border) 88%, transparent);
-  }
-
-  .field:focus-within {
-    border-color: color-mix(in srgb, var(--border) 94%, transparent);
-    background: var(--surface);
-  }
-
-  .icon {
-    opacity: 0.58;
-    font-size: 14px;
-    user-select: none;
-    color: var(--ink-muted);
-  }
-
-  .input {
-    width: 100%;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: var(--ink);
-    font-size: 14px;
-    line-height: 1.2;
-    font-family: var(--font-sans);
-  }
-
-  .input::placeholder {
-    color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
-  }
-
-.select {
-  min-width: 214px;
-  max-width: 248px;
-  width: 100%;
-  padding: 11px 40px 11px 13px;
-  border-radius: 13px;
-  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
-  background-color: color-mix(in srgb, var(--surface) 99%, black 1%);
-  background-image: url("/homepage/downarrow.png");
-  background-repeat: no-repeat;
-  background-size: 12px 12px;
-  background-position: right 14px center;
-  color: var(--ink);
-  font-size: 14px;
-  font-family: var(--font-sans);
-  font-weight: 500;
-  cursor: pointer;
-  transition: border-color 0.18s var(--ease), background-color 0.18s var(--ease);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-  .select:hover {
-    border-color: color-mix(in srgb, var(--border) 88%, transparent);
-  }
-
-  .rightActions {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .resultsInline {
-    color: color-mix(in srgb, var(--ink-muted) 88%, var(--ink) 12%);
-    font-size: 13px;
-    font-weight: 500;
-    white-space: nowrap;
-    padding: 0 2px;
-  }
-
-  .ghost {
-    min-height: 38px;
-    padding: 0 12px;
-    border-radius: 11px;
-    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
-    background: color-mix(in srgb, var(--surface) 98%, black 2%);
-    color: var(--ink);
-    font-size: 13px;
-    font-weight: 550;
-    cursor: pointer;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.62) inset;
-    transition:
-      background-color 0.18s var(--ease),
-      border-color 0.18s var(--ease),
-      transform 0.18s var(--ease);
-  }
-
-  .ghost:hover {
-    background: color-mix(in srgb, var(--surface) 95%, black 2%);
-    border-color: color-mix(in srgb, var(--border) 92%, transparent);
-    transform: translateY(-1px);
-  }
-
-  .viewToggle {
-    display: flex;
-    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
-    border-radius: 11px;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--surface) 98%, black 2%);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.56) inset;
-  }
-
-  .toggleBtn {
-    min-height: 38px;
-    padding: 0 12px;
-    border: 0;
-    background: transparent;
-    color: color-mix(in srgb, var(--ink-muted) 82%, var(--ink) 18%);
-    font-size: 13px;
-    font-weight: 550;
-    cursor: pointer;
-    transition: background 0.18s var(--ease), color 0.18s var(--ease);
-  }
-
-  .toggleBtn:hover {
-    color: var(--ink);
-  }
-
-  .toggleBtn.isActive {
-    background: var(--surface);
-    color: var(--ink);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
-  }
+  /* =========================================================
+     2) FEATURED / SPOTLIGHT BLOCKS
+     ========================================================= */
 
   .featuredBlock {
     margin-top: 10px;
@@ -927,6 +748,10 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     font-size: 1.04rem;
   }
 
+  /* =========================================================
+     3) GROUP HEADERS / EXPANDERS
+     ========================================================= */
+
   .group {
     margin-top: 25px;
   }
@@ -953,8 +778,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 
   .groupTitle {
     margin: 0;
-    color: var(--ink);
-        color:rgb(5, 35, 80);
+    color: rgb(5, 35, 80);
     font-size: 1rem;
     font-weight: 650;
     letter-spacing: -0.02em;
@@ -1002,104 +826,642 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     opacity: 1;
   }
 
- .groupFooter {
-  display: none;
-  justify-content: center;
-  align-items: center;
-  margin-top: -12px;
+  .groupFooter {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    margin-top: -12px;
+    position: relative;
+    z-index: 3;
+    padding-bottom: 4px;
+  }
+
+  .groupFooter.isVisible {
+    display: flex;
+  }
+
+  .groupToggle {
+    margin: 0 auto;
+    width: 126px;
+    min-height: 36px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .groupToggle::before,
+  .groupToggle::after {
+    content: "";
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--border) 72%, transparent) 50%,
+      transparent 100%
+    );
+    opacity: 0.9;
+  }
+
+  .groupToggle[hidden] {
+    display: none !important;
+  }
+
+  .groupTogglePill {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    filter: none;
+    transform: none;
+  }
+
+  .groupTogglePill::before {
+    display: none;
+  }
+
+  .groupToggle:hover .groupTogglePill {
+    transform: translateY(-1px);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    filter: none;
+  }
+
+  .groupToggleIcon {
+    width: 14px;
+    height: 14px;
+    display: block;
+    object-fit: contain;
+    opacity: 0.98;
+    transform: rotate(0deg);
+    transition:
+      transform 0.28s var(--ease),
+      opacity 0.2s var(--ease);
+  }
+
+  .groupToggle:hover .groupToggleIcon {
+    opacity: 1;
+  }
+
+  .isExpanded .groupToggleIcon {
+    transform: rotate(180deg);
+    opacity: 1;
+  }
+
+  /* =========================================================
+     4) CONTROL BAR
+     ========================================================= */
+
+  .controlsBar {
+    position: sticky;
+    top: calc(var(--siteHeaderH, 64px) + 8px);
+    z-index: 40;
+    display: grid;
+    grid-template-columns: minmax(320px, 1.2fr) minmax(260px, 0.78fr) minmax(0, 1fr);
+    align-items: center;
+    column-gap: 14px;
+    row-gap: 10px;
+    padding: 14px 16px;
+    min-height: 60px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 22px;
+    border: 1px solid rgba(79, 101, 145, 0.34);
+    background:
+      radial-gradient(circle at top left, rgba(84, 111, 170, 0.18) 0%, rgba(84, 111, 170, 0) 34%),
+      linear-gradient(180deg, rgba(20, 30, 55, 0.92) 0%, rgba(10, 17, 33, 0.96) 100%);
+    backdrop-filter: blur(22px) saturate(135%);
+    -webkit-backdrop-filter: blur(22px) saturate(135%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.08) inset,
+      0 12px 26px rgba(4, 9, 18, 0.24),
+      0 24px 46px rgba(4, 9, 18, 0.12);
+    margin: 0 0 34px;
+    transition:
+      box-shadow 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      border-radius 0.22s var(--ease),
+      margin 0.22s var(--ease),
+      padding 0.22s var(--ease),
+      width 0.22s var(--ease);
+  }
+
+  .controlsBar:focus-within {
+    border-color: rgba(116, 145, 206, 0.48);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.1) inset,
+      0 16px 30px rgba(4, 9, 18, 0.28),
+      0 30px 56px rgba(4, 9, 18, 0.16);
+  }
+
+  .controlsBar.isStickyMobile {
+    width: auto;
+    max-width: none;
+    margin-left: calc(var(--sticky-expand-left, 0px) * -1);
+    margin-right: calc(var(--sticky-expand-right, 0px) * -1);
+    border-radius: 0;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
+  }
+
+  .field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+  }
+
+  .icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(219, 227, 244, 0.56);
+    font-size: 13px;
+    pointer-events: none;
+    opacity: 1;
+  }
+
+  .input {
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    padding: 0 16px 0 38px;
+    border-radius: 15px;
+    border: 1px solid rgba(95, 117, 160, 0.34);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+    color: rgba(248, 250, 255, 0.96);
+    font: inherit;
+    font-size: 14px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 1px 2px rgba(0, 0, 0, 0.08);
+    transition:
+      border-color 0.18s var(--ease),
+      box-shadow 0.18s var(--ease),
+      background 0.18s var(--ease);
+  }
+
+  .input::placeholder {
+    color: rgba(214, 223, 241, 0.5);
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: rgba(125, 153, 212, 0.5);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      0 0 0 4px rgba(104, 135, 201, 0.12);
+  }
+
+ .select {
+  width: 100%;
+  min-width: 260px;
+  max-width: 300px;
+  height: 46px;
+  padding: 0 40px 0 16px;
+  border-radius: 15px;
+  border: 1px solid rgba(95, 117, 160, 0.34);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+  color: rgba(248, 250, 255, 0.96);
+  font: inherit;
+  font-size: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+  transition:
+    border-color 0.18s var(--ease),
+    box-shadow 0.18s var(--ease),
+    background 0.18s var(--ease);
+}
+
+.select:focus {
+  outline: none;
+  border-color: rgba(125, 153, 212, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 0 0 4px rgba(104, 135, 201, 0.12);
+}
+
+.selectWrap {
   position: relative;
-  z-index: 3;
-  padding-bottom: 4px;
+  min-width: 260px;
+  max-width: 300px;
+  width: 100%;
 }
 
-.groupFooter.isVisible {
-  display: flex;
+.selectWrap .select {
+  width: 100%;
+  max-width: none;
+  padding-right: 42px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
-.groupToggle {
-  margin: 0 auto;
-  width: 126px;
-  min-height: 36px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
+.selectWrap .select::-ms-expand {
+  display: none;
 }
 
-.groupToggle::before,
-.groupToggle::after {
-  content: "";
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in srgb, var(--border) 72%, transparent) 50%,
-    transparent 100%
-  );
-  opacity: 0.9;
-}
-
-.groupToggle[hidden] {
-  display: none !important;
-}
-
-.groupTogglePill {
-  width: 18px;
-  height: 18px;
+.selectChevron {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  border-radius: 0;
-  padding: 0;
-  filter: none;
-  transform: none;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
 }
 
-.groupTogglePill::before {
-  display: none;
-}
-
-.groupToggle:hover .groupTogglePill {
-  transform: translateY(-1px);
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  filter: none;
-}
-
-.groupToggleIcon {
+.selectChevronIcon {
   width: 14px;
   height: 14px;
   display: block;
   object-fit: contain;
-  opacity: 0.98;
-  transform: rotate(0deg);
+  opacity: 1;
+  filter: brightness(0) invert(1);
+}
+
+/* Critical: readable native dropdown options */
+.select option {
+  color: #111827;
+  background: #ffffff;
+}
+
+  .rightActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    gap: 8px;
+    flex-wrap: nowrap;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .resultsInline {
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(221, 229, 245, 0.72);
+    margin-right: 2px;
+  }
+
+  .viewToggle {
+    display: flex;
+    flex: 0 0 auto;
+    border: 1px solid rgba(95, 117, 160, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+
+  .toggleBtn {
+    min-height: 38px;
+    padding: 0 12px;
+    border: 0;
+    background: transparent;
+    color: rgba(221, 229, 245, 0.7);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s var(--ease), color 0.18s var(--ease);
+  }
+
+  .toggleBtn:hover {
+    color: #ffffff;
+  }
+
+  .toggleBtn.isActive {
+    background:
+      linear-gradient(180deg, rgba(122, 151, 214, 0.22), rgba(82, 111, 170, 0.18));
+    color: #ffffff;
+    box-shadow:
+      inset 0 0 0 1px rgba(135, 162, 217, 0.28),
+      0 1px 0 rgba(255,255,255,0.04);
+  }
+
+  .ghost {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(95, 117, 160, 0.3);
+    background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+    color: rgba(245, 248, 255, 0.95);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 1px 2px rgba(0, 0, 0, 0.08);
+    transition:
+      transform 0.18s var(--ease),
+      border-color 0.18s var(--ease),
+      box-shadow 0.18s var(--ease),
+      background 0.18s var(--ease);
+  }
+
+  .ghost:hover {
+    background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.06));
+    border-color: rgba(125, 153, 212, 0.42);
+    transform: translateY(-1px);
+  }
+
+.selectWrap {
+  position: relative;
+  min-width: 260px;
+  max-width: 300px;
+  width: 100%;
+}
+
+.selectWrap .select {
+  width: 100%;
+  max-width: none;
+  padding-right: 42px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.selectWrap .select::-ms-expand {
+  display: none;
+}
+
+.selectChevron {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+.selectChevronIcon {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+  opacity: 0.82;
+}
+    
+    /* =========================================================
+   ANALYTICS STRIP — ULTRA PREMIUM WHITE GLASS
+   ========================================================= */
+
+.analyticsStrip {
+  margin: 6px 0 26px;
+}
+
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* =========================================================
+   CARD BASE
+   ========================================================= */
+
+.analyticsCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  padding: 18px 18px 16px;
+  min-height: 132px;
+
+  border: 1px solid rgba(255, 255, 255, 0.72);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.94) 0%,
+      rgba(250,250,252,0.9) 46%,
+      rgba(244,245,248,0.88) 100%
+    );
+
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.95) inset,
+    0 10px 24px rgba(15, 23, 42, 0.045),
+    0 22px 44px rgba(15, 23, 42, 0.03);
+
   transition:
-    transform 0.28s var(--ease),
-    opacity 0.2s var(--ease);
+    transform 0.22s var(--ease),
+    box-shadow 0.22s var(--ease),
+    border-color 0.22s var(--ease),
+    background 0.22s var(--ease);
 }
 
-.groupToggle:hover .groupToggleIcon {
+.analyticsCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.52) 0%,
+      rgba(255,255,255,0.18) 28%,
+      rgba(255,255,255,0.04) 58%,
+      rgba(255,255,255,0) 100%
+    );
   opacity: 1;
 }
 
-.isExpanded .groupToggleIcon {
-  transform: rotate(180deg);
-  opacity: 1;
+.analyticsCard::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  pointer-events: none;
+  border-radius: calc(20px - 1px);
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      rgba(255,255,255,0.38) 0%,
+      rgba(255,255,255,0.12) 34%,
+      rgba(255,255,255,0) 68%
+    );
+  opacity: 0.9;
 }
+
+.analyticsCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.98) inset,
+    0 14px 28px rgba(15, 23, 42, 0.055),
+    0 28px 52px rgba(15, 23, 42, 0.038);
+}
+
+/* old glow stays off */
+.analyticsCardGlow {
+  display: none;
+}
+
+/* =========================================================
+   CONTENT STRUCTURE
+   ========================================================= */
+
+.analyticsBody {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.analyticsTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.analyticsTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
+}
+
+/* =========================================================
+   CENTER CONTENT
+   ========================================================= */
+
+.analyticsCenter {
+  margin-top: 12px;
+  margin-bottom: auto;
+}
+
+.analyticsCenter--category .analyticsFrameworkName {
+  letter-spacing: -0.015em;
+}
+
+.analyticsFrameworkName {
+  font-size: 15px;
+  font-weight: 630;
+  line-height: 1.35;
+  letter-spacing: -0.012em;
+  color: color-mix(in srgb, var(--ink) 94%, black 6%);
+}
+
+.analyticsFrameworkLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.analyticsFrameworkLink:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
+.analyticsCategoryMeta {
+  margin-top: 5px;
+  font-size: 11.5px;
+  font-weight: 520;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--ink-muted) 82%, var(--ink) 18%);
+}
+
+.analyticsCategoryMeta--category {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* =========================================================
+   METRIC ROW
+   ========================================================= */
+
+.analyticsBottomRow {
+  margin-top: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(20, 24, 32, 0.06);
+}
+
+.analyticsMetricValue {
+  font-size: 22px;
+  font-weight: 720;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: color-mix(in srgb, var(--ink) 96%, black 4%);
+}
+
+.analyticsMetricSuffix {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink-muted) 75%, var(--ink) 25%);
+}
+
+/* =========================================================
+   KEEP ALL 4 THEMES VISUALLY CONSISTENT
+   ========================================================= */
+
+.analyticsCard--category,
+.analyticsCard--popular,
+.analyticsCard--downloaded,
+.analyticsCard--liked {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.94) 0%,
+      rgba(250,250,252,0.9) 46%,
+      rgba(244,245,248,0.88) 100%
+    );
+}
+
+  /* =========================================================
+     6) GRID / CARDS
+     ========================================================= */
 
   .grid {
     display: grid;
+    width: 100%;
+    max-width: 1680px;
+    margin-inline: auto;
     column-gap: 12px;
     row-gap: 16px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     align-items: stretch;
   }
 
@@ -1132,243 +1494,298 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     transform: translateY(-2px);
     border-color: color-mix(in srgb, var(--border) 92%, transparent);
     box-shadow:
-      0 1px 0 rgba(255,255,255,0.78) inset,
-      0 16px 32px rgba(15, 23, 42, 0.04);
+      0 1px 0 rgba(255,255,255,0.76) inset,
+      0 16px 34px rgba(15, 23, 42, 0.05);
   }
 
   .thumb {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    padding: 4px;
-    box-sizing: border-box;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.02) 100%);
-    display: flex;
-    align-items: stretch;
-    justify-content: stretch;
     position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10.5;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--surface) 95%, black 5%);
   }
 
-  .thumb::after {
-    content: "";
-    position: absolute;
-    inset: 4px;
-    border-radius: 12px;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
-    pointer-events: none;
+  .thumbEmpty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .thumbMark {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
   }
 
   .cover {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
     display: block;
-    transition: transform 0.22s var(--ease);
-    border-radius: 12px;
-    background: #0b1018;
-    box-shadow: none;
+    transition: transform 0.45s var(--ease);
   }
 
   .card:hover .cover {
-    transform: scale(1.012);
-  }
-
-  .thumbEmpty {
-    background: linear-gradient(145deg, rgba(0, 0, 0, 0.025), rgba(0, 0, 0, 0.01));
-  }
-
-  .thumbMark {
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    font-size: 12px;
-    color: var(--ink-muted);
-    border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.75);
-    margin: auto;
+    transform: scale(1.02);
   }
 
   .meta {
-    padding: 14px 14px 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    padding: 14px 14px 15px;
     min-height: 124px;
-    height: 100%;
-    box-sizing: border-box;
   }
 
   .cardTitle {
     margin: 0;
     color: var(--ink);
-    font-weight: 650;
-    letter-spacing: -0.018em;
-    line-height: 1.18;
     font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.14;
   }
 
   .excerpt {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    margin-top: 0;
-    flex: 1;
   }
 
   .excerptLabel {
-    font-size: 10px;
-    line-height: 1.1;
-    letter-spacing: 0.085em;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    font-size: 0.69rem;
+    line-height: 1;
     font-weight: 700;
-  }
-
-  .excerptLabel::before {
-    content: "";
-    width: 8px;
-    height: 1px;
-    background: color-mix(in srgb, var(--border) 80%, transparent);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--ink-muted) 76%, var(--ink) 24%);
   }
 
   .whenToUse {
-    color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
-    font-size: 0.875rem;
-    line-height: 1.48;
+    color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);
+    font-size: 0.9rem;
+    line-height: 1.5;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
     overflow: hidden;
-    min-height: calc(1.48em * 3);
-    max-height: calc(1.48em * 3);
+    min-height: calc(1.5em * 3);
+    max-height: calc(1.5em * 3);
   }
 
   .muted {
-    color: var(--ink-muted);
+    opacity: 0.62;
   }
 
+  /* =========================================================
+     7) EMPTY STATE / TO TOP
+     ========================================================= */
+
   .empty {
-    margin: 22px 0 12px;
-    padding: 24px 18px;
-    border-radius: var(--tk-radius);
+    margin-top: 16px;
+    padding: 28px 20px;
+    border-radius: 18px;
     border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
     background:
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--surface) 98%, white 2%),
+        color-mix(in srgb, var(--surface) 99%, white 1%),
         color-mix(in srgb, var(--surface) 98%, black 2%)
       );
     text-align: center;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.68) inset,
+      0 10px 24px rgba(15, 23, 42, 0.026);
   }
 
   .emptyTitle {
-    font-weight: 650;
     font-size: 1rem;
-    margin-bottom: 6px;
+    font-weight: 700;
     color: var(--ink);
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
   }
 
   .emptyDesc {
-    color: color-mix(in srgb, var(--ink-secondary, var(--ink-muted)) 88%, var(--ink) 12%);
-    margin-bottom: 14px;
-    font-size: 14px;
-    line-height: 1.45;
+    margin-top: 6px;
+    font-size: 0.92rem;
+    color: color-mix(in srgb, var(--ink-muted) 82%, var(--ink) 18%);
   }
 
   .empty .primary {
-    min-height: 38px;
-    padding: 0 12px;
-    border-radius: 11px;
-    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-    background: color-mix(in srgb, var(--surface) 98%, black 2%);
-    color: var(--ink);
-    font-size: 13px;
-    font-weight: 550;
-    cursor: pointer;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.55) inset;
-    transition: border-color 0.18s var(--ease), transform 0.18s var(--ease);
-  }
-
-  .empty .primary:hover {
-    border-color: color-mix(in srgb, var(--border) 92%, transparent);
-    transform: translateY(-1px);
+    margin-top: 14px;
   }
 
   .toTop {
     position: fixed;
     right: 20px;
     bottom: 20px;
-    z-index: 60;
-    min-height: 36px;
-    padding: 0 12px;
+    z-index: 45;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    height: 46px;
+    padding: 0 14px;
     border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-    background: color-mix(in srgb, var(--surface) 96%, white 4%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.62) inset,
-      0 10px 20px rgba(0,0,0,0.05);
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(8px);
-    pointer-events: none;
-    transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), border-color 0.2s var(--ease);
+    border: 1px solid rgba(114, 136, 180, 0.28);
+    background:
+      radial-gradient(circle at top left, rgba(104, 135, 201, 0.2) 0%, rgba(104, 135, 201, 0) 36%),
+      linear-gradient(180deg, rgba(23, 34, 61, 0.94) 0%, rgba(11, 18, 34, 0.98) 100%);
+    color: rgba(246, 249, 255, 0.96);
     font-size: 12px;
-    font-weight: 600;
-    color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.08) inset,
+      0 14px 28px rgba(5, 10, 20, 0.22),
+      0 6px 14px rgba(5, 10, 20, 0.14);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px) scale(0.96);
+    backdrop-filter: blur(16px) saturate(135%);
+    -webkit-backdrop-filter: blur(16px) saturate(135%);
+    transition:
+      opacity 0.22s var(--ease),
+      transform 0.22s var(--ease),
+      box-shadow 0.22s var(--ease),
+      border-color 0.22s var(--ease),
+      background 0.22s var(--ease);
   }
 
   .toTop.isVisible {
-    opacity: 0.98;
-    transform: translateY(0);
+    opacity: 1;
     pointer-events: auto;
+    transform: translateY(0) scale(1);
   }
 
   .toTop:hover {
-    color: var(--ink);
-    border-color: color-mix(in srgb, var(--border) 92%, transparent);
+    border-color: rgba(130, 156, 211, 0.4);
+    background:
+      radial-gradient(circle at top left, rgba(120, 148, 212, 0.24) 0%, rgba(120, 148, 212, 0) 36%),
+      linear-gradient(180deg, rgba(28, 41, 71, 0.96) 0%, rgba(13, 20, 38, 1) 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.1) inset,
+      0 18px 34px rgba(5, 10, 20, 0.26),
+      0 8px 18px rgba(5, 10, 20, 0.16);
   }
 
-  .ghost:active,
-  .toggleBtn:active {
-    transform: translateY(0);
+  /* =========================================================
+     8) COMPACT VIEW
+     ========================================================= */
+
+  .toolkit[data-view="compact"] .grid {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+  }
+
+  .toolkit[data-view="compact"] .card {
+    flex-direction: row;
+    height: auto;
+  }
+
+  .toolkit[data-view="compact"] .thumb {
+    width: 188px;
+    aspect-ratio: 16 / 10;
+    border-right: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    flex: 0 0 auto;
+  }
+
+  .toolkit[data-view="compact"] .meta {
+    min-height: unset;
+    width: 100%;
+  }
+
+  .toolkit[data-view="compact"] .whenToUse {
+    -webkit-line-clamp: 2;
+    min-height: calc(1.48em * 2);
+    max-height: calc(1.48em * 2);
+  }
+
+  /* =========================================================
+     9) RESPONSIVE
+     ========================================================= */
+
+  @media (max-width: 1320px) {
+    .controlsBar {
+      grid-template-columns: minmax(340px, 1.35fr) minmax(240px, 0.82fr) minmax(0, 1fr);
+      column-gap: 10px;
+    }
+
+    .select {
+      min-width: 240px;
+      max-width: 280px;
+    }
+
+    .rightActions {
+      gap: 8px;
+    }
+
+    .resultsInline {
+      font-size: 11.5px;
+    }
   }
 
   @media (max-width: 1180px) {
-    .spotlightGrid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+    .controlsBar {
+      grid-template-columns: minmax(300px, 1.2fr) minmax(220px, 0.76fr) minmax(0, 1fr);
     }
 
-    .grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      column-gap: 12px;
-      row-gap: 16px;
+    .select {
+      min-width: 220px;
+      max-width: 250px;
+    }
+
+    .analyticsGrid {
+      gap: 12px;
+    }
+
+    .analyticsCard {
+      min-height: 172px;
+    }
+
+    .analyticsBody {
+      min-height: 172px;
+      padding: 14px 16px 13px;
+    }
+
+    .analyticsFrameworkName {
+      font-size: 0.93rem;
     }
   }
 
-  @media (max-width: 1040px) {
-    .spotlightGrid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+  @media (max-width: 1080px) {
+    .controlsBar {
+      grid-template-columns: minmax(0, 1fr) 240px;
+      align-items: start;
     }
 
-    .grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      column-gap: 12px;
-      row-gap: 16px;
+    .field {
+      grid-column: 1 / 2;
+      grid-row: 1;
+    }
+
+    .select {
+      grid-column: 2 / 3;
+      grid-row: 1;
+      min-width: 240px;
+      max-width: 240px;
+      width: 240px;
+    }
+
+    .rightActions {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      justify-content: flex-end;
+      width: 100%;
+      padding-top: 2px;
     }
   }
 
-  @media (max-width: 860px) {
+  @media (max-width: 900px) {
     .grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       column-gap: 12px;
       row-gap: 16px;
     }
@@ -1388,17 +1805,85 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       min-height: 0;
     }
 
-    .controlsBar {
-      top: calc(var(--siteHeaderH, 64px) - 1px);
-      padding: 12px;
-      border-radius: 16px;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
+  .controlsBar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "search search"
+      "category results";
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 10px;
+    padding: 12px 12px;
+    top: calc(var(--siteHeaderH, 64px) + -4px);
+  }
 
     .controlsBar.isStickyMobile {
       padding-left: max(12px, env(safe-area-inset-left, 0px));
       padding-right: max(12px, env(safe-area-inset-right, 0px));
+    }
+
+  .field {
+    grid-area: search;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .selectWrap {
+    grid-area: category;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+    .select,
+    .rightActions {
+      grid-column: auto;
+      grid-row: auto;
+      width: 100%;
+      min-width: 100%;
+      max-width: none;
+    }
+
+     .select,
+  .selectWrap .select {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+.rightActions {
+    grid-area: results;
+    min-width: 0;
+    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0;
+  }
+  
+  .resultsInline {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .viewToggle,
+  #clear {
+    display: none !important;
+  }
+  
+    .viewToggle {
+      order: 1;
+    }
+
+    .ghost {
+      order: 2;
+    }
+
+    .analyticsStrip {
+      margin-bottom: 24px;
     }
 
     .analyticsGrid {
@@ -1406,22 +1891,23 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       gap: 12px;
     }
 
-
-    .field {
-      min-width: 100%;
-      padding: 10px 11px;
+    .analyticsCard {
+      min-height: auto;
+      border-radius: 20px;
     }
 
-    .select {
-      min-width: 100%;
+    .analyticsBody {
+      min-height: auto;
+      padding: 15px 15px 14px;
+    }
+
+    .analyticsCenter {
+      min-height: 70px;
+    }
+
+    .analyticsFrameworkName {
       max-width: none;
-    }
-
-    .rightActions {
-      width: 100%;
-      margin-left: 0;
-      justify-content: space-between;
-      gap: 8px;
+      font-size: 0.98rem;
     }
 
     .featuredBlock {
@@ -1490,32 +1976,37 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     }
   }
 
-  .toolkit[data-view="compact"] .grid {
-    grid-template-columns: 1fr;
-    row-gap: 12px;
-  }
+  @media (max-width: 560px) {
+    .analyticsCard {
+      border-radius: 18px;
+    }
 
-  .toolkit[data-view="compact"] .card {
-    flex-direction: row;
-    height: auto;
-  }
+    .analyticsBody {
+      padding: 14px 13px 13px;
+      gap: 10px;
+    }
 
-  .toolkit[data-view="compact"] .thumb {
-    width: 188px;
-    aspect-ratio: 16 / 10;
-    border-right: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-    flex: 0 0 auto;
-  }
+    .analyticsTitle {
+      font-size: 0.8rem;
+    }
 
-  .toolkit[data-view="compact"] .meta {
-    min-height: unset;
-    width: 100%;
-  }
+    .analyticsFrameworkName {
+      font-size: 0.92rem;
+    }
 
-  .toolkit[data-view="compact"] .whenToUse {
-    -webkit-line-clamp: 2;
-    min-height: calc(1.48em * 2);
-    max-height: calc(1.48em * 2);
+    .analyticsCategoryMeta {
+      font-size: 8px;
+      letter-spacing: 0.14em;
+    }
+
+    .analyticsMetricValue {
+      font-size: 1.42rem;
+    }
+
+    .analyticsMetricSuffix {
+      font-size: 0.58rem;
+      letter-spacing: 0.13em;
+    }
   }
 
   @media (max-width: 520px) {
@@ -1528,11 +2019,23 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       display: none !important;
     }
 
-    .controlsBar {
-      padding: 12px;
-      top: calc(var(--siteHeaderH, 64px) - 0px);
-      border-radius: 16px;
-    }
+  .controlsBar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "search search"
+      "category results";
+    column-gap: 8px;
+    row-gap: 10px;
+    padding: 12px 10px;
+  }
+
+  .resultsInline {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-align: right;
+  }
 
     .grid {
       grid-template-columns: 1fr;
@@ -1550,6 +2053,10 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     }
   }
 
+  /* =========================================================
+     10) REDUCED MOTION
+     ========================================================= */
+
   @media (prefers-reduced-motion: reduce) {
     * {
       scroll-behavior: auto !important;
@@ -1561,34 +2068,21 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     .toTop,
     .groupTogglePill,
     .groupToggleIcon,
-    .groupReveal {
+    .groupReveal,
+    .analyticsCard,
+    .toggleBtn,
+    .controlsBar,
+    .input,
+    .select {
       transition: none !important;
     }
 
     .card:hover,
     .ghost:hover,
-    .empty .primary:hover,
-    .groupToggle:hover .groupTogglePill {
+    .analyticsCard:hover {
       transform: none !important;
     }
   }
-
-  @media (max-width: 720px) {
-    .toolkit {
-      padding-top: 0;
-    }
-
-    .controlsBar {
-      top: calc(var(--siteHeaderH, 64px) - 4px);
-      margin-bottom: 12px;
-    }
-
-    .controlsBar.isStickyMobile {
-      padding-top: 12px;
-      padding-bottom: 12px;
-    }
-  }
-
 </style>
 
   </div>
