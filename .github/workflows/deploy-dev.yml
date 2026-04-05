@@ -24,10 +24,9 @@ jobs:
       - name: Create GA4 credentials file
         run: echo '${{ secrets.GA4_KEY_JSON }}' > ga4-key.json
 
-      - name: Set GOOGLE_APPLICATION_CREDENTIALS
-        run: echo "GOOGLE_APPLICATION_CREDENTIALS=$GITHUB_WORKSPACE/ga4-key.json" >> ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
-      
       - name: Build
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/ga4-key.json
         run: npm run build
 
       - name: Add SSH key
