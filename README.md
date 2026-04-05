@@ -23,7 +23,6 @@ The site is intentionally designed to feel:
 - Technically precise
 
 ---
-
 ## Core Surfaces
 
 - Homepage (curated product surface)
@@ -60,6 +59,11 @@ The site is intentionally designed to feel:
   - Production: `altareen.com`
   - Dev: `dev.altareen.com`
 
+## License
+This project is proprietary and not open source.
+
+All rights reserved.  
+See the LICENSE file for details.
 ---
 
 ## Key Features
