@@ -339,41 +339,53 @@ updateToTop();
     <style>
 .toTop {
   position: fixed;
-  right: 20px;
-  bottom: max(88px, calc(env(safe-area-inset-bottom, 0px) + 24px));
-  z-index: 9999;
-  min-height: 36px;
-  padding: 0 12px;
+  right: 22px;
+bottom: max(28px, calc(env(safe-area-inset-bottom, 0px) + 0px));  
+z-index: 200;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(79, 101, 145, 0.34);
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-  background: color-mix(in srgb, var(--surface) 96%, white 4%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background:
+    linear-gradient(180deg, rgba(20, 30, 55, 0.92) 0%, rgba(10, 17, 33, 0.96) 100%);
+  color: rgba(248, 250, 255, 0.94);
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.62) inset,
-    0 10px 20px rgba(0,0,0,0.05);
+    0 1px 0 rgba(255,255,255,0.08) inset,
+    0 12px 26px rgba(4, 9, 18, 0.24),
+    0 24px 46px rgba(4, 9, 18, 0.12);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   cursor: pointer;
   opacity: 0;
-  transform: translateY(8px);
   pointer-events: none;
+  transform: translateY(10px);
   transition:
     opacity 0.2s var(--ease),
     transform 0.2s var(--ease),
-    border-color 0.2s var(--ease);
-  font-size: 12px;
-  font-weight: 600;
-  color: color-mix(in srgb, var(--ink-muted) 78%, var(--ink) 22%);
+    border-color 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
 }
 
 .toTop.isVisible {
-  opacity: 0.98;
-  transform: translateY(0);
+  opacity: 1;
   pointer-events: auto;
+  transform: translateY(0);
 }
 
 .toTop:hover {
-  color: var(--ink);
-  border-color: color-mix(in srgb, var(--border) 92%, transparent);
+  border-color: rgba(116, 145, 206, 0.48);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.1) inset,
+    0 16px 30px rgba(4, 9, 18, 0.28),
+    0 30px 56px rgba(4, 9, 18, 0.16);
 }
 @media (max-width: 720px) {
   .toTop {
