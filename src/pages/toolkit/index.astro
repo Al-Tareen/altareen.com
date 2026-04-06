@@ -97,7 +97,7 @@ const analyticsCards = [
       "—",
     frameworkCategory: "Most engaged category",
     href: null,
-    metricLabel: "Views",
+    metricLabel: "Hits",
     metricValue: analyticsData?.topCategory?.metricValue ?? 0,
     theme: "category",
   },
@@ -227,15 +227,16 @@ breadcrumbs={pmtoolkitBreadcrumbs}
         <div class="groupReveal" data-expand-wrap>
           <div class="grid" data-expand-grid>
             {featured.map((item) => (
-            <a
+<a
   class="card"
   href={`/toolkit/${item.slug}/`}
   data-title={item.data.title}
   data-category={item.data.primaryCategory || "Uncategorized"}
   data-when={item.data.whenToUse || ""}
   data-featured="true"
-  onclick={`trackEvent('framework_click', { framework: '${item.slug}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: true })`}
+  onclick={`trackEvent('framework_click', { framework: '${item.slug}', framework_name: '${item.data.title.replace(/'/g, "\\'")}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: true })`}
 >
+
                 {item.data.cover ? (
                   <div class="thumb" aria-hidden="true">
                     <img class="cover" src={item.data.cover} alt={`Cover for ${item.data.title}`} loading="lazy" />
@@ -306,7 +307,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
   data-title={item.data.title}
   data-category={item.data.primaryCategory || "Uncategorized"}
   data-when={item.data.whenToUse || ""}
-  onclick={`trackEvent('framework_click', { framework: '${item.slug}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: false })`}
+  onclick={`trackEvent('framework_click', { framework: '${item.slug}', framework_name: '${item.data.title.replace(/'/g, "\\'")}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: false })`}
 >
                 {item.data.cover ? (
                   <div class="thumb" aria-hidden="true">

@@ -190,9 +190,12 @@ const pmFrameworkBreadcrumbs = [
     breadcrumbs={pmFrameworkBreadcrumbs}
 
 >
-  <div class="toolkitDetail" data-framework-slug={item.slug}>
-    <!-- Top row -->
-    <div class="topRow">
+<div
+  class="toolkitDetail"
+  data-framework-slug={item.slug}
+  data-framework-name={baseTitle}
+>    
+<div class="topRow">
       <a class="back" href="/toolkit/" aria-label="Back to PM Toolkit">
         <span class="arrow" aria-hidden="true">←</span>
         <span>PM Toolkit</span>
@@ -270,57 +273,57 @@ const pmFrameworkBreadcrumbs = [
 
 
 
-      {showQuickActions && (
+{showQuickActions && (
   <div class="sideCard" aria-label="Quick Actions">
     <div class="sideTop">
       <div class="sideTitle">Quick Actions</div>
     </div>
 
     <div class="sideMeta">
-    {quickActions.map((a) => {
-  if (a.kind === "download") {
-    return (
-      <a
-        class="qaRow primary qaDownloadRow"
-        href={a.href}
-        download
-        target="_blank"
-        rel="noopener"
-        onclick={`trackEvent('framework_download', { framework: '${item.slug}', source: 'quick_actions' })`}
-      >
-        <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-        <span class="qaText">{a.label}</span>
-        {a.fileType && <span class="qaFileType">{a.fileType}</span>}
-      </a>
-    );
-  }
+      {quickActions.map((a) => {
+        if (a.kind === "download") {
+          return (
+            <a
+              class="qaRow primary qaDownloadRow"
+              href={a.href}
+              download
+              target="_blank"
+              rel="noopener"
+              onclick={`trackEvent('framework_download', { framework: '${item.slug}', framework_name: '${baseTitle.replace(/'/g, "\\'")}', source: 'quick_actions' })`}
+            >
+              <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+              <span class="qaText">{a.label}</span>
+              {a.fileType && <span class="qaFileType">{a.fileType}</span>}
+            </a>
+          );
+        }
 
-  if (a.kind === "preview") {
-    return (
-      <button class="qaRow" type="button" data-preview>
-        <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-        <span class="qaText">{a.label}</span>
-      </button>
-    );
-  }
+        if (a.kind === "preview") {
+          return (
+            <button class="qaRow" type="button" data-preview>
+              <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+              <span class="qaText">{a.label}</span>
+            </button>
+          );
+        }
 
-  if (a.kind === "share") {
-    return (
-      <button class="qaRow" type="button" data-share>
-        <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-        <span class="qaText">{a.label}</span>
-      </button>
-    );
-  }
+        if (a.kind === "share") {
+          return (
+            <button class="qaRow" type="button" data-share>
+              <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+              <span class="qaText">{a.label}</span>
+            </button>
+          );
+        }
 
-  return (
-    <a class="qaRow" href={a.href} target="_blank" rel="noopener">
-      <span class="qaIcon" aria-hidden="true">{a.icon}</span>
-      <span class="qaText">{a.label}</span>
-      <span class="qaEnd" aria-hidden="true">↗</span>
-    </a>
-  );
-})}
+        return (
+          <a class="qaRow" href={a.href} target="_blank" rel="noopener">
+            <span class="qaIcon" aria-hidden="true">{a.icon}</span>
+            <span class="qaText">{a.label}</span>
+            <span class="qaEnd" aria-hidden="true">↗</span>
+          </a>
+        );
+      })}
     </div>
   </div>
 )}
@@ -339,15 +342,15 @@ const pmFrameworkBreadcrumbs = [
 
     <div class="downloadList">
       {normalizedDownloads.map((f, i) => (
-<a
-  class="fileRow"
-  href={f.href}
-  download
-  target="_blank"
-  rel="noopener"
-  aria-label={`Download ${f.displayName || `Attachment ${i + 1}`}`}
-  onclick={`trackEvent('framework_download', { framework: '${item.slug}', file: '${f.displayName.replace(/'/g, "\\'")}', source: 'downloads_list' })`}
->
+        <a
+          class="fileRow"
+          href={f.href}
+          download
+          target="_blank"
+          rel="noopener"
+          aria-label={`Download ${f.displayName || `Attachment ${i + 1}`}`}
+          onclick={`trackEvent('framework_download', { framework: '${item.slug}', framework_name: '${baseTitle.replace(/'/g, "\\'")}', file: '${f.displayName.replace(/'/g, "\\'")}', source: 'downloads_list' })`}
+        >
           <span class="fileType" aria-hidden="true">{f.typeLabel}</span>
           <span class="fileName">{f.displayName || `Attachment ${i + 1}`}</span>
         </a>
@@ -468,8 +471,9 @@ const pmFrameworkBreadcrumbs = [
             window.__toastT = window.setTimeout(() => toast.classList.remove("isOn"), 1200);
           }
 
-          const pageRoot = document.querySelector(".toolkitDetail");
-          const frameworkSlug = pageRoot?.dataset?.frameworkSlug || "";
+const pageRoot = document.querySelector(".toolkitDetail");
+const frameworkSlug = pageRoot?.dataset?.frameworkSlug || "";
+const frameworkName = pageRoot?.dataset?.frameworkName || "";
 
           // ---- Cover feedback (like / dislike) ----
           const likeBtn = document.querySelector('[data-feedback="like"]');
@@ -639,10 +643,11 @@ async function submitFeedback(value) {
 
     const finalVote = data?.userVote ?? next;
 
-    trackEvent("framework_feedback", {
-      framework: frameworkSlug,
-      action: finalVote || "cleared",
-    });
+trackEvent("framework_feedback", {
+  framework: frameworkSlug,
+  framework_name: frameworkName,
+  action: finalVote || "cleared",
+});
 
     if ((data?.userVote ?? next) === "like") showToast("Marked as helpful");
     else if ((data?.userVote ?? next) === "dislike") showToast("Feedback saved");
