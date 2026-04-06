@@ -111,9 +111,7 @@ altareen.com is built to turn:
 - analytics → decision intelligence
 - ideas → executable product surfaces
 
-This is not a content site.
-
-It is a **working system for building, analyzing, and scaling products.**
+Al Tareen is a **working system for building, analyzing, and scaling products.**
 
 ## Project Structure
 
