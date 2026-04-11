@@ -2179,7 +2179,7 @@ transition:
 .toTop {
   position: fixed;
   right: 22px;
-bottom: max(48px, calc(env(safe-area-inset-bottom, 0px) + 24px));  
+bottom: 22px; 
 z-index: 200;
   isolation: isolate;
   display: inline-flex;
@@ -2302,9 +2302,15 @@ footer,
   .projectGroup + .projectGroup {
     margin-top: 48px;
   }
+  
+  .projectRail {
+    grid-auto-columns: 320px !important;
+    gap: 12px;
+  }
 
   .projectCard {
-    padding: 17px;
+    width: 100%;
+    max-width: none;
   }
 
   .cardFooter {
