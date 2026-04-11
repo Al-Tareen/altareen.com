@@ -62,10 +62,14 @@ function chunkItems(items, size) {
 
 const homepagePreviewSeed = Math.random();
 
-const pmPages = chunkItems(
-  buildPreviewItems(frameworkPool, 12, homepagePreviewSeed + 0.101),
-  4
+const pmPreviewItems = buildPreviewItems(
+  frameworkPool,
+  12,
+  homepagePreviewSeed + 0.101
 );
+
+const pmPagesDesktop = chunkItems(pmPreviewItems, 3);
+const pmPagesMobile = chunkItems(pmPreviewItems, 2);
 
 const financePages = chunkItems(
   buildPreviewItems(financePool, 4, homepagePreviewSeed + 0.202),
@@ -100,9 +104,7 @@ const homepageSchema = [
   },
 ];
 
-const homepageBreadcrumbs = [
-  { name: "Home", path: "/" },
-];
+const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
 ---
 
 <BaseLayout
@@ -121,7 +123,9 @@ const homepageBreadcrumbs = [
       <h1 id="home-title">Al Tareen</h1>
 
       <p class="lead">
-        Welcome to my website. Explore selected Projects, a PM Toolkit for effective decision-making, a Finance Toolkit containing various models, and Concepts that reflect how I think through new opportunities.
+        Welcome to my website. Explore selected Projects, a PM Toolkit for effective decision-making,
+        a Finance Toolkit containing various models, and Concepts that reflect how I think through new
+        opportunities.
       </p>
     </section>
 
@@ -148,11 +152,11 @@ const homepageBreadcrumbs = [
           <p>Frameworks that help product managers make better decisions.</p>
         </div>
 
-        {pmPages.length > 0 && (
-          <div class="previewDeck previewDeckPm" data-rotator data-interval="5600">
+        {pmPagesDesktop.length > 0 && (
+          <div class="previewDeck previewDeckPm previewDeckPmDesktop" data-rotator data-interval="5600">
             <div class="previewWindow previewWindowPm">
               <div class="previewTrack" data-preview-track>
-                {pmPages.map((page) => (
+                {pmPagesDesktop.map((page) => (
                   <div class="previewPage previewPagePm" data-preview-page>
                     {page.map((entry) => (
                       <div class="previewCard previewCardPm">
@@ -172,10 +176,50 @@ const homepageBreadcrumbs = [
               </div>
             </div>
 
-            {pmPages.length > 1 && (
+            {pmPagesDesktop.length > 1 && (
               <div class="previewIndicators">
-                {pmPages.map((_, index) => (
-                  <span class={`previewDot ${index === 0 ? "isActive" : ""}`} data-preview-dot></span>
+                {pmPagesDesktop.map((_, index) => (
+                  <span
+                    class={`previewDot ${index === 0 ? "isActive" : ""}`}
+                    data-preview-dot
+                  ></span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {pmPagesMobile.length > 0 && (
+          <div class="previewDeck previewDeckPm previewDeckPmMobile" data-rotator data-interval="5600">
+            <div class="previewWindow previewWindowPm">
+              <div class="previewTrack" data-preview-track>
+                {pmPagesMobile.map((page) => (
+                  <div class="previewPage previewPagePm previewPagePmMobile" data-preview-page>
+                    {page.map((entry) => (
+                      <div class="previewCard previewCardPm">
+                        <div class="previewCoverShell">
+                          <img
+                            class="previewCover"
+                            src={entry.cover}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {pmPagesMobile.length > 1 && (
+              <div class="previewIndicators">
+                {pmPagesMobile.map((_, index) => (
+                  <span
+                    class={`previewDot ${index === 0 ? "isActive" : ""}`}
+                    data-preview-dot
+                  ></span>
                 ))}
               </div>
             )}
@@ -234,7 +278,10 @@ const homepageBreadcrumbs = [
             {financePages.length > 1 && (
               <div class="previewIndicators">
                 {financePages.map((_, index) => (
-                  <span class={`previewDot ${index === 0 ? "isActive" : ""}`} data-preview-dot></span>
+                  <span
+                    class={`previewDot ${index === 0 ? "isActive" : ""}`}
+                    data-preview-dot
+                  ></span>
                 ))}
               </div>
             )}
@@ -293,7 +340,10 @@ const homepageBreadcrumbs = [
             {conceptPages.length > 1 && (
               <div class="previewIndicators">
                 {conceptPages.map((_, index) => (
-                  <span class={`previewDot ${index === 0 ? "isActive" : ""}`} data-preview-dot></span>
+                  <span
+                    class={`previewDot ${index === 0 ? "isActive" : ""}`}
+                    data-preview-dot
+                  ></span>
                 ))}
               </div>
             )}
@@ -775,12 +825,20 @@ const homepageBreadcrumbs = [
     z-index: 4;
     display: grid;
     gap: 10px;
-    margin-top: 0px;
+    margin-top: 0;
     padding-top: 0;
   }
 
   .previewDeckPm {
     max-width: none;
+  }
+
+  .previewDeckPmDesktop {
+    display: grid;
+  }
+
+  .previewDeckPmMobile {
+    display: none;
   }
 
   .previewWindow {
@@ -796,23 +854,35 @@ const homepageBreadcrumbs = [
   .previewTrack {
     --active-page: 0;
     display: flex;
-    width: 100%;
     transform: translateX(calc(var(--active-page) * -100%));
     transition: transform 980ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform;
   }
 
   .previewPage {
-    min-width: 100%;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     align-content: start;
   }
 
+  .previewPage,
+  .previewPagePm,
+  .previewPagePmMobile {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+  }
+
   .previewPagePm {
-    grid-template-columns: repeat(4, 29.5%);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
+  }
+
+  .previewPagePmMobile {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .previewCard {
@@ -963,7 +1033,7 @@ const homepageBreadcrumbs = [
     }
 
     .previewPagePm {
-      grid-template-columns: repeat(4, 43%);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
     }
 
@@ -1047,14 +1117,14 @@ const homepageBreadcrumbs = [
       gap: 12px;
     }
 
-   .card-pm,
-.card-finance,
-.card-concepts,
-.card-projects,
-.card-about {
-  min-height: 270px;
-  max-height: 270px;
-}
+    .card-pm,
+    .card-finance,
+    .card-concepts,
+    .card-projects,
+    .card-about {
+      min-height: 270px;
+      max-height: 270px;
+    }
 
     .card h2 {
       font-size: 1.02rem;
@@ -1075,63 +1145,34 @@ const homepageBreadcrumbs = [
       gap: 8px;
     }
 
-.previewPagePm {
-  grid-template-columns: repeat(4, 55%);
-  gap: 8px;
-}
+    .previewDeckPmDesktop {
+      display: none;
+    }
+
+    .previewDeckPmMobile {
+      display: grid;
+    }
+
+    .previewPagePmMobile {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
 
     .previewWindowPm {
       -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 82%, rgba(0,0,0,0.56) 92%, transparent 100%);
       mask-image: linear-gradient(90deg, #000 0%, #000 82%, rgba(0,0,0,0.56) 92%, transparent 100%);
     }
 
-    .previewCard {
-      padding: 3px;
-      border-radius: 9px;
+    .previewIndicators {
+      gap: 6px;
     }
 
-    .previewCoverShell {
-      border-radius: 6px;
+    .previewDot {
+      width: 12px;
     }
 
-    .card-arrow {
-      right: 12px;
-      top: 12px;
-      font-size: 11px;
-      opacity: 0.72;
-      transform: none;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .hero h1 {
-      max-width: 8.8ch;
-    }
-
-    .lead {
-      font-size: 0.95rem;
-      line-height: 1.58;
-    }
-
-    .card-pm,
-    .card-finance 
-    .card-concepts,
-    .card-projects,
-    .card-about {
-      min-height: 270px;
-      max-height: 270px;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .card,
-    .card-ambience-media,
-    .card-arrow,
-    .previewTrack,
-    .previewDot,
-    .previewCard,
-    .previewCover {
-      transition: none !important;
+    .previewDot.isActive {
+      width: 20px;
     }
   }
 </style>
