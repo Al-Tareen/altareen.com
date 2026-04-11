@@ -1,0 +1,297 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+const tabs = [
+  {
+    id: "executive",
+    label: "Executive Overview",
+    embedUrl: "https://lookerstudio.google.com/embed/reporting/c057e4d0-4a93-4acf-9fe6-59b81a5769be/page/p_n1te0qrl2d",
+    title: "Executive Overview",
+    embedHeight: 1050,
+  },
+  {
+    id: "framework",
+    label: "Framework Intelligence",
+    embedUrl: "https://lookerstudio.google.com/embed/reporting/c057e4d0-4a93-4acf-9fe6-59b81a5769be/page/p_jdb4fy771d",
+    title: "Framework Intelligence",
+    embedHeight: 1050,
+  },
+  {
+    id: "seo",
+    label: "SEO Performance",
+    embedUrl: "https://lookerstudio.google.com/embed/reporting/c057e4d0-4a93-4acf-9fe6-59b81a5769be/page/p_3z7ds8vl2d",
+    title: "SEO Performance",
+    embedHeight: 1050,
+  },
+];
+---
+
+<BaseLayout
+  title="Executive Analytics Dashboard | Al Tareen"
+  description="Private executive analytics dashboard for traffic, framework intelligence, and search performance."
+  slug="executive-dashboard"
+>
+  <Header />
+
+  <main class="dashboard-shell">
+    <section class="dashboard-hero">
+      <div class="hero-copy">
+        <h1>Executive Analytics Dashboard</h1>
+        <p class="hero-description">
+          Executive visibility across traffic, product, and search.
+        </p>
+      </div>
+    </section>
+
+    <section class="dashboard-tabs" aria-label="Dashboard Tabs">
+      <div class="tab-list" role="tablist" aria-label="Analytics Tabs">
+        {tabs.map((tab, index) => (
+          <button
+            class={`tab-button ${index === 0 ? "is-active" : ""}`}
+            id={`tab-${tab.id}`}
+            type="button"
+            role="tab"
+            aria-selected={index === 0 ? "true" : "false"}
+            aria-controls={`panel-${tab.id}`}
+            data-tab-target={tab.id}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div class="tab-panels">
+        {tabs.map((tab, index) => (
+          <section
+            class={`tab-panel ${index === 0 ? "is-active" : ""}`}
+            id={`panel-${tab.id}`}
+            role="tabpanel"
+            aria-labelledby={`tab-${tab.id}`}
+            data-tab-panel={tab.id}
+            hidden={index !== 0}
+          >
+            <div
+              class="embed-frame-wrap"
+              style={`--embed-height: ${tab.embedHeight}px;`}
+              aria-label={tab.title}
+            >
+              <iframe
+                src={tab.embedUrl}
+                title={tab.title}
+                loading={index === 0 ? "eager" : "lazy"}
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </section>
+        ))}
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script is:inline>
+  (() => {
+    const buttons = document.querySelectorAll("[data-tab-target]");
+    const panels = document.querySelectorAll("[data-tab-panel]");
+
+    function activateTab(tabId) {
+      buttons.forEach((button) => {
+        const isActive = button.dataset.tabTarget === tabId;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      panels.forEach((panel) => {
+        const isActive = panel.dataset.tabPanel === tabId;
+        panel.classList.toggle("is-active", isActive);
+
+        if (isActive) {
+          panel.removeAttribute("hidden");
+        } else {
+          panel.setAttribute("hidden", "");
+        }
+      });
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        activateTab(button.dataset.tabTarget);
+      });
+    });
+
+    activateTab("executive");
+  })();
+</script>
+
+<style>
+  .dashboard-shell {
+    width: min(1400px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 50px 0 80px;
+  }
+
+  .dashboard-hero {
+    margin-bottom: 27px;
+  }
+
+  .hero-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 700px;
+  }
+
+  .dashboard-hero h1 {
+    margin: 0;
+    font-size: clamp(1.85rem, 3.2vw, 2.85rem);
+    line-height: 1.03;
+    letter-spacing: -0.04em;
+    font-weight: 700;
+    color: rgba(12, 16, 24, 0.96);
+  }
+
+  .hero-description {
+    margin: 0;
+    max-width: 620px;
+    color: rgba(28, 34, 44, 0.68);
+    line-height: 1.55;
+    font-size: 0.98rem;
+  }
+
+  .dashboard-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .tab-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .tab-button {
+    appearance: none;
+    border: 1px solid rgba(12, 16, 24, 0.08);
+    background: rgba(255, 255, 255, 0.9);
+    color: rgba(12, 16, 24, 0.78);
+    border-radius: 9px;
+    padding: 10px 16px;
+    font: inherit;
+    font-size: 0.96rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      background 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      transform 180ms ease,
+      box-shadow 180ms ease;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 8px 20px rgba(15, 17, 21, 0.05);
+  }
+
+  .tab-button:hover {
+    border-color: rgba(12, 16, 24, 0.14);
+    color: rgba(12, 16, 24, 0.92);
+    background: rgba(255, 255, 255, 0.98);
+    transform: translateY(-1px);
+  }
+
+  .tab-button.is-active {
+    background: #0f1115;
+    color: rgba(255, 255, 255, 0.96);
+    border-color: #0f1115;
+    box-shadow:
+      0 12px 28px rgba(15, 17, 21, 0.12),
+      0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  }
+
+  .tab-panels {
+    display: block;
+  }
+
+  .tab-panel {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tab-panel.is-active {
+    display: flex;
+  }
+
+  .tab-panel[hidden] {
+    display: none !important;
+  }
+
+  .embed-frame-wrap {
+    position: relative;
+    width: 100%;
+    height: var(--embed-height, 1100px);
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(15, 17, 21, 0.08);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01)),
+      rgba(10, 12, 18, 0.96);
+    box-shadow:
+      0 24px 64px rgba(15, 17, 21, 0.1),
+      0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  }
+
+  .embed-frame-wrap iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: transparent;
+  }
+
+ @media (max-width: 900px) {
+  .dashboard-shell {
+    width: min(100% - 20px, 1400px);
+    padding: 40px 0 60px;
+  }
+
+  .dashboard-hero {
+    margin-bottom: 26px;
+  }
+
+  .dashboard-hero h1 {
+    font-size: clamp(1.7rem, 7vw, 2.2rem);
+  }
+
+  .hero-description {
+    font-size: 0.94rem;
+  }
+
+  .tab-list {
+    gap: 8px;
+  }
+
+  .tab-button {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    padding: 11px 14px;
+    font-size: 0.95rem;
+  }
+
+  .embed-frame-wrap {
+    height: 52vh;
+    min-height: 300px;
+    max-height: 380px;
+    border-radius: 20px;
+  }
+}
+
+</style>
