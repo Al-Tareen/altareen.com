@@ -924,39 +924,74 @@ breadcrumbs={pmtoolkitBreadcrumbs}
      4) CONTROL BAR
      ========================================================= */
 
-  .controlsBar {
-    position: sticky;
-    top: calc(var(--siteHeaderH, 64px) + 8px);
-    z-index: 40;
-    display: grid;
-    grid-template-columns: minmax(320px, 1.2fr) minmax(260px, 0.78fr) minmax(0, 1fr);
-    align-items: center;
-    column-gap: 14px;
-    row-gap: 10px;
-    padding: 14px 16px;
-    min-height: 60px;
-    width: 100%;
-    box-sizing: border-box;
-    border-radius: 22px;
-    border: 1px solid rgba(79, 101, 145, 0.34);
-    background:
-      radial-gradient(circle at top left, rgba(84, 111, 170, 0.18) 0%, rgba(84, 111, 170, 0) 34%),
-      linear-gradient(180deg, rgba(20, 30, 55, 0.92) 0%, rgba(10, 17, 33, 0.96) 100%);
-    backdrop-filter: blur(22px) saturate(135%);
-    -webkit-backdrop-filter: blur(22px) saturate(135%);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.08) inset,
-      0 12px 26px rgba(4, 9, 18, 0.24),
-      0 24px 46px rgba(4, 9, 18, 0.12);
-    margin: 0 0 34px;
-    transition:
-      box-shadow 0.2s var(--ease),
-      border-color 0.2s var(--ease),
-      border-radius 0.22s var(--ease),
-      margin 0.22s var(--ease),
-      padding 0.22s var(--ease),
-      width 0.22s var(--ease);
-  }
+.controlsBar {
+  position: sticky;
+  top: calc(var(--siteHeaderH, 64px) + 8px);
+  z-index: 40;
+  display: grid;
+  grid-template-columns: minmax(280px, 1.9fr) minmax(220px, 0.96fr) auto;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 10px;
+  margin-left: 0;
+margin-right: 0;
+  padding: 14px 16px;
+  min-height: 60px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 22px;
+  border: 1px solid rgba(79, 101, 145, 0.34);
+  background:
+    radial-gradient(circle at top left, rgba(84, 111, 170, 0.18) 0%, rgba(84, 111, 170, 0) 34%),
+    linear-gradient(180deg, rgba(20, 30, 55, 0.92) 0%, rgba(10, 17, 33, 0.96) 100%);
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.08) inset,
+    0 12px 26px rgba(4, 9, 18, 0.24),
+    0 24px 46px rgba(4, 9, 18, 0.12);
+  margin: 0 0 34px;
+transition:
+  box-shadow 0.34s var(--ease),
+  border-color 0.34s var(--ease),
+  border-radius 0.38s var(--ease),
+  background 0.38s var(--ease),
+  margin-left 0.38s var(--ease),
+  margin-right 0.38s var(--ease);
+}
+
+.controlsBar::before,
+.controlsBar::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  width: var(--sticky-side-size, 0px);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transform: scaleX(0.84);
+  transition:
+    opacity 0.42s var(--ease),
+    transform 0.42s var(--ease);
+  border-top: 1px solid rgba(79, 101, 145, 0.34);
+  border-bottom: 1px solid rgba(79, 101, 145, 0.34);
+  background:
+    radial-gradient(circle at top left, rgba(84, 111, 170, 0.18) 0%, rgba(84, 111, 170, 0) 34%),
+    linear-gradient(180deg, rgba(20, 30, 55, 0.92) 0%, rgba(10, 17, 33, 0.96) 100%);
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+}
+
+.controlsBar::before {
+  right: 100%;
+  transform-origin: right center;
+}
+
+.controlsBar::after {
+  left: 100%;
+  transform-origin: left center;
+}
 
   .controlsBar:focus-within {
     border-color: rgba(116, 145, 206, 0.48);
