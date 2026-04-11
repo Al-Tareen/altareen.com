@@ -11,9 +11,7 @@ link: ""
 url: ""
 logo: "/project-logos/product-platforms-lifeos-personal-operating-system--logo--logo-png.png"
 cover: "/project-logos/product-platforms-lifeos-personal-operating-system--logo--logo-png.png"
-files:
-  - name: "LifeOS.png"
-    url: "/project-files/product-platforms-lifeos-personal-operating-system--1--lifeos-png.png"
+files: []
 tags: ["Personal OS","Workflow Automation","Systems Design"]
 comingSoon: false
 position: 4

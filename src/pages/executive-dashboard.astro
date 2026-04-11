@@ -84,6 +84,7 @@ const tabs = [
                 referrerpolicy="strict-origin-when-cross-origin"
                 allowfullscreen
               ></iframe>
+              <div class="embed-brand-mask" aria-hidden="true"></div>
             </div>
           </section>
         ))}
@@ -129,6 +130,10 @@ const tabs = [
 </script>
 
 <style>
+  :global(body) {
+    background: #0f1115;
+  }
+
   .dashboard-shell {
     width: min(1400px, calc(100% - 32px));
     margin: 0 auto;
@@ -152,13 +157,13 @@ const tabs = [
     line-height: 1.03;
     letter-spacing: -0.04em;
     font-weight: 700;
-    color: rgba(12, 16, 24, 0.96);
+    color: rgba(255, 255, 255, 0.96);
   }
 
   .hero-description {
     margin: 0;
     max-width: 620px;
-    color: rgba(28, 34, 44, 0.68);
+    color: rgba(255, 255, 255, 0.68);
     line-height: 1.55;
     font-size: 0.98rem;
   }
@@ -177,9 +182,9 @@ const tabs = [
 
   .tab-button {
     appearance: none;
-    border: 1px solid rgba(12, 16, 24, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.9);
-    color: rgba(12, 16, 24, 0.78);
+    color: rgba(12, 16, 24, 0.84);
     border-radius: 9px;
     padding: 10px 16px;
     font: inherit;
@@ -195,24 +200,24 @@ const tabs = [
       transform 180ms ease,
       box-shadow 180ms ease;
     box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.75) inset,
-      0 8px 20px rgba(15, 17, 21, 0.05);
+      0 1px 0 rgba(255, 255, 255, 0.86) inset,
+      0 10px 24px rgba(0, 0, 0, 0.16);
   }
 
   .tab-button:hover {
-    border-color: rgba(12, 16, 24, 0.14);
-    color: rgba(12, 16, 24, 0.92);
+    border-color: rgba(255, 255, 255, 0.22);
+    color: rgba(12, 16, 24, 0.94);
     background: rgba(255, 255, 255, 0.98);
     transform: translateY(-1px);
   }
 
   .tab-button.is-active {
-    background: #0f1115;
-    color: rgba(255, 255, 255, 0.96);
-    border-color: #0f1115;
+    background: rgba(255, 255, 255, 0.98);
+    color: #0f1115;
+    border-color: rgba(255, 255, 255, 0.98);
     box-shadow:
-      0 12px 28px rgba(15, 17, 21, 0.12),
-      0 1px 0 rgba(255, 255, 255, 0.05) inset;
+      0 14px 30px rgba(255, 255, 255, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.9) inset;
   }
 
   .tab-panels {
@@ -239,13 +244,13 @@ const tabs = [
     height: var(--embed-height, 1100px);
     border-radius: 24px;
     overflow: hidden;
-    border: 1px solid rgba(15, 17, 21, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01)),
+      linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
       rgba(10, 12, 18, 0.96);
     box-shadow:
-      0 24px 64px rgba(15, 17, 21, 0.1),
-      0 1px 0 rgba(255, 255, 255, 0.04) inset;
+      0 32px 80px rgba(0, 0, 0, 0.18),
+      0 1px 0 rgba(255,255,255,0.04) inset;
   }
 
   .embed-frame-wrap iframe {
@@ -256,42 +261,58 @@ const tabs = [
     background: transparent;
   }
 
- @media (max-width: 900px) {
-  .dashboard-shell {
-    width: min(100% - 20px, 1400px);
-    padding: 40px 0 60px;
+  .embed-brand-mask {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 52px;
+    background:
+      linear-gradient(180deg, rgba(10, 12, 18, 0), rgba(10, 12, 18, 0.96) 28%),
+      rgba(10, 12, 18, 0.96);
+    pointer-events: none;
+    z-index: 2;
   }
 
-  .dashboard-hero {
-    margin-bottom: 26px;
-  }
+  @media (max-width: 900px) {
+    .dashboard-shell {
+      width: min(100% - 20px, 1400px);
+      padding: 40px 0 60px;
+    }
 
-  .dashboard-hero h1 {
-    font-size: clamp(1.7rem, 7vw, 2.2rem);
-  }
+    .dashboard-hero {
+      margin-bottom: 26px;
+    }
 
-  .hero-description {
-    font-size: 0.94rem;
-  }
+    .dashboard-hero h1 {
+      font-size: clamp(1.7rem, 7vw, 2.2rem);
+    }
 
-  .tab-list {
-    gap: 8px;
-  }
+    .hero-description {
+      font-size: 0.94rem;
+    }
 
-  .tab-button {
-    width: 100%;
-    text-align: center;
-    justify-content: center;
-    padding: 11px 14px;
-    font-size: 0.95rem;
-  }
+    .tab-list {
+      gap: 8px;
+    }
 
-  .embed-frame-wrap {
-    height: 52vh;
-    min-height: 150px;
-    max-height: 380px;
-    border-radius: 20px;
-  }
-}
+    .tab-button {
+      width: 100%;
+      text-align: center;
+      justify-content: center;
+      padding: 11px 14px;
+      font-size: 0.95rem;
+    }
 
+    .embed-frame-wrap {
+      height: 52vh;
+      min-height: 150px;
+      max-height: 380px;
+      border-radius: 20px;
+    }
+
+    .embed-brand-mask {
+      height: 42px;
+    }
+  }
 </style>
