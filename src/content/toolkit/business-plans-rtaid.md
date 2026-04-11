@@ -12,8 +12,8 @@ notionId: "2d739950-eddd-8091-81fb-de6acd1fa436"
 link: ""
 cover: "/toolkit-covers/business-plans-rtaid.png"
 files:
-  - name: "business-plans-rtaid--1--rtaid-pdf.pdf"
-    url: "/toolkit-files/business-plans-rtaid--1--business-plans-rtaid-1-rtaid-pdf-pdf.pdf"
+  - name: "RTAID.pdf"
+    url: "/toolkit-files/business-plans-rtaid--1--rtaid-pdf.pdf"
 tags: ["DefenseTech","Agentic AI","Intelligence Fusion"]
 ---
 ## Tags
