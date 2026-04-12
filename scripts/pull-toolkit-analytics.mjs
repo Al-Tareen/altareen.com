@@ -7,6 +7,16 @@ import { BetaAnalyticsDataClient } from "@google-analytics/data";
 const PROPERTY_ID = "530034293";
 const OUTPUT_PATH = path.resolve("src/data/toolkit-analytics.json");
 
+/**
+ * Set this to the date you want cumulative analytics to start from.
+ * Format: YYYY-MM-DD
+ *
+ * Example:
+ * - site launch date
+ * - date when tracking became reliable
+ */
+const ANALYTICS_START_DATE = "2026-04-01";
+
 // Put your downloaded service-account JSON somewhere outside git if possible,
 // then point GOOGLE_APPLICATION_CREDENTIALS to it before running this script.
 const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
@@ -18,14 +28,14 @@ if (!credentialsPath) {
 }
 
 const client = new BetaAnalyticsDataClient({
-    keyFilename: credentialsPath,
-    scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
-  });
+  keyFilename: credentialsPath,
+  scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
+});
 
-  function cleanValue(value) {
-    const v = String(value || "").trim();
-    return v === "(not set)" ? "" : v;
-  }
+function cleanValue(value) {
+  const v = String(value || "").trim();
+  return v === "(not set)" ? "" : v;
+}
 
 function toMap(rows = [], dimensionKeyIndex = 0, metricValueIndex = 0) {
   const map = new Map();
@@ -42,6 +52,10 @@ function toMap(rows = [], dimensionKeyIndex = 0, metricValueIndex = 0) {
 
 function sortEntriesDesc(map) {
   return [...map.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function getDateRange() {
+  return [{ startDate: ANALYTICS_START_DATE, endDate: "today" }];
 }
 
 async function runReport({ dimensions, metrics, dateRanges, dimensionFilter, limit = 100 }) {
@@ -61,7 +75,7 @@ async function getMostPopularFramework() {
   const rows = await runReport({
     dimensions: [{ name: "customEvent:framework" }],
     metrics: [{ name: "eventCount" }],
-    dateRanges: [{ startDate: "1daysAgo", endDate: "today" }],
+    dateRanges: getDateRange(),
     dimensionFilter: {
       filter: {
         fieldName: "eventName",
@@ -84,12 +98,9 @@ async function getMostPopularFramework() {
 
 async function getMostDownloadedFramework() {
   const rows = await runReport({
-    dimensions: [
-      { name: "eventName" },
-      { name: "customEvent:framework" },
-    ],
+    dimensions: [{ name: "eventName" }, { name: "customEvent:framework" }],
     metrics: [{ name: "eventCount" }],
-    dateRanges: [{ startDate: "1daysAgo", endDate: "today" }],
+    dateRanges: getDateRange(),
     dimensionFilter: {
       orGroup: {
         expressions: [
@@ -137,12 +148,9 @@ async function getMostDownloadedFramework() {
 
 async function getMostLikedFramework() {
   const rows = await runReport({
-    dimensions: [
-      { name: "customEvent:framework" },
-      { name: "customEvent:action" },
-    ],
+    dimensions: [{ name: "customEvent:framework" }, { name: "customEvent:action" }],
     metrics: [{ name: "eventCount" }],
-    dateRanges: [{ startDate: "1daysAgo", endDate: "today" }],
+    dateRanges: getDateRange(),
     dimensionFilter: {
       andGroup: {
         expressions: [
@@ -182,7 +190,7 @@ async function getTopCategory() {
   const rows = await runReport({
     dimensions: [{ name: "customEvent:category" }],
     metrics: [{ name: "eventCount" }],
-    dateRanges: [{ startDate: "1daysAgo", endDate: "today" }],
+    dateRanges: getDateRange(),
     dimensionFilter: {
       filter: {
         fieldName: "eventName",
@@ -219,7 +227,7 @@ async function main() {
     mostLiked,
     generatedAt: new Date().toISOString(),
     propertyId: PROPERTY_ID,
-    range: "1daysAgo:today",
+    range: `${ANALYTICS_START_DATE}:today`,
   };
 
   await fs.writeFile(OUTPUT_PATH, JSON.stringify(payload, null, 2) + "\n", "utf8");

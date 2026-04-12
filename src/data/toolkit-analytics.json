@@ -1,21 +1,21 @@
 {
   "topCategory": {
     "categoryName": "AI Product Quality, Risk & Safety",
-    "metricValue": "9"
+    "metricValue": "39"
   },
   "mostPopular": {
     "frameworkName": "ai-product-quality-risk-safety-abuse-misuse-threat-model",
-    "metricValue": "6"
+    "metricValue": "23"
   },
   "mostDownloaded": {
     "frameworkName": "strategy-positioning-good-strategy-bad-strategy-criteria",
-    "metricValue": "10"
+    "metricValue": "38"
   },
   "mostLiked": {
     "frameworkName": "strategy-positioning-good-strategy-bad-strategy-criteria",
-    "metricValue": "4"
+    "metricValue": "8"
   },
-  "generatedAt": "2026-04-05T15:34:27.546Z",
+  "generatedAt": "2026-04-12T00:43:37.646Z",
   "propertyId": "530034293",
-  "range": "1daysAgo:today"
+  "range": "2026-04-01:today"
 }
