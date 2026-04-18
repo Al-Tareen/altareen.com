@@ -36,6 +36,36 @@ type OrchestratorResult = {
   situation_summary: string;
   follow_up_suggestions: string[];
 };
+type ConversationGuideParsed = {
+  status: "ask_problem" | "clarify" | "ready";
+  assistant_response: string;
+  situation_summary: string;
+  present_information: string[];
+  context_required: string[];
+  next_question: string;
+  suggested_replies: string[];
+  category_decisions: Array<{
+    category: string;
+    confidence: number;
+    reason: string;
+  }>;
+  framework_decisions: Array<{
+    slug: string;
+    confidence: number;
+    reason: string;
+  }>;
+};
+type ConversationGuideResult = {
+  status: "ask_problem" | "clarify" | "ready";
+  assistantResponse: string;
+  situationSummary: string;
+  presentInformation: string[];
+  contextRequired: string[];
+  nextQuestion: string;
+  suggestedReplies: string[];
+  categoryDecisions: CategoryDecision[];
+  frameworkDecisions: FrameworkDecision[];
+};
 
 type PlainMessage = {
   role: "user" | "assistant";
@@ -75,6 +105,27 @@ type FrameworkCoverage = {
   readinessLabel: string;
   requiredSignalKeys: SignalKey[];
 };
+type CategoryDecision = {
+  category: string;
+  score: number;
+  confidence: number;
+  confidenceLabel: string;
+  locked: boolean;
+  frameworkCount: number;
+};
+type FrameworkDecision = {
+  slug: string;
+  title: string;
+  category: string;
+  score: number;
+  confidence: number;
+  confidenceLabel: string;
+  locked: boolean;
+  whenToUse: string;
+  inputsRequired: string;
+  outputArtifact: string;
+  commonMistakes: string;
+};
 type IntakeAssessment = {
   shouldClarify: boolean;
   situationSummary: string;
@@ -84,17 +135,21 @@ type IntakeAssessment = {
   presentSignals: Set<SignalKey>;
   candidateFrameworks: Framework[];
   coverageBySlug: Record<string, FrameworkCoverage>;
+  categoryDecisions: CategoryDecision[];
+  frameworkDecisions: FrameworkDecision[];
+  lockedCategories: string[];
+  lockedFrameworks: string[];
   askedSignalKeys: SignalKey[];
   askedInformation: string[];
   deferredInformation: string[];
   suggestedReplies: string[];
 };
-
 type Provider =
   | {
       kind: "groq";
       apiKey: string;
       models: {
+        intake: string;
         orchestrator: string;
         specialist: string;
         synthesis: string;
@@ -104,6 +159,7 @@ type Provider =
       kind: "anthropic";
       client: Anthropic;
       models: {
+        intake: string;
         orchestrator: string;
         specialist: string;
         synthesis: string;
@@ -113,6 +169,7 @@ type Provider =
 const EXCLUDED_CATEGORIES = new Set(["Business Plans", "Financial Models", "TBA"]);
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MAX_TOKENS = {
+  intake: 520,
   orchestrator: 450,
   specialist: 320,
   synthesis: 700,
@@ -179,6 +236,7 @@ const SMALL_TALK_PATTERNS = [
 ];
 const PM_SIGNAL_PATTERNS = [
   /\b(product|pm|roadmap|priorit|launch|go[- ]to[- ]market|gtm|churn|retention|activation|onboarding|metric|kpi|okr|vision|strategy|discovery|stakeholder|backlog|feature|experiment|pricing|market|segmentation|enterprise|b2b|b2c|adoption|conversion|north star|jtbd|jobs to be done|positioning|portfolio|q[1-4]|quarter)\b/i,
+  /\b(scrum|standup|sprint|cadence|delivery|deliverable|deadline|blocker|retro|retrospective|azure devops|ado|engineering|dev team|daily meeting|release)\b/i,
 ];
 const INTAKE_CHECK_PATTERN = /## Intake Check|Before I commit to specific frameworks/i;
 const NO_MORE_CONTEXT_PATTERNS = [
@@ -186,6 +244,11 @@ const NO_MORE_CONTEXT_PATTERNS = [
   /\b(?:that(?:'s| is)\s+all\s+i\s+(?:have|know))\b/i,
   /\b(?:no more (?:info(?:rmation)?|context|details))\b/i,
   /\b(?:not sure|don't know|unsure)\b/i,
+];
+const NON_ANSWER_REPLY_PATTERNS = [
+  /^\s*(?:i\s+just\s+replied|i\s+already\s+replied|i\s+already\s+answered|i\s+answered)\b/i,
+  /^\s*(?:what\s+else\s+do\s+you\s+need|what\s+do\s+you\s+need)\b/i,
+  /^\s*(?:i\s+don't\s+understand|i\s+dont\s+understand|not\s+sure|unsure)\b/i,
 ];
 const SIGNAL_META: Record<
   SignalKey,
@@ -317,6 +380,82 @@ const ORCHESTRATOR_SCHEMA = {
     required: ["framework_matches", "situation_summary", "follow_up_suggestions"],
   },
 } as const;
+const CONVERSATION_GUIDE_SCHEMA = {
+  name: "prodforce_conversation_guide",
+  strict: true,
+  schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      status: {
+        type: "string",
+        enum: ["ask_problem", "clarify", "ready"],
+      },
+      assistant_response: { type: "string" },
+      situation_summary: { type: "string" },
+      present_information: {
+        type: "array",
+        minItems: 0,
+        maxItems: 8,
+        items: { type: "string" },
+      },
+      context_required: {
+        type: "array",
+        minItems: 0,
+        maxItems: 6,
+        items: { type: "string" },
+      },
+      next_question: { type: "string" },
+      suggested_replies: {
+        type: "array",
+        minItems: 0,
+        maxItems: 3,
+        items: { type: "string" },
+      },
+      category_decisions: {
+        type: "array",
+        minItems: 0,
+        maxItems: 5,
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            category: { type: "string" },
+            confidence: { type: "number" },
+            reason: { type: "string" },
+          },
+          required: ["category", "confidence", "reason"],
+        },
+      },
+      framework_decisions: {
+        type: "array",
+        minItems: 0,
+        maxItems: 6,
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            slug: { type: "string" },
+            confidence: { type: "number" },
+            reason: { type: "string" },
+          },
+          required: ["slug", "confidence", "reason"],
+        },
+      },
+    },
+    required: [
+      "status",
+      "assistant_response",
+      "situation_summary",
+      "present_information",
+      "context_required",
+      "next_question",
+      "suggested_replies",
+      "category_decisions",
+      "framework_decisions",
+    ],
+  },
+} as const;
 
 async function loadFrameworks(): Promise<Framework[]> {
   const all = await getCollection("toolkit");
@@ -354,6 +493,123 @@ function latestUserMessage(messages: Message[]) {
   return messages.filter((message) => message.role === "user").slice(-1)[0]?.content ?? "";
 }
 
+function countSubstantivePmTurns(messages: Message[], file?: FilePayload) {
+  return messages
+    .filter((message) => message.role === "user")
+    .map((message) => normalizeUserContextText(message.content))
+    .filter(Boolean)
+    .filter((text) => hasPmSignal(text, file)).length;
+}
+
+function shouldUnlockFrameworkReasoning(messages: Message[], file?: FilePayload) {
+  const context = collectPmContext(messages, file);
+  const signalCount = detectContextSignals(context).size;
+  const tokenCount = tokenize(context).length;
+  const pmTurns = countSubstantivePmTurns(messages, file);
+  return hasPmSignal(context, file) && (pmTurns >= 2 || (signalCount >= 4 && tokenCount >= 22));
+}
+
+function lastAssistantQuestion(messages: Message[]) {
+  const assistants = messages.filter((message) => message.role === "assistant").slice().reverse();
+  for (const message of assistants) {
+    const content = String(message.content || "").replace(/\s+/g, " ").trim();
+    const match = content.match(/([^?]+\?)(?!.*\?)/);
+    if (match?.[1]) return match[1].trim();
+  }
+  return "";
+}
+
+function extractAllAssistantQuestions(messages: Message[]): string[] {
+  const questions: string[] = [];
+  for (const message of messages) {
+    if (message.role !== "assistant") continue;
+    const content = String(message.content || "").replace(/\s+/g, " ").trim();
+    const matches = content.match(/[^.!?\n]*\?/g);
+    if (matches) {
+      for (const raw of matches) {
+        const q = raw.replace(/^[\s,;:—–-]+/, "").trim();
+        if (q.length > 10) questions.push(q);
+      }
+    }
+  }
+  return questions;
+}
+
+function inferSignalFromQuestion(question: string): SignalKey | null {
+  const normalized = normalizeComparableText(question);
+  if (!normalized) return null;
+  if (
+    /what do you need to fix first|what exact decision|what decision should this|goal|objective|trying to make/.test(
+      normalized
+    )
+  ) {
+    return "objective";
+  }
+  if (/what options|scope|actual bets|fix paths|in scope|on the table/.test(normalized)) {
+    return "scope";
+  }
+  if (/who is the primary user|which cohort|which user segment|buyer involved/.test(normalized)) {
+    return "users";
+  }
+  if (/what metric|which outcome|which signal|business outcome|success signal/.test(normalized)) {
+    return "metrics";
+  }
+  if (/timeline|resource|budget|deadline|process fix you can start this week|constraints/.test(normalized)) {
+    return "constraints";
+  }
+  if (
+    /what does the current baseline|what changed|what usually causes the miss|what s going on|what is going on|what blockers/.test(
+      normalized
+    )
+  ) {
+    return "evidence";
+  }
+  if (/assumptions|risk|dependency|could derail|biggest risk/.test(normalized)) {
+    return "risks";
+  }
+  if (/who owns|which stakeholders|who needs alignment|sign off|decision owners/.test(normalized)) {
+    return "stakeholders";
+  }
+  return null;
+}
+
+function inferAnsweredSignalFromLatestTurn(messages: Message[]) {
+  const latestUser = normalizeUserContextText(latestUserMessage(messages));
+  if (!latestUser || isLikelyNonAnswerReply(latestUser)) return null;
+  const priorQuestion = lastAssistantQuestion(messages);
+  return inferSignalFromQuestion(priorQuestion);
+}
+
+function inferAnsweredSignalsFromConversation(messages: Message[]) {
+  const signals = new Set<SignalKey>();
+  let activeQuestion = "";
+
+  for (const message of messages) {
+    if (message.role === "assistant") {
+      const question = lastAssistantQuestion([message]);
+      if (question) activeQuestion = question;
+      continue;
+    }
+
+    const answer = normalizeUserContextText(message.content);
+    if (!answer || isLikelyNonAnswerReply(answer) || !activeQuestion) {
+      continue;
+    }
+
+    const signal = inferSignalFromQuestion(activeQuestion);
+    if (signal) signals.add(signal);
+  }
+
+  return signals;
+}
+
+function isLikelyNonAnswerReply(text: string) {
+  const clean = normalizeUserContextText(text);
+  if (!clean) return true;
+  if (NON_ANSWER_REPLY_PATTERNS.some((pattern) => pattern.test(clean))) return true;
+  return /^(ok|okay|sure|yes|yep|no|nah|maybe|what|huh|why|how|hmm|idk|help|hello|hi|hey)[!?.]*$/i.test(clean);
+}
+
 function hasPmSignal(text: string, file?: FilePayload) {
   if (file) return true;
   return PM_SIGNAL_PATTERNS.some((pattern) => pattern.test(text));
@@ -379,11 +635,11 @@ function classifyConversationMode(messages: Message[], file?: FilePayload): Conv
   return "pm";
 }
 
-function buildDirectResponse(mode: ConversationMode, latestText: string) {
+function buildDirectResponse(mode: ConversationMode, _latestText: string) {
   if (mode === "smalltalk") {
     return {
       text:
-        "Hey — I’m Prodforce, a multi-agent system built for product decisions. Drop me a challenge — prioritization call, launch decision, metric diagnosis, team alignment — and I’ll match it to the right PM framework and run specialist analysis on it.",
+        "Hey — I’m Prodforce. Give me a product decision you’re stuck on and I’ll match it to the right PM framework, run specialist analysis, and deliver an applied recommendation. What are you working through?",
       suggestions: [
         "How do I prioritize our Q3 roadmap with competing stakeholder demands?",
         "Churn spiked after our latest release. How do I diagnose it?",
@@ -392,11 +648,9 @@ function buildDirectResponse(mode: ConversationMode, latestText: string) {
     };
   }
 
-  // Never return this in practice anymore since classifyConversationMode
-  // now routes most things to "pm", but keep as safety net
   return {
     text:
-      "I’m here. Give me the product decision, and I’ll identify the framework, pressure-test it against your situation, and deliver a recommendation. What are you working through?",
+      "What’s the product decision you’re working through? I’ll match it to the right framework and run a full analysis.",
     suggestions: [
       "We have 3 competing roadmap bets for next quarter. How should I evaluate them?",
       "Churn spiked after our latest release. How do I diagnose the root cause?",
@@ -408,7 +662,7 @@ function buildDirectResponse(mode: ConversationMode, latestText: string) {
 function collectPmContext(messages: Message[], file?: FilePayload) {
   const recentUserMessages = messages
     .filter((message) => message.role === "user")
-    .slice(-3)
+    .slice(-8)
     .map((message) => normalizeUserContextText(message.content))
     .filter(Boolean);
   const attachmentContext =
@@ -448,8 +702,14 @@ function normalizeUserContextText(text: string) {
 }
 
 function countClarificationTurns(messages: Message[]) {
+  // Count assistant turns that asked a clarifying question (contain a question mark)
+  // but did NOT produce a full framework analysis (no markdown headers like "## Executive Summary")
   return messages.filter(
-    (message) => message.role === "assistant" && INTAKE_CHECK_PATTERN.test(message.content)
+    (message) =>
+      message.role === "assistant" &&
+      message.content.includes("?") &&
+      !/^##\s/m.test(message.content) &&
+      message.content.length < 600
   ).length;
 }
 
@@ -607,19 +867,174 @@ function buildFrameworkCoverage(framework: Framework, presentSignals: Set<Signal
   };
 }
 
+function clamp01(value: number) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function describeConfidence(confidence: number) {
+  if (confidence >= 0.82) return "locked";
+  if (confidence >= 0.66) return "strong";
+  if (confidence >= 0.48) return "emerging";
+  return "exploring";
+}
+
+function coverageToNumber(coverage: FrameworkCoverage | undefined) {
+  if (!coverage) return 0.4;
+  if (coverage.confidence === "high") return 0.92;
+  if (coverage.confidence === "medium") return 0.68;
+  return 0.44;
+}
+
+function buildCategoryDecisions(
+  rankedCandidates: Array<{ framework: Framework; score: number }>,
+  coverageBySlug: Record<string, FrameworkCoverage>
+) {
+  const ranked = rankedCandidates.filter((item) => item.framework).slice(0, 14);
+  if (!ranked.length) return [];
+
+  const maxScore = Math.max(...ranked.map((item) => item.score), 1);
+  const buckets = new Map<
+    string,
+    {
+      category: string;
+      total: number;
+      best: number;
+      support: number;
+      frameworks: Set<string>;
+    }
+  >();
+
+  ranked.forEach(({ framework, score }, index) => {
+    const category = framework.category || "Uncategorized";
+    const normalizedScore = clamp01(score / maxScore);
+    const rankWeight = clamp01(1 - index * 0.06);
+    const coverageScore = coverageToNumber(coverageBySlug[framework.slug]);
+    const contribution = normalizedScore * 0.64 + coverageScore * 0.24 + rankWeight * 0.12;
+    const current =
+      buckets.get(category) ??
+      {
+        category,
+        total: 0,
+        best: 0,
+        support: 0,
+        frameworks: new Set<string>(),
+      };
+
+    current.total += contribution;
+    current.best = Math.max(current.best, contribution);
+    current.frameworks.add(framework.slug);
+    if (contribution >= 0.5) current.support += 1;
+    buckets.set(category, current);
+  });
+
+  const provisional = Array.from(buckets.values()).map((entry) => {
+    const frameworkCount = entry.frameworks.size;
+    const avgContribution = entry.total / Math.max(frameworkCount, 1);
+    const supportFactor = clamp01(frameworkCount / 3);
+    const confidence = clamp01(
+      entry.best * 0.48 + avgContribution * 0.34 + supportFactor * 0.18
+    );
+
+    return {
+      category: entry.category,
+      score: Number((entry.total / Math.max(frameworkCount, 1)).toFixed(3)),
+      confidence,
+      confidenceLabel: describeConfidence(confidence),
+      locked: false,
+      frameworkCount,
+    };
+  });
+
+  provisional.sort(
+    (a, b) =>
+      b.confidence - a.confidence ||
+      b.frameworkCount - a.frameworkCount ||
+      a.category.localeCompare(b.category)
+  );
+
+  return provisional.map((decision, index, list) => {
+    const next = list[index + 1];
+    const margin = decision.confidence - (next?.confidence ?? 0);
+    const locked =
+      decision.confidence >= 0.74 &&
+      (index === 0 ? margin >= 0.04 || decision.confidence >= 0.86 : decision.confidence >= 0.82);
+
+    return {
+      ...decision,
+      locked,
+      confidenceLabel: locked ? "locked" : describeConfidence(decision.confidence),
+    };
+  });
+}
+
+function buildFrameworkDecisions(
+  rankedCandidates: Array<{ framework: Framework; score: number }>,
+  coverageBySlug: Record<string, FrameworkCoverage>
+) {
+  const ranked = rankedCandidates.filter((item) => item.framework).slice(0, 12);
+  if (!ranked.length) return [];
+
+  const maxScore = Math.max(...ranked.map((item) => item.score), 1);
+  const provisional = ranked.map(({ framework, score }, index) => {
+    const normalizedScore = clamp01(score / maxScore);
+    const rankWeight = clamp01(1 - index * 0.07);
+    const coverageScore = coverageToNumber(coverageBySlug[framework.slug]);
+    const confidence = clamp01(
+      normalizedScore * 0.58 + coverageScore * 0.28 + rankWeight * 0.14
+    );
+
+    return {
+      slug: framework.slug,
+      title: framework.title,
+      category: framework.category,
+      score: Number((normalizedScore * 100).toFixed(1)),
+      confidence,
+      confidenceLabel: describeConfidence(confidence),
+      locked: false,
+      whenToUse: framework.whenToUseFull || framework.whenToUse,
+      inputsRequired: framework.inputsRequired,
+      outputArtifact: framework.outputArtifact,
+      commonMistakes: framework.commonMistakes,
+    };
+  });
+
+  provisional.sort(
+    (a, b) =>
+      b.confidence - a.confidence ||
+      b.score - a.score ||
+      a.title.localeCompare(b.title)
+  );
+
+  return provisional.map((decision, index, list) => {
+    const next = list[index + 1];
+    const margin = decision.confidence - (next?.confidence ?? 0);
+    const locked =
+      decision.confidence >= 0.76 &&
+      (index <= 1 ? margin >= 0.03 || decision.confidence >= 0.86 : decision.confidence >= 0.84);
+
+    return {
+      ...decision,
+      locked,
+      confidenceLabel: locked ? "locked" : describeConfidence(decision.confidence),
+    };
+  });
+}
+
 function summarizeSituation(messages: Message[], file?: FilePayload) {
-  const recentUserMessages = messages
+  // Only include user messages that carry actual PM context — skip
+  // noise like "ok", "what?", "I don't understand", short replies, etc.
+  const substantiveUserMessages = messages
     .filter((message) => message.role === "user")
-    .slice(-2)
     .map((message) => normalizeUserContextText(message.content))
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter((text) => text.length > 8 && !isLikelyNonAnswerReply(text));
   const attachmentLead =
     file?.fileType === "text" && file.content
       ? `Attached context: ${file.content.slice(0, 180).trim()}`
       : "";
-  const summary = [attachmentLead, ...recentUserMessages].filter(Boolean).join(" ");
+  const summary = [attachmentLead, ...substantiveUserMessages.slice(-2)].filter(Boolean).join(". ");
   if (!summary) {
-    return "I have a PM question, but not enough context yet to pick the right framework.";
+    return "";
   }
   return summary.length > 220 ? `${summary.slice(0, 217)}...` : summary;
 }
@@ -684,6 +1099,9 @@ function inferScenarioContext(
 function buildDynamicClarificationQuestion(key: SignalKey, scenario: ScenarioContext) {
   switch (key) {
     case "objective":
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(scenario.lowerText)) {
+        return "What do you need to fix first: daily attendance, earlier blocker surfacing, or delivery reliability overall?";
+      }
       if (scenario.isPrioritization) {
         return "What decision are you actually trying to make: pick the top bet, rank all options, or decide what ships first?";
       }
@@ -701,6 +1119,9 @@ function buildDynamicClarificationQuestion(key: SignalKey, scenario: ScenarioCon
       }
       return SIGNAL_META[key].question;
     case "scope":
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(scenario.lowerText)) {
+        return "What part of the workflow is breaking most right now: attendance, blocker escalation, planning clarity, or follow-through after the scrum?";
+      }
       if (scenario.isPrioritization) {
         return "What are the actual bets, initiatives, or roadmap options on the table right now?";
       }
@@ -723,6 +1144,9 @@ function buildDynamicClarificationQuestion(key: SignalKey, scenario: ScenarioCon
       }
       return SIGNAL_META[key].question;
     case "metrics":
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(scenario.lowerText)) {
+        return "How will you know this is improving: attendance rate, blockers raised on time, or delivery commitments met?";
+      }
       if (scenario.isPrioritization) {
         return "Which outcome matters most for this tradeoff: revenue, retention, activation, strategic learning, or delivery confidence?";
       }
@@ -737,6 +1161,9 @@ function buildDynamicClarificationQuestion(key: SignalKey, scenario: ScenarioCon
       }
       return SIGNAL_META[key].question;
     case "constraints":
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(scenario.lowerText)) {
+        return "Do you need a process fix you can start this week, or are you redesigning how the team plans and delivers work more broadly?";
+      }
       if (scenario.isPrioritization) {
         return "What deadlines, resourcing limits, or dependencies make this prioritization call harder?";
       }
@@ -748,6 +1175,9 @@ function buildDynamicClarificationQuestion(key: SignalKey, scenario: ScenarioCon
       }
       return SIGNAL_META[key].question;
     case "evidence":
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(scenario.lowerText)) {
+        return "What usually causes the miss right now: unclear scope, no owner, late dependencies, or blockers not getting raised early enough?";
+      }
       if (scenario.isDiagnostic) {
         return "What changed in the release, funnel, support tickets, or usage data right before the issue showed up?";
       }
@@ -759,6 +1189,9 @@ function buildDynamicClarificationQuestion(key: SignalKey, scenario: ScenarioCon
       }
       return SIGNAL_META[key].question;
     case "risks":
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(scenario.lowerText)) {
+        return "What is the main risk if you push on attendance first: low buy-in, the wrong root cause, or blockers still staying hidden?";
+      }
       if (scenario.isAi) {
         return "What risk could change the recommendation most: model quality, trust, privacy, compliance, or operational readiness?";
       }
@@ -773,6 +1206,9 @@ function buildDynamicClarificationQuestion(key: SignalKey, scenario: ScenarioCon
       }
       return SIGNAL_META[key].question;
     case "stakeholders":
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(scenario.lowerText)) {
+        return "Who owns the delivery process today: the PM, engineering manager, tech lead, or someone else?";
+      }
       if (scenario.isAlignment || scenario.isStrategy) {
         return "Who owns the call, and which leaders or partner teams need alignment before you can commit?";
       }
@@ -887,20 +1323,9 @@ function buildClarificationMessageV2(assessment: IntakeAssessment) {
 }
 
 function buildClarificationMessageV3(assessment: IntakeAssessment) {
-  const questions = assessment.clarificationQuestions.slice(0, 3);
-  const likelyFrameworks = assessment.candidateFrameworks
-    .slice(0, 3)
-    .map((framework) => framework.title)
-    .filter(Boolean);
-
-  // Framework context — mention what we're considering
-  const fwContext = likelyFrameworks.length
-    ? `I'm currently pressure-testing **${likelyFrameworks.join("**, **")}** against your situation.\n\n`
-    : "";
-
-  // Ask just ONE question — the rest come as clickable chips
-  const lead = questions[0] || "What's the core decision you need to make here?";
-  return `${fwContext}${lead}`;
+  // Never echo user text back — just ask the next question.
+  // The LLM path handles acknowledgment; this fallback should be clean.
+  return assessment.clarificationQuestions[0] || "What's the core decision you need to make here?";
 }
 
 function buildGroundedSuggestedReplies(
@@ -927,7 +1352,10 @@ function buildGroundedSuggestedReplies(
 
   for (const key of askedSignalKeys.slice(0, 3)) {
     if (key === "objective") {
-      if (scenario.isDiagnostic && /\b(churn|retention|drop|spike|regression)\b/.test(lower)) {
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(lower)) {
+        push("The goal is to restore daily attendance and surface blockers earlier.");
+        push("The goal is to improve delivery reliability without redesigning everything.");
+      } else if (scenario.isDiagnostic && /\b(churn|retention|drop|spike|regression)\b/.test(lower)) {
         push("The goal is to isolate the root cause and decide the first corrective move.");
       } else if (scenario.isDiagnostic) {
         push("The goal is to explain the issue clearly enough to choose the right first fix.");
@@ -937,7 +1365,10 @@ function buildGroundedSuggestedReplies(
         push("The goal is to improve the proposal workflow in a way that increases RFP wins.");
       }
     } else if (key === "metrics") {
-      if (/\brfps?\s+won\b/.test(lower)) {
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(lower)) {
+        push("We will track attendance rate and whether blockers get raised during the scrum.");
+        push("We will know it is working if the team starts meeting delivery commitments more consistently.");
+      } else if (/\brfps?\s+won\b/.test(lower)) {
         push("Success is more RFPs won and a higher proposal win rate.");
       } else if (scenario.isDiagnostic) {
         if (/\bchurn\b/.test(lower)) push("The core signal is churn, broken down by affected cohort.");
@@ -961,6 +1392,9 @@ function buildGroundedSuggestedReplies(
         push("The user is the internal proposal workflow team serving government deals.");
       }
     } else if (key === "constraints") {
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(lower)) {
+        push("We need a process fix the team can start this week.");
+      }
       const timeline = extract([
         /\b(?:in|within|over|for)\s+((?:the\s+next\s+)?\d+\s+(?:days?|weeks?|months?|quarters?))/i,
         /\b((?:q[1-4]|next quarter|this quarter|next sprint|this sprint))/i,
@@ -969,24 +1403,35 @@ function buildGroundedSuggestedReplies(
       if (timeline) push("Timeline constraint: " + timeline + ".");
       if (team) push("Resourcing constraint: " + team + ".");
     } else if (key === "risks") {
-      if (/\bprivacy|compliance|security|trust\b/.test(lower)) {
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(lower)) {
+        push("The main risk is that attendance is a symptom and blockers still will not surface early enough.");
+      } else if (/\bprivacy|compliance|security|trust\b/.test(lower)) {
         push("A major risk is trust, privacy, or compliance blocking adoption.");
       } else if (/\bintegration|dependency\b/.test(lower)) {
         push("Integration dependencies could change the recommendation.");
       }
     } else if (key === "stakeholders") {
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(lower)) {
+        push("The PM and engineering manager currently own the delivery process.");
+      }
       const stakeholder = extract([
         /\b(vp of [a-z ]+|head of [a-z ]+|cto|ceo|cpo|sales leadership|marketing leadership|engineering leadership)\b/i,
       ]);
       if (stakeholder) push("Key stakeholder: " + stakeholder + ".");
     } else if (key === "scope") {
-      const options = extract([
-        /\b((?:three|3|four|4|two|2)\s+(?:options|bets|initiatives|approaches))/i,
-        /\bcomparing\s+([^.;]+)/i,
-      ]);
-      if (options) push("Scope in play: " + options + ".");
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(lower)) {
+        push("The issue seems concentrated in daily attendance and blocker escalation.");
+      } else {
+        const options = extract([
+          /\b((?:three|3|four|4|two|2)\s+(?:options|bets|initiatives|approaches))/i,
+          /\bcomparing\s+([^.;]+)/i,
+        ]);
+        if (options) push("Scope in play: " + options + ".");
+      }
     } else if (key === "evidence") {
-      if (/\bspiked after (?:our|the) latest release\b/i.test(context)) {
+      if (/\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(lower)) {
+        push("People are skipping the scrum, so blockers surface too late.");
+      } else if (/\bspiked after (?:our|the) latest release\b/i.test(context)) {
         push("We saw the change immediately after the latest release.");
       } else if (/\blatest release\b/i.test(context) && /\bchurn\b/i.test(context)) {
         push("The churn change appears tied to the latest release window.");
@@ -1010,9 +1455,11 @@ function assessFrameworkReadiness(
   messages: Message[],
   file: FilePayload | undefined
 ): IntakeAssessment {
-  const candidateFrameworks = selectFrameworkCandidates(frameworkPool, messages, file, 6).slice(0, 4);
+  const rankedCandidates = rankFrameworkCandidates(frameworkPool, messages, file);
+  const candidateFrameworks = rankedCandidates.slice(0, 6).map((item) => item.framework).slice(0, 4);
   const context = collectPmContext(messages, file);
   const presentSignals = detectContextSignals(context);
+  inferAnsweredSignalsFromConversation(messages).forEach((signal) => presentSignals.add(signal));
   const clarificationTurns = countClarificationTurns(messages);
   const latestSignals = latestUserSignals(messages);
   const previousSignals = priorUserSignals(messages, file);
@@ -1025,10 +1472,13 @@ function assessFrameworkReadiness(
       buildFrameworkCoverage(framework, presentSignals),
     ])
   ) as Record<string, FrameworkCoverage>;
+  const categoryDecisions = buildCategoryDecisions(rankedCandidates, coverageBySlug).slice(0, 5);
+  const frameworkDecisions = buildFrameworkDecisions(rankedCandidates, coverageBySlug).slice(0, 6);
 
   const candidateCategories = Array.from(
     new Set(
-      inferContextCategories(context).concat(
+      categoryDecisions.map((decision) => decision.category).concat(
+        inferContextCategories(context),
         candidateFrameworks.map((framework) => framework.category).filter(Boolean)
       )
     )
@@ -1053,36 +1503,79 @@ function assessFrameworkReadiness(
   const topCriticalMissing =
     topCoverage?.requiredSignalKeys.slice(0, 2).filter((key) => !presentSignals.has(key)) ?? [];
   const detailTokenCount = tokenize(context).length;
+  const strongCategoryCount = categoryDecisions.filter(
+    (decision) => decision.locked || decision.confidence >= 0.72
+  ).length;
+  const strongFrameworkCount = frameworkDecisions.filter(
+    (decision) => decision.locked || decision.confidence >= 0.72
+  ).length;
   const shouldProceedProvisionally =
-    clarificationTurns > 0 &&
-    (exhaustedContext ||
-      introducedSignals.length > 0 ||
-      latestSignals.size >= 2 ||
-      latestTokenCount >= 8);
+    (clarificationTurns > 0 &&
+      (exhaustedContext ||
+        introducedSignals.length > 0 ||
+        latestSignals.size >= 2 ||
+        latestTokenCount >= 8)) ||
+    (clarificationTurns >= 2 && presentSignals.size >= 3) ||
+    (clarificationTurns >= 3 && presentSignals.size >= 2) ||
+    (clarificationTurns >= 1 &&
+      strongCategoryCount >= 1 &&
+      presentSignals.size >= 4 &&
+      (topCoverage?.missingInputs.length ?? 0) <= 2) ||
+    (clarificationTurns >= 1 &&
+      strongFrameworkCount >= 1 &&
+      presentSignals.size >= 4) ||
+    (exhaustedContext && presentSignals.size >= 2);
   const shouldClarify =
     candidateFrameworks.length > 0 &&
     !shouldProceedProvisionally &&
-    (presentSignals.size < 3 ||
-      topCriticalMissing.length > 0 ||
+    (presentSignals.size < 2 ||
+      topCriticalMissing.length > 1 ||
       (topCoverage?.missingInputs.length ?? 0) >= 3 ||
       ((topCoverage?.confidence === "medium" || topCoverage?.confidence === "low") &&
-        detailTokenCount < 18));
+        detailTokenCount < 18 &&
+        clarificationTurns === 0));
   const scenario = inferScenarioContext(messages, file, candidateFrameworks, candidateCategories);
   const fallbackQuestions = buildHeuristicSuggestions(normalizeUserContextText(latestUserMessage(messages)));
-  const askedSignalKeys = prioritizedMissing.slice(0, 3);
+  const orderedMissing =
+    /\b(scrum|standup|daily meeting|ado|azure devops|deliverable|deadline|blocker)\b/.test(
+      scenario.lowerText
+    ) && !scenario.isPrioritization
+      ? [
+          "objective",
+          "evidence",
+          "stakeholders",
+          "constraints",
+          "risks",
+          "scope",
+          "metrics",
+          "users",
+        ].filter((key) => prioritizedMissing.includes(key as SignalKey)) as SignalKey[]
+      : prioritizedMissing;
+  const askedSignalKeys = orderedMissing.slice(0, 1);
   const clarificationQuestions = askedSignalKeys.map((key) =>
     buildDynamicClarificationQuestion(key, scenario)
   );
-  const missingInformation = prioritizedMissing
-    .slice(0, 4)
+  const missingInformation = orderedMissing
+    .slice(0, 3)
     .map((key) => SIGNAL_META[key].label);
   const askedInformation = askedSignalKeys.length
     ? askedSignalKeys.map((key) => SIGNAL_META[key].label)
     : missingInformation.slice(0, 3);
-  const deferredInformation = prioritizedMissing
-    .slice(3, 6)
+  const deferredInformation = orderedMissing
+    .slice(1, 3)
     .map((key) => SIGNAL_META[key].label);
   const suggestedReplies = buildGroundedSuggestedReplies(askedSignalKeys, scenario, context);
+  const stableCategoryDecisions = categoryDecisions.filter(
+    (decision) => decision.confidence >= 0.45 || decision.locked
+  );
+  const stableFrameworkDecisions = frameworkDecisions.filter((decision) => {
+    if (decision.locked || decision.confidence >= 0.66) return true;
+    return stableCategoryDecisions.some(
+      (categoryDecision) =>
+        categoryDecision.category === decision.category &&
+        (categoryDecision.locked || categoryDecision.confidence >= 0.6)
+    );
+  });
 
   return {
     shouldClarify,
@@ -1097,6 +1590,10 @@ function assessFrameworkReadiness(
     presentSignals,
     candidateFrameworks,
     coverageBySlug,
+    categoryDecisions: stableCategoryDecisions,
+    frameworkDecisions: stableFrameworkDecisions,
+    lockedCategories: stableCategoryDecisions.filter((decision) => decision.locked).map((decision) => decision.category),
+    lockedFrameworks: stableFrameworkDecisions.filter((decision) => decision.locked).map((decision) => decision.slug),
     askedSignalKeys,
     askedInformation,
     deferredInformation,
@@ -1104,37 +1601,31 @@ function assessFrameworkReadiness(
   };
 }
 
-function selectFrameworkCandidates(
+function rankFrameworkCandidates(
   frameworks: Framework[],
   messages: Message[],
-  file: FilePayload | undefined,
-  limit = ORCHESTRATOR_CANDIDATE_LIMIT
+  file: FilePayload | undefined
 ) {
-  const latestUserContext = messages
-    .filter((message) => message.role === "user")
-    .slice(-2)
-    .map((message) => message.content)
-    .join(" ");
-  const attachmentContext =
-    file?.fileType === "text" ? ` ${file.content?.slice(0, 2000) ?? ""}` : "";
-  const queryTokens = tokenize(`${latestUserContext}${attachmentContext}`);
-  const lowerContext = `${latestUserContext}${attachmentContext}`.toLowerCase();
+  const fullContext = collectPmContext(messages, file);
+  const queryTokens = tokenize(fullContext);
+  const lowerContext = fullContext.toLowerCase();
   const intentSignals = {
     prioritization: /\b(priorit|roadmap|tradeoff|backlog|bet|bets|capacity|rank|ranking|evaluate|portfolio)\b/.test(lowerContext),
     strategy: /\b(vision|strategy|positioning|north star|mission|align|alignment|differentiat)\b/.test(lowerContext),
-    discovery: /\b(discover|discovery|research|interview|customer|user|validate|opportunity|problem)\b/.test(lowerContext),
+    discovery: /\b(discover|discovery|research|interview|customer|user|validate|opportunity|jtbd|jobs to be done)\b/.test(lowerContext),
     metrics: /\b(metric|metrics|kpi|okrs?|analytics|measure|success)\b/.test(lowerContext),
     diagnostic: /\b(churn|drop|spike|diagnos|root cause|regression|incident|release|support ticket|bug)\b/.test(lowerContext),
     gtm: /\b(launch|go-to-market|go to market|gtm|pricing|churn|retention|activation|adoption|sales|market)\b/.test(lowerContext),
     execution: /\b(stakeholder|retro|retrospective|postmortem|scrum|cadence|decision|escalation|execution)\b/.test(lowerContext),
+    deliveryExecution: /\b(scrum|standup|daily scrum|daily standup|ado|azure devops|deliverable|deliverables|deadline|attendance|blocker|missed delivery|delivery reliability)\b/.test(lowerContext),
     multipleOptions: /\b(competing|compare|comparison|versus|vs|bet one|bet two|bet three|option|options)\b/.test(lowerContext),
   };
 
   if (queryTokens.length === 0) {
-    return frameworks.slice(0, limit);
+    return frameworks.map((framework) => ({ framework, score: 0 }));
   }
 
-  const ranked = frameworks
+  return frameworks
     .map((framework) => {
       const titleTokens = new Set(tokenize(`${framework.title} ${framework.category}`));
       const detailText = `${framework.whenToUse} ${framework.tags}`;
@@ -1152,6 +1643,7 @@ function selectFrameworkCandidates(
 
       if (
         intentSignals.diagnostic &&
+        !intentSignals.deliveryExecution &&
         (category.includes("metrics") ||
           category.includes("discovery") ||
           identity.includes("retention") ||
@@ -1196,6 +1688,7 @@ function selectFrameworkCandidates(
       }
       if (
         intentSignals.discovery &&
+        !intentSignals.deliveryExecution &&
         (category.includes("discovery") ||
           identity.includes("research") ||
           identity.includes("interview") ||
@@ -1235,17 +1728,86 @@ function selectFrameworkCandidates(
       if (
         intentSignals.execution &&
         (category.includes("alignment") ||
+          category.includes("delivery") ||
           identity.includes("stakeholder") ||
           identity.includes("retro") ||
+          identity.includes("raci") ||
           identity.includes("scrum") ||
+          identity.includes("acceptance criteria") ||
+          identity.includes("discovery-delivery-flow") ||
           identity.includes("decision"))
       ) {
         score += 14;
+      }
+      if (
+        intentSignals.deliveryExecution &&
+        (category.includes("alignment") ||
+          category.includes("delivery") ||
+          identity.includes("scrum") ||
+          identity.includes("raci") ||
+          identity.includes("retro") ||
+          identity.includes("postmortem") ||
+          identity.includes("acceptance criteria") ||
+          identity.includes("discovery-delivery-flow") ||
+          identity.includes("decision escalation"))
+      ) {
+        score += 24;
+      }
+      if (
+        intentSignals.deliveryExecution &&
+        (category.includes("growth") ||
+          category.includes("market") ||
+          identity.includes("retention") ||
+          identity.includes("churn") ||
+          identity.includes("pricing") ||
+          identity.includes("launch") ||
+          identity.includes("gtm"))
+      ) {
+        score -= 26;
+      }
+      if (
+        intentSignals.deliveryExecution &&
+        category.includes("metrics") &&
+        !identity.includes("post-launch") &&
+        !identity.includes("kpi") &&
+        !identity.includes("okr")
+      ) {
+        score -= 8;
+      }
+      if (
+        intentSignals.deliveryExecution &&
+        category.includes("discovery") &&
+        !identity.includes("acceptance criteria") &&
+        !identity.includes("discovery-delivery-flow")
+      ) {
+        score -= 12;
+      }
+      if (
+        intentSignals.execution &&
+        !intentSignals.prioritization &&
+        !intentSignals.multipleOptions &&
+        (category.includes("prioritization") ||
+          category.includes("roadmap") ||
+          identity.includes("tradeoff") ||
+          identity.includes("rice") ||
+          identity.includes("moscow") ||
+          identity.includes("cost-benefit"))
+      ) {
+        score -= 18;
       }
 
       return { framework, score };
     })
     .sort((a, b) => b.score - a.score || a.framework.title.localeCompare(b.framework.title));
+}
+
+function selectFrameworkCandidates(
+  frameworks: Framework[],
+  messages: Message[],
+  file: FilePayload | undefined,
+  limit = ORCHESTRATOR_CANDIDATE_LIMIT
+) {
+  const ranked = rankFrameworkCandidates(frameworks, messages, file);
 
   const positive = ranked.filter((item) => item.score > 0).slice(0, limit);
   if (positive.length >= Math.min(6, limit)) {
@@ -1380,6 +1942,394 @@ function buildFallbackSynthesis(
     "2. Run the chosen framework with real impact, effort, and risk inputs.\n" +
     "3. Review the output with stakeholders and commit to one decision or next experiment this week."
   );
+}
+
+function buildConversationGuidePrompt(args: {
+  frameworks: Framework[];
+  assessment: IntakeAssessment;
+  messages: Message[];
+  file?: FilePayload;
+  unlockFrameworks: boolean;
+}): string {
+  const frameworks = args.frameworks;
+  const frameworkBlock = frameworks.length
+    ? frameworks
+        .map(
+          (framework) =>
+            `[${framework.slug}]\n` +
+            `Title: ${framework.title}\n` +
+            `Category: ${framework.category}\n` +
+            `When to use: ${framework.whenToUseFull || framework.whenToUse}\n` +
+            `Inputs required: ${framework.inputsRequired}\n` +
+            `Output artifact: ${framework.outputArtifact}`
+        )
+        .join("\n\n")
+    : "No framework shortlist yet. Ask for the PM problem first, then narrow categories and frameworks only when warranted.";
+  const knownFacts = Array.from(args.assessment.presentSignals).map((key) => SIGNAL_META[key].label);
+  const missingFacts = args.assessment.missingInformation.slice(0, 4);
+  const lastQuestion = lastAssistantQuestion(args.messages);
+  const userTurns = args.messages
+    .filter((message) => message.role === "user")
+    .map((message) => normalizeUserContextText(message.content))
+    .filter(Boolean);
+  const recentUserContext = userTurns.slice(-3).join(" | ") || "No substantive PM context yet.";
+
+  const allPriorQuestions = extractAllAssistantQuestions(args.messages);
+  const priorQuestionsBlock = allPriorQuestions.length
+    ? allPriorQuestions.map((q: string, i: number) => `  ${i + 1}. "${q}"`).join("\n")
+    : "  (none yet)";
+
+  return `You are the Prodforce Intake Agent — the conversational interface of a multi-agent PM intelligence system.
+
+Your personality: A sharp, empathetic senior PM advisor. You are proactive, not interrogative. You think out loud, confirm your understanding, and guide the user toward clarity — not just extract information.
+
+## How to respond
+
+When the user provides PM context, your assistant_response MUST follow this structure:
+1. **Acknowledge and confirm** what you just learned — restate the key fact from their latest message in your own words so they can correct you if wrong. Keep this to one sentence.
+2. **State your current read** of the situation — briefly say what you think the problem is and where you're leaning. This shows intelligence, not just data collection.
+3. **Ask ONE specific next question** — the single most important missing detail. Make it concrete and contextual, not generic.
+
+Example of a GOOD assistant_response:
+"So the core issue is daily scrum attendance — team members are consistently missing standup. That tells me this is likely a cadence and accountability problem rather than a process design issue. Who owns the delivery process today — the PM, engineering manager, tech lead, or someone else?"
+
+Example of a BAD assistant_response:
+"What do you need to fix first: daily attendance, earlier blocker surfacing, or delivery reliability overall?"
+(This is bad because it doesn't acknowledge what the user said, doesn't show understanding, and bundles multiple options into one question.)
+
+## Critical rules
+
+- Read the FULL conversation. Never forget facts already provided.
+- NEVER repeat a question already asked. Check the "Questions already asked" list below.
+- NEVER ask the user to choose between options when they already told you the answer. If the user said "daily attendance", do not ask them to choose between attendance, blockers, and delivery.
+- If the user gives a short or vague answer, work with it — incorporate it and move forward. Do not re-ask the same thing in different words.
+- If the user seems confused, simplify your current question instead of switching topics.
+- ONE question per turn. Not a bundle. Not a list. One sentence ending in a question mark.
+- Do not mention framework names, category names, or internal system concepts in assistant_response when status is "ask_problem" or "clarify".
+- Suggested replies must directly answer your next_question. They must be statements, not questions. If you cannot ground them in conversation context, return an empty list.
+- When the user gives enough context for you to apply frameworks, set status to "ready" — don't keep asking for marginal details.
+- Prefer stability. Don't rotate categories or frameworks unless the user provides materially new information.
+- If fewer than two PM facts are grounded, return empty category_decisions and framework_decisions.
+- If framework reasoning is not unlocked, keep decisions empty and focus on asking the right question.
+
+## Status definitions
+
+- ask_problem: No usable PM problem yet. Ask for it briefly.
+- clarify: PM problem exists, but one more key input would strengthen the recommendation.
+- ready: Enough context to advance to framework application.
+
+## Current working memory
+
+Situation so far: ${args.assessment.situationSummary}
+Grounded facts: ${knownFacts.join(", ") || "none yet"}
+Still missing: ${missingFacts.join(", ") || "none"}
+Last assistant question: ${lastQuestion || "none"}
+Recent user context: ${recentUserContext}
+Framework reasoning unlocked: ${args.unlockFrameworks ? "yes" : "no"}
+
+Questions already asked (NEVER repeat these):
+${priorQuestionsBlock}
+
+## Framework shortlist
+
+${frameworkBlock}
+
+Return only JSON matching the schema.`;
+}
+
+function normalizeConversationGuideResult(
+  parsed: ConversationGuideParsed | null,
+  frameworkPool: Framework[],
+  fallbackAssessment: IntakeAssessment,
+  messages: Message[]
+): ConversationGuideResult | null {
+  if (!parsed) return null;
+
+  const frameworkBySlug = new Map(frameworkPool.map((framework) => [framework.slug, framework]));
+  const categoryCounts = frameworkPool.reduce<Record<string, number>>((acc, framework) => {
+    acc[framework.category] = (acc[framework.category] ?? 0) + 1;
+    return acc;
+  }, {});
+  const validCategories = new Set(
+    frameworkPool.map((framework) => framework.category).filter(Boolean)
+  );
+
+  const normalizedFrameworks = (Array.isArray(parsed.framework_decisions)
+    ? parsed.framework_decisions
+    : []
+  )
+    .map((item) => {
+      const framework = frameworkBySlug.get(String(item?.slug || "").trim());
+      if (!framework) return null;
+      const confidence = clamp01(Number(item?.confidence ?? 0.5));
+      return {
+        slug: framework.slug,
+        title: framework.title,
+        category: framework.category,
+        score: Number((confidence * 100).toFixed(1)),
+        confidence,
+        confidenceLabel: describeConfidence(confidence),
+        locked: false,
+        whenToUse: framework.whenToUseFull || framework.whenToUse,
+        inputsRequired: framework.inputsRequired,
+        outputArtifact: framework.outputArtifact,
+        commonMistakes: framework.commonMistakes,
+        reason: typeof item?.reason === "string" ? item.reason.trim() : "",
+      };
+    })
+    .filter((item): item is FrameworkDecision & { reason: string } => Boolean(item))
+    .sort((a, b) => b.confidence - a.confidence || b.score - a.score);
+
+  const lockedFrameworks = normalizedFrameworks.map((decision, index, list) => {
+    const next = list[index + 1];
+    const margin = decision.confidence - (next?.confidence ?? 0);
+    const locked =
+      decision.confidence >= 0.76 &&
+      (index <= 1 ? margin >= 0.03 || decision.confidence >= 0.86 : decision.confidence >= 0.84);
+    return {
+      ...decision,
+      locked,
+      confidenceLabel: locked ? "locked" : describeConfidence(decision.confidence),
+    };
+  });
+
+  const normalizedCategoriesRaw = (Array.isArray(parsed.category_decisions)
+    ? parsed.category_decisions
+    : []
+  )
+    .map((item) => {
+      const category = String(item?.category || "").trim();
+      if (!category || !validCategories.has(category)) return null;
+      const confidence = clamp01(Number(item?.confidence ?? 0.5));
+      return {
+        category,
+        score: Number((confidence * 100).toFixed(1)),
+        confidence,
+        confidenceLabel: describeConfidence(confidence),
+        locked: false,
+        frameworkCount: categoryCounts[category] ?? 0,
+      };
+    })
+    .filter((item): item is CategoryDecision => Boolean(item));
+
+  const derivedCategories = lockedFrameworks
+    .filter((decision) => decision.confidence >= 0.46)
+    .map((decision) => ({
+      category: decision.category,
+      score: Number((decision.confidence * 100).toFixed(1)),
+      confidence: decision.confidence,
+      confidenceLabel: describeConfidence(decision.confidence),
+      locked: false,
+      frameworkCount: categoryCounts[decision.category] ?? 0,
+    }));
+
+  const normalizedCategories = dedupeCategoryDecisions(
+    normalizedCategoriesRaw.concat(derivedCategories)
+  )
+    .sort((a, b) => b.confidence - a.confidence || b.score - a.score)
+    .map((decision, index, list) => {
+      const next = list[index + 1];
+      const margin = decision.confidence - (next?.confidence ?? 0);
+      const locked =
+        decision.confidence >= 0.74 &&
+        (index === 0 ? margin >= 0.04 || decision.confidence >= 0.86 : decision.confidence >= 0.82);
+      return {
+        ...decision,
+        locked,
+        confidenceLabel: locked ? "locked" : describeConfidence(decision.confidence),
+      };
+    });
+
+  const presentInformation = dedupeListText(
+    Array.isArray(parsed.present_information) ? parsed.present_information : []
+  );
+  const contextRequired = dedupeListText(
+    Array.isArray(parsed.context_required) ? parsed.context_required : []
+  );
+  const nextQuestion = keepFirstQuestion(
+    typeof parsed.next_question === "string" ? parsed.next_question.trim() : ""
+  );
+  const rawAssistantResponse =
+    keepFirstQuestion(
+      typeof parsed.assistant_response === "string" ? parsed.assistant_response.trim() : ""
+    );
+  // Strip echo patterns — never regurgitate user text back at them
+  const latestUserText = normalizeComparableText(latestUserMessage(messages));
+  const assistantResponse = stripEchoPatterns(rawAssistantResponse, latestUserText);
+  const substantivePresentCount = presentInformation.length;
+  const status =
+    parsed.status === "ready"
+      ? "ready"
+      : parsed.status === "ask_problem"
+        ? "ask_problem"
+        : "clarify";
+  const effectiveStatus =
+    status === "ready" && !lockedFrameworks.length && !normalizedCategories.length
+      ? "clarify"
+      : status;
+  const hideCategoryDecisions =
+    effectiveStatus === "ask_problem" ||
+    (effectiveStatus === "clarify" && substantivePresentCount < 2);
+  const hideFrameworkDecisions =
+    effectiveStatus !== "ready" || substantivePresentCount < 3;
+  const suggestedReplies = dedupeListText(
+    Array.isArray(parsed.suggested_replies) ? parsed.suggested_replies : []
+  )
+    .filter((item) => !/[?？]$/.test(item))
+    .filter((item) => item.length <= 140)
+    .slice(0, 3);
+  const latestUser = latestUserMessage(messages);
+  // Collect ALL prior questions to prevent any repetition
+  const allPriorQuestions = extractAllAssistantQuestions(messages);
+  const allPriorNormalized = new Set(
+    allPriorQuestions.map((q: string) => normalizeComparableText(q)).filter(Boolean)
+  );
+  const isQuestionRepeated = (q: string) => {
+    const norm = normalizeComparableText(q);
+    return Boolean(norm) && allPriorNormalized.has(norm);
+  };
+  const repeatedQuestion = Boolean(nextQuestion) && isQuestionRepeated(nextQuestion);
+  const repeatedResponse = Boolean(assistantResponse) && assistantResponse.includes("?") &&
+    allPriorQuestions.some((pq: string) => {
+      const norm = normalizeComparableText(pq);
+      return norm && normalizeComparableText(assistantResponse).includes(norm);
+    });
+  const needsRepair =
+    effectiveStatus === "clarify" &&
+    (isLikelyNonAnswerReply(latestUser) || repeatedQuestion || repeatedResponse);
+  // Find a fallback question that hasn't been asked before
+  const repairedQuestion = needsRepair
+    ? fallbackAssessment.clarificationQuestions.find(
+        (question) => !isQuestionRepeated(question)
+      ) ||
+      fallbackAssessment.clarificationQuestions[0] ||
+      nextQuestion
+    : nextQuestion;
+  const isConfused = needsRepair && isLikelyNonAnswerReply(latestUser);
+  const repairedResponse = needsRepair
+    ? (isConfused && repairedQuestion
+      ? `No worries — let me simplify. ${repairedQuestion}`
+      : "")
+    : assistantResponse;
+  const repairedSuggestions = needsRepair
+    ? fallbackAssessment.suggestedReplies
+        .filter((item) => !/[?？]$/.test(item))
+        .slice(0, 2)
+    : suggestedReplies;
+  const responseDraft = repairedResponse || assistantResponse;
+  const mentionsFrameworkName = frameworkPool.some((framework) =>
+    responseDraft.toLowerCase().includes(framework.title.toLowerCase())
+  );
+  const safeAssistantResponse =
+    effectiveStatus !== "ready" &&
+    (mentionsFrameworkName ||
+      /\bframeworks?\b|\bpressure[- ]?testing\b|\bcategory\b/i.test(responseDraft))
+      ? ""
+      : responseDraft;
+  // Ensure the response actually contains a question and isn't stale
+  const clarifyAssistantResponse =
+    effectiveStatus === "clarify" &&
+    (!safeAssistantResponse ||
+      !safeAssistantResponse.includes("?"))
+      ? ""
+      : safeAssistantResponse;
+
+  return {
+    status: effectiveStatus,
+    assistantResponse:
+      clarifyAssistantResponse ||
+      (status === "ask_problem"
+        ? "What's the product decision or uncertainty you're working through?"
+        : repairedQuestion ||
+          "What would change the recommendation most — is there a key constraint, metric, or stakeholder I should know about?"),
+    situationSummary:
+      (typeof parsed.situation_summary === "string" ? parsed.situation_summary.trim() : "") ||
+      fallbackAssessment.situationSummary,
+    presentInformation:
+      presentInformation.length
+        ? presentInformation
+        : Array.from(fallbackAssessment.presentSignals).map((key) => SIGNAL_META[key].label),
+    contextRequired:
+      contextRequired.length
+        ? contextRequired
+        : fallbackAssessment.missingInformation.slice(0, 3),
+    nextQuestion:
+      repairedQuestion ||
+      fallbackAssessment.clarificationQuestions[0] ||
+      "",
+    suggestedReplies:
+      effectiveStatus === "clarify"
+        ? repairedSuggestions
+        : [],
+    categoryDecisions: hideCategoryDecisions
+      ? []
+      : normalizedCategories.length
+        ? normalizedCategories.filter((decision) => decision.confidence >= 0.56)
+        : fallbackAssessment.categoryDecisions.filter((decision) => decision.confidence >= 0.56),
+    frameworkDecisions: hideFrameworkDecisions
+      ? []
+      : lockedFrameworks.length
+        ? lockedFrameworks.filter((decision) => decision.confidence >= 0.68)
+        : fallbackAssessment.frameworkDecisions.filter((decision) => decision.confidence >= 0.68),
+  };
+}
+
+function dedupeCategoryDecisions(decisions: CategoryDecision[]) {
+  const seen = new Set<string>();
+  return decisions.filter((decision) => {
+    if (!decision?.category || seen.has(decision.category)) return false;
+    seen.add(decision.category);
+    return true;
+  });
+}
+
+function stripEchoPatterns(response: string, latestUserNormalized: string): string {
+  if (!response) return response;
+  // Strip "Got it — [user text]" / "Understood — [user text]" echo prefix
+  let cleaned = response
+    .replace(/^(?:got it|understood|okay|ok|sure|right|i see|noted)\s*[—–-]\s*/i, "")
+    .trim();
+  // If the response starts by repeating the user's latest message, strip it
+  if (latestUserNormalized && latestUserNormalized.length > 6) {
+    const norm = normalizeComparableText(cleaned);
+    if (norm.startsWith(latestUserNormalized)) {
+      // Remove the echoed portion — find the first question mark or sentence boundary after it
+      const afterEcho = cleaned.slice(latestUserNormalized.length + 5);
+      const questionStart = afterEcho.search(/[A-Z][a-z]|[?]/);
+      if (questionStart >= 0) {
+        cleaned = afterEcho.slice(questionStart).trim();
+      }
+    }
+  }
+  // Ensure we still have something meaningful
+  return cleaned || response;
+}
+
+function dedupeListText(items: string[]) {
+  return Array.from(
+    new Set(
+      (items || [])
+        .map((item) => String(item || "").replace(/\s+/g, " ").trim())
+        .filter(Boolean)
+    )
+  );
+}
+
+function keepFirstQuestion(text: string) {
+  const clean = String(text || "").replace(/\s+/g, " ").trim();
+  if (!clean) return "";
+  const firstQuestion = clean.indexOf("?");
+  if (firstQuestion === -1) return clean;
+  const remainder = clean.slice(firstQuestion + 1);
+  if (!remainder.includes("?")) return clean;
+  return clean.slice(0, firstQuestion + 1).trim();
+}
+
+function normalizeComparableText(text: string) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function buildOrchestratorPrompt(frameworks: Framework[]): string {
@@ -1619,10 +2569,11 @@ function getProvider(): Provider | null {
   const anthropicApiKey = import.meta.env.ANTHROPIC_API_KEY?.trim();
 
   const groqProvider = groqApiKey
-    ? {
-        kind: "groq" as const,
-        apiKey: groqApiKey,
-        models: {
+      ? {
+          kind: "groq" as const,
+          apiKey: groqApiKey,
+          models: {
+          intake: import.meta.env.GROQ_INTAKE_MODEL ?? "llama-3.1-8b-instant",
           orchestrator: import.meta.env.GROQ_ORCHESTRATOR_MODEL ?? "openai/gpt-oss-20b",
           specialist: import.meta.env.GROQ_SPECIALIST_MODEL ?? "llama-3.1-8b-instant",
           synthesis: import.meta.env.GROQ_SYNTHESIS_MODEL ?? "llama-3.1-8b-instant",
@@ -1631,10 +2582,12 @@ function getProvider(): Provider | null {
     : null;
 
   const anthropicProvider = anthropicApiKey
-    ? {
-        kind: "anthropic" as const,
-        client: new Anthropic({ apiKey: anthropicApiKey }),
-        models: {
+      ? {
+          kind: "anthropic" as const,
+          client: new Anthropic({ apiKey: anthropicApiKey }),
+          models: {
+          intake:
+            import.meta.env.ANTHROPIC_INTAKE_MODEL ?? "claude-haiku-4-5-20251001",
           orchestrator:
             import.meta.env.ANTHROPIC_ORCHESTRATOR_MODEL ?? "claude-sonnet-4-6",
           specialist:
@@ -1780,6 +2733,51 @@ async function groqStructuredCompletion(args: {
   }
 
   return normalizeOrchestratorResult(fallbackParsed);
+}
+
+async function groqGuideCompletion(args: {
+  apiKey: string;
+  model: string;
+  system: string;
+  messages: PlainMessage[];
+  maxTokens: number;
+}) {
+  const supportsStructuredOutput =
+    args.model.toLowerCase().startsWith("openai/") || /gpt-oss/i.test(args.model);
+
+  if (supportsStructuredOutput) {
+    try {
+      const response = await groqRequest(args.apiKey, {
+        model: args.model,
+        messages: [{ role: "system", content: args.system }, ...args.messages],
+        max_completion_tokens: args.maxTokens,
+        response_format: {
+          type: "json_schema",
+          json_schema: CONVERSATION_GUIDE_SCHEMA,
+        },
+      });
+
+      const data = (await response.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+      };
+      const raw = data.choices?.[0]?.message?.content ?? "";
+      return parseJsonObject<ConversationGuideParsed>(raw);
+    } catch (error) {
+      console.warn("[prodforce-groq] Structured guide fallback:", error);
+    }
+  }
+
+  const fallbackText = await groqTextCompletion({
+    apiKey: args.apiKey,
+    model: args.model,
+    system:
+      args.system +
+      "\n\nReturn one valid JSON object with exactly these keys: status, assistant_response, situation_summary, present_information, context_required, next_question, suggested_replies, category_decisions, framework_decisions. No markdown fences. No commentary.",
+    messages: args.messages,
+    maxTokens: args.maxTokens,
+  });
+
+  return parseJsonObject<ConversationGuideParsed>(fallbackText);
 }
 
 async function* parseGroqStream(body: ReadableStream<Uint8Array>) {
@@ -1936,6 +2934,127 @@ async function runOrchestrator(args: {
   return normalizeOrchestratorResult(parseJsonObject<OrchestratorResult>(text));
 }
 
+async function runConversationGuide(args: {
+  provider: Provider;
+  frameworks: Framework[];
+  messages: Message[];
+  file?: FilePayload;
+  unlockFrameworks: boolean;
+}) {
+  const fallbackAssessment = assessFrameworkReadiness(args.frameworks, args.messages, args.file);
+  const allPriorQs = new Set(
+    extractAllAssistantQuestions(args.messages)
+      .map((q: string) => normalizeComparableText(q))
+      .filter(Boolean)
+  );
+  const isRepeated = (q: string) => {
+    const norm = normalizeComparableText(q);
+    return Boolean(norm) && allPriorQs.has(norm);
+  };
+  const promoteAskProblemToClarify = (guide: ConversationGuideResult) => {
+    const hasMeaningfulPmContext = hasPmSignal(collectPmContext(args.messages, args.file), args.file);
+    if (!hasMeaningfulPmContext || guide.status !== "ask_problem") {
+      return guide;
+    }
+
+    // Pick a question that hasn't been asked before
+    const candidates = [
+      guide.nextQuestion,
+      keepFirstQuestion(guide.assistantResponse),
+      ...fallbackAssessment.clarificationQuestions,
+      "What is the first outcome you need to improve?",
+    ].filter(Boolean);
+    const promotedQuestion = candidates.find((q) => !isRepeated(q)) || candidates[0];
+
+    return {
+      ...guide,
+      status: "clarify",
+      assistantResponse:
+        guide.assistantResponse &&
+        !/describe the product decision|what(?:'| i)?s on your mind/i.test(guide.assistantResponse)
+          ? guide.assistantResponse
+          : promotedQuestion,
+      contextRequired: guide.contextRequired.length
+        ? guide.contextRequired
+        : fallbackAssessment.missingInformation.slice(0, 3),
+      nextQuestion: promotedQuestion,
+      suggestedReplies: [],
+      categoryDecisions: [],
+      frameworkDecisions: [],
+    } satisfies ConversationGuideResult;
+  };
+  const systemPrompt = buildConversationGuidePrompt({
+    frameworks: args.frameworks.slice(0, 6),
+    assessment: fallbackAssessment,
+    messages: args.messages,
+    file: args.file,
+    unlockFrameworks: args.unlockFrameworks,
+  });
+
+  if (args.provider.kind === "groq") {
+    try {
+      const parsed = await groqGuideCompletion({
+        apiKey: args.provider.apiKey,
+        model: args.provider.models.intake,
+        system: systemPrompt,
+        messages: buildPlainMessages(args.messages, args.file),
+        maxTokens: GROQ_MAX_TOKENS.intake,
+      });
+
+      const normalized = normalizeConversationGuideResult(
+        parsed,
+        args.frameworks,
+        fallbackAssessment,
+        args.messages
+      );
+      if (normalized) return promoteAskProblemToClarify(normalized);
+    } catch (error) {
+      console.warn("[prodforce-groq] Intake guide fallback:", error);
+    }
+  } else {
+    const text = await anthropicTextCompletion({
+      client: args.provider.client,
+      model: args.provider.models.intake,
+      system:
+        systemPrompt +
+        "\n\nReturn one valid JSON object with exactly these keys: status, assistant_response, situation_summary, present_information, context_required, next_question, suggested_replies, category_decisions, framework_decisions. No markdown fences. No commentary.",
+      messages: buildAnthropicMessages(args.messages, args.file),
+      maxTokens: 800,
+    });
+    const normalized = normalizeConversationGuideResult(
+      parseJsonObject<ConversationGuideParsed>(text),
+      args.frameworks,
+      fallbackAssessment,
+      args.messages
+    );
+    if (normalized) return promoteAskProblemToClarify(normalized);
+  }
+
+  const fallbackContext = collectPmContext(args.messages, args.file);
+  const hasMeaningfulPmContext = hasPmSignal(fallbackContext, args.file);
+  return {
+    status: hasMeaningfulPmContext
+      ? fallbackAssessment.shouldClarify
+        ? "clarify"
+        : "ready"
+      : "ask_problem",
+    assistantResponse: hasMeaningfulPmContext
+      ? fallbackAssessment.shouldClarify
+        ? buildClarificationMessageV3(fallbackAssessment)
+        : ""
+      : "Describe the product decision, uncertainty, or PM problem you want Prodforce to help resolve.",
+    situationSummary: fallbackAssessment.situationSummary,
+    presentInformation: Array.from(fallbackAssessment.presentSignals).map(
+      (key) => SIGNAL_META[key].label
+    ),
+    contextRequired: fallbackAssessment.missingInformation.slice(0, 3),
+    nextQuestion: fallbackAssessment.clarificationQuestions[0] ?? "",
+    suggestedReplies: fallbackAssessment.suggestedReplies,
+    categoryDecisions: fallbackAssessment.categoryDecisions,
+    frameworkDecisions: fallbackAssessment.frameworkDecisions,
+  } satisfies ConversationGuideResult;
+}
+
 async function orchestrate(
   messages: Message[],
   file: FilePayload | undefined,
@@ -1951,50 +3070,59 @@ async function orchestrate(
   const frameworks = await loadFrameworks();
   const latestText = latestUserMessage(messages);
   const conversationMode = classifyConversationMode(messages, file);
+  const unlockFrameworks =
+    conversationMode === "pm" && shouldUnlockFrameworkReasoning(messages, file);
+  const hiddenFrameworkCandidates =
+    conversationMode === "pm" ? getFrameworkCandidates(provider, frameworks, messages, file) : [];
+  const frameworkCandidates = unlockFrameworks ? hiddenFrameworkCandidates : [];
+  const guide = await runConversationGuide({
+    provider,
+    frameworks: hiddenFrameworkCandidates,
+    messages,
+    file,
+    unlockFrameworks,
+  });
 
-  if (conversationMode !== "pm") {
-    const directResponse = buildDirectResponse(conversationMode, latestText);
-
+  if (guide.status === "ask_problem") {
     await send({
       type: "agent_start",
       agent: "orchestrator",
-      label:
-        conversationMode === "smalltalk"
-          ? "Responding conversationally..."
-          : "Waiting for a PM challenge...",
+      label: "Waiting for a real product decision...",
     });
     await send({
       type: "content",
-      text: directResponse.text,
+      text: guide.assistantResponse,
     });
     await send({
       type: "done",
-      suggestions: directResponse.suggestions,
+      mode: "ask_problem",
+      suggestions: [],
     });
     return;
   }
 
-  const frameworkCandidates = getFrameworkCandidates(provider, frameworks, messages, file);
-  const intakeAssessment = assessFrameworkReadiness(frameworkCandidates, messages, file);
-
-  if (intakeAssessment.shouldClarify) {
+  if (guide.status === "clarify") {
+    const askedInformation = guide.contextRequired.slice(0, 1);
+    const deferredInformation = guide.contextRequired.slice(1);
     await send({
       type: "agent_start",
       agent: "orchestrator",
-      label: "Scoping the PM situation before matching frameworks...",
+      label: "Grounding the next missing input before framework application...",
     });
     await send({
       type: "clarification_needed",
-      situationSummary: intakeAssessment.situationSummary,
-      missingInformation: intakeAssessment.missingInformation,
-      askedInformation: intakeAssessment.askedInformation,
-      deferredInformation: intakeAssessment.deferredInformation,
-      presentInformation: Array.from(intakeAssessment.presentSignals).map(
-        (key) => SIGNAL_META[key].label
-      ),
-      questions: intakeAssessment.clarificationQuestions,
-      candidateCategories: intakeAssessment.candidateCategories,
-      candidateFrameworks: intakeAssessment.candidateFrameworks.slice(0, 3).map((framework) => ({
+      situationSummary: guide.situationSummary,
+      missingInformation: guide.contextRequired,
+      askedInformation,
+      deferredInformation,
+      presentInformation: guide.presentInformation,
+      questions: guide.nextQuestion ? [guide.nextQuestion] : [],
+      candidateCategories: guide.categoryDecisions.map((decision) => decision.category),
+      categoryDecisions: guide.categoryDecisions,
+      lockedCategories: guide.categoryDecisions
+        .filter((decision) => decision.locked)
+        .map((decision) => decision.category),
+      candidateFrameworks: guide.frameworkDecisions.slice(0, 3).map((framework) => ({
         slug: framework.slug,
         title: framework.title,
         category: framework.category,
@@ -2002,26 +3130,41 @@ async function orchestrate(
         inputsRequired: framework.inputsRequired,
         outputArtifact: framework.outputArtifact,
       })),
-      suggestedReplies: intakeAssessment.suggestedReplies,
+      frameworkDecisions: guide.frameworkDecisions,
+      lockedFrameworks: guide.frameworkDecisions
+        .filter((decision) => decision.locked)
+        .map((decision) => decision.slug),
+      suggestedReplies: guide.suggestedReplies,
     });
     await send({
       type: "content",
-      text: buildClarificationMessageV3(intakeAssessment),
+      text: guide.assistantResponse,
     });
     await send({
       type: "done",
       mode: "clarify",
-      suggestions:
-        intakeAssessment.suggestedReplies.length > 0
-          ? intakeAssessment.suggestedReplies
-          : intakeAssessment.clarificationQuestions,
+      suggestions: guide.suggestedReplies,
     });
     return;
   }
 
+  const orchestratorFrameworkPool = (() => {
+    const bySlug = new Map(frameworks.map((framework) => [framework.slug, framework]));
+    const guided = guide.frameworkDecisions
+      .map((decision) => bySlug.get(decision.slug))
+      .filter((framework): framework is Framework => Boolean(framework));
+    const merged = Array.from(
+      new Map(
+        guided.concat(frameworkCandidates).map((framework) => [framework.slug, framework])
+      ).values()
+    );
+    return merged.length ? merged : frameworkCandidates.length ? frameworkCandidates : frameworks;
+  })();
+  const intakeAssessment = assessFrameworkReadiness(orchestratorFrameworkPool, messages, file);
+
   const orchestratorResult = await runOrchestrator({
     provider,
-    frameworks: frameworkCandidates,
+    frameworks: orchestratorFrameworkPool,
     messages,
     file,
   });
@@ -2039,7 +3182,7 @@ async function orchestrate(
 
   if (matchedFrameworks.length === 0) {
     const fallback =
-      frameworkCandidates[0] ??
+      orchestratorFrameworkPool[0] ??
       frameworks.find((framework) => framework.category.includes("Strategy")) ??
       frameworks[0];
 
@@ -2065,12 +3208,24 @@ async function orchestrate(
 
   await send({
     type: "frameworks_matched",
-    situationSummary: orchestratorResult.situation_summary,
+    situationSummary: guide.situationSummary || orchestratorResult.situation_summary,
     suggestions: orchestratorResult.follow_up_suggestions,
+    categoryDecisions: guide.categoryDecisions.length
+      ? guide.categoryDecisions
+      : intakeAssessment.categoryDecisions,
+    lockedCategories: (guide.categoryDecisions.length
+      ? guide.categoryDecisions
+      : intakeAssessment.categoryDecisions)
+      .filter((decision) => decision.locked)
+      .map((decision) => decision.category),
     frameworks: activeMatchedFrameworks.map(({ framework, reason }) => {
       const coverage =
         intakeAssessment.coverageBySlug[framework.slug] ??
         buildFrameworkCoverage(framework, intakeAssessment.presentSignals);
+      const frameworkDecision =
+        guide.frameworkDecisions.find((decision) => decision.slug === framework.slug) ??
+        intakeAssessment.frameworkDecisions.find((decision) => decision.slug === framework.slug) ??
+        null;
 
       return {
         ...coverage,
@@ -2078,12 +3233,27 @@ async function orchestrate(
         title: framework.title,
         category: framework.category,
         whenToUse: framework.whenToUse,
+        whenToUseFull: framework.whenToUseFull,
         inputsRequired: framework.inputsRequired,
         outputArtifact: framework.outputArtifact,
         commonMistakes: framework.commonMistakes,
+        tags: framework.tags,
+        score: frameworkDecision?.score ?? 0,
+        decisionConfidence: frameworkDecision?.confidence ?? coverageToNumber(coverage),
+        decisionConfidenceLabel:
+          frameworkDecision?.confidenceLabel ?? describeConfidence(coverageToNumber(coverage)),
+        locked: frameworkDecision?.locked ?? false,
         reason: reason || "Strong contextual fit for your situation.",
       };
     }),
+    frameworkDecisions: guide.frameworkDecisions.length
+      ? guide.frameworkDecisions
+      : intakeAssessment.frameworkDecisions,
+    lockedFrameworks: (guide.frameworkDecisions.length
+      ? guide.frameworkDecisions
+      : intakeAssessment.frameworkDecisions)
+      .filter((decision) => decision.locked)
+      .map((decision) => decision.slug),
   });
 
   await send({
@@ -2098,22 +3268,28 @@ async function orchestrate(
         intakeAssessment.coverageBySlug[framework.slug] ??
         buildFrameworkCoverage(framework, intakeAssessment.presentSignals);
 
-      let analysis =
-        provider.kind === "groq"
-          ? await groqTextCompletion({
-              apiKey: provider.apiKey,
-              model: provider.models.specialist,
-              system: buildSpecialistPrompt(framework, coverage),
-              messages: plainMessages,
-              maxTokens: GROQ_MAX_TOKENS.specialist,
-            })
-          : await anthropicTextCompletion({
-              client: provider.client,
-              model: provider.models.specialist,
-              system: buildSpecialistPrompt(framework, coverage),
-              messages: anthropicMessages,
-              maxTokens: 1000,
-            });
+      let analysis = "";
+      try {
+        analysis =
+          provider.kind === "groq"
+            ? await groqTextCompletion({
+                apiKey: provider.apiKey,
+                model: provider.models.specialist,
+                system: buildSpecialistPrompt(framework, coverage),
+                messages: plainMessages,
+                maxTokens: GROQ_MAX_TOKENS.specialist,
+              })
+            : await anthropicTextCompletion({
+                client: provider.client,
+                model: provider.models.specialist,
+                system: buildSpecialistPrompt(framework, coverage),
+                messages: anthropicMessages,
+                maxTokens: 1000,
+              });
+      } catch (error) {
+        console.warn("[prodforce-specialist] Specialist fallback:", error);
+        analysis = buildSpecialistFallbackAnalysis(framework);
+      }
 
       if (
         provider.kind === "groq" &&

@@ -8,6 +8,7 @@ const {
   datePublished,
   schema = null,
   breadcrumbs = [],
+  immersive = false,
 } = Astro.props;
 
 const metaKeywords = typeof keywords === "string" ? keywords : "";
@@ -188,10 +189,10 @@ const schemaGraph = [
 </script>
 
 </head>
-<body>
+<body class:list={[immersive && "is-immersive"]}>
   <div id="pageLoaderBar" class="page-loader-bar" aria-hidden="true"></div>
 
-  <div class="siteShell">
+  <div class:list={["siteShell", immersive && "is-immersive"]}>
     <slot />
 
     <div id="cookie-overlay" class="cookieOverlay"></div>
@@ -500,6 +501,11 @@ const schemaGraph = [
     overflow-x: hidden;
   }
 
+  :global(body.is-immersive) {
+    background: #06060e;
+    color: #e5e7f4;
+  }
+
   :global(a) {
     color: inherit;
   }
@@ -508,6 +514,11 @@ const schemaGraph = [
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+  }
+
+  :global(.siteShell.is-immersive) {
+    min-height: 100dvh;
+    background: #06060e;
   }
 
   :global(*),

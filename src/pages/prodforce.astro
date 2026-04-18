@@ -1,7 +1,6 @@
 ---
 export const prerender = true;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Header from "../components/Header.astro";
 import { getCollection } from "astro:content";
 
 const EXCLUDED = new Set(["Business Plans", "Financial Models", "TBA"]);
@@ -17,8 +16,11 @@ const frameworks = all
     title: item.data.title ?? "",
     category: (item.data.primaryCategory ?? "").trim(),
     whenToUse: item.data.whenToUse ?? "",
+    whenToUseFull: item.data.whenToUseFull ?? "",
+    inputsRequired: item.data.inputsRequired ?? "",
     outputArtifact: item.data.outputArtifact ?? "",
     commonMistakes: item.data.commonMistakes ?? "",
+    tags: (item.data.tags ?? []).join(", "),
   }));
 
 const frameworksJson = JSON.stringify(frameworks);
@@ -27,9 +29,8 @@ const frameworksJson = JSON.stringify(frameworks);
 <BaseLayout
   title="Prodforce — PM Framework Intelligence"
   description="Multi-agent AI that matches your product management challenge to the right framework and synthesizes expert analysis."
+  immersive={true}
 >
-  <Header />
-
   <main class="pf-app" role="main" aria-label="Prodforce PM Intelligence">
     <!-- 3D Scene panel -->
     <div class="pf-scene" aria-hidden="true">
@@ -37,6 +38,7 @@ const frameworksJson = JSON.stringify(frameworks);
       <div class="pf-agent-labels" id="pfAgentLabels"></div>
       <div class="pf-scene-hud" id="pfSceneHud"></div>
       <div class="pf-scene-gradient"></div>
+      <div class="pf-scene-progress" id="pfSceneProgress"></div>
       <div class="pf-scene-brand">
         <span class="pf-brand-wordmark">PRODFORCE</span>
         <span class="pf-brand-sub">Multi-Agent PM Intelligence</span>
@@ -49,9 +51,6 @@ const frameworksJson = JSON.stringify(frameworks);
         <div class="pf-head-left">
           <div class="pf-status-dot" id="pfStatusDot"></div>
           <span class="pf-head-title">PRODFORCE</span>
-        </div>
-        <div class="pf-head-right">
-          <span class="pf-fw-count" id="pfFwCount"></span>
         </div>
       </div>
 
@@ -74,7 +73,7 @@ const frameworksJson = JSON.stringify(frameworks);
           <textarea
             id="pfTextarea"
             class="pf-textarea"
-            placeholder="Describe your PM challenge…"
+            placeholder="What decision are you working through?"
             rows="1"
             maxlength="4000"
             aria-label="Message input"
@@ -95,9 +94,13 @@ const frameworksJson = JSON.stringify(frameworks);
 /* ─── App shell ───────────────────────────────────────────────────────────── */
 .pf-app {
   display: flex;
-  height: calc(100dvh - 76px);
+  min-height: 100dvh;
+  height: 100dvh;
   overflow: hidden;
-  background: #08080f;
+  background:
+    radial-gradient(circle at top left, rgba(0,212,255,0.08), transparent 28%),
+    radial-gradient(circle at top right, rgba(99,102,241,0.08), transparent 24%),
+    #08080f;
   --pf-bg: #08080f;
   --pf-bg-2: #0d0d1a;
   --pf-text: #ddddf0;
@@ -113,7 +116,7 @@ const frameworksJson = JSON.stringify(frameworks);
 /* ─── 3D Scene ────────────────────────────────────────────────────────────── */
 .pf-scene {
   position: relative;
-  flex: 0 0 55%;
+  flex: 0 0 58%;
   overflow: hidden;
   background: #06060e;
   isolation: isolate;
@@ -152,6 +155,26 @@ const frameworksJson = JSON.stringify(frameworks);
   width: 100%;
   height: 100%;
   z-index: 1;
+}
+/* Scene progress bar */
+.pf-scene-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  z-index: 5;
+  pointer-events: none;
+  background: rgba(255,255,255,0.04);
+  overflow: hidden;
+}
+.pf-scene-progress:empty { background: transparent; }
+.pf-scene-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 0 2px 2px 0;
+  transition: width 0.5s ease, background 0.5s ease;
+  box-shadow: 0 0 12px var(--bar-glow, rgba(0,212,255,0.3));
 }
 .pf-agent-labels {
   position: absolute;
@@ -216,17 +239,19 @@ const frameworksJson = JSON.stringify(frameworks);
   flex-direction: column;
   overflow: hidden;
   border-left: 1px solid var(--pf-border);
-  background: var(--pf-bg);
+  background:
+    linear-gradient(180deg, rgba(10,12,24,0.96), rgba(7,8,16,0.98)),
+    var(--pf-bg);
 }
 
 /* Header bar */
 .pf-chat-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--pf-border);
-  background: rgba(255,255,255,0.02);
+  justify-content: flex-start;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
   flex-shrink: 0;
 }
 .pf-head-left { display: flex; align-items: center; gap: 10px; }
@@ -262,51 +287,23 @@ const frameworksJson = JSON.stringify(frameworks);
   color: var(--pf-text-muted);
 }
 
+
 /* Messages */
 .pf-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 20px;
+  padding: 28px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   scroll-behavior: smooth;
+  background:
+    radial-gradient(circle at top center, rgba(0,212,255,0.05), transparent 30%),
+    transparent;
 }
 .pf-messages::-webkit-scrollbar { width: 4px; }
 .pf-messages::-webkit-scrollbar-track { background: transparent; }
 .pf-messages::-webkit-scrollbar-thumb { background: var(--pf-border-strong); border-radius: 2px; }
-
-/* Welcome */
-.pf-welcome {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 28px;
-  background: var(--pf-glass);
-  border: 1px solid var(--pf-border);
-  border-radius: 16px;
-}
-.pf-welcome-badge {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: var(--pf-accent);
-  text-transform: uppercase;
-}
-.pf-welcome-title {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--pf-text);
-  margin: 0;
-  line-height: 1.3;
-}
-.pf-welcome-body {
-  font-size: 14px;
-  line-height: 1.65;
-  color: #b4b9e8;
-  margin: 0;
-}
 
 /* Messages */
 .pf-msg { display: flex; flex-direction: column; gap: 6px; }
@@ -541,10 +538,12 @@ const frameworksJson = JSON.stringify(frameworks);
   display: none;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 12px 20px 14px;
-  border-top: 1px solid var(--pf-border);
+  padding: 16px 20px 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
   flex-shrink: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(0,212,255,0.035));
+  background:
+    linear-gradient(180deg, rgba(8,10,20,0.96), rgba(8,10,20,0.99)),
+    radial-gradient(circle at left top, rgba(0,212,255,0.05), transparent 24%);
 }
 .pf-chip {
   font-family: var(--font-sans);
@@ -570,12 +569,12 @@ const frameworksJson = JSON.stringify(frameworks);
 /* Input area */
 .pf-input-area {
   padding: 12px 16px 16px;
-  border-top: 1px solid var(--pf-border);
+  border-top: 1px solid rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
   gap: 8px;
   flex-shrink: 0;
-  background: rgba(255,255,255,0.01);
+  background: linear-gradient(180deg, rgba(8,10,20,0.98), rgba(7,8,16,1));
 }
 .pf-file-badge {
   display: flex;
@@ -605,14 +604,16 @@ const frameworksJson = JSON.stringify(frameworks);
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  background: var(--pf-glass);
-  border: 1px solid var(--pf-border-strong);
-  border-radius: 14px;
-  padding: 8px 10px;
-  transition: border-color 0.2s;
+  background: rgba(17,18,28,0.95);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  padding: 10px 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 18px 48px rgba(0,0,0,0.22);
 }
 .pf-input-bar:focus-within {
   border-color: rgba(0,212,255,0.35);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,212,255,0.1);
 }
 .pf-attach-btn {
   flex-shrink: 0;
@@ -666,7 +667,7 @@ const frameworksJson = JSON.stringify(frameworks);
 @media (max-width: 720px) {
   .pf-app {
     flex-direction: column;
-    height: calc(100dvh - 58px);
+    height: 100dvh;
   }
   .pf-scene {
     flex: 0 0 38vh;
@@ -677,6 +678,13 @@ const frameworksJson = JSON.stringify(frameworks);
     background: linear-gradient(to bottom, transparent 60%, #08080f 100%);
   }
   .pf-chat { flex: 1; }
+  .pf-progress-head {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pf-progress-stages {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 480px) {
   .pf-scene { flex: 0 0 32vh; }
@@ -686,6 +694,13 @@ const frameworksJson = JSON.stringify(frameworks);
 </style>
 
 <style is:global>
+:root {
+  color-scheme: dark;
+}
+html,
+body {
+  background: #06060e;
+}
 .pf-scene-hud {
   position: absolute;
   top: 22px;
@@ -693,6 +708,23 @@ const frameworksJson = JSON.stringify(frameworks);
   width: min(360px, calc(100% - 56px));
   z-index: 4;
   pointer-events: none;
+}
+.pf-scene-hud-standby-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    linear-gradient(180deg, rgba(8,14,28,0.9), rgba(8,10,22,0.72)),
+    radial-gradient(circle at left center, rgba(0,212,255,0.14), transparent 52%);
+  box-shadow: 0 18px 46px rgba(0,0,0,0.26);
+  backdrop-filter: blur(18px);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #9cefff;
 }
 .pf-scene-hud-card {
   display: flex;
@@ -874,36 +906,6 @@ const frameworksJson = JSON.stringify(frameworks);
   z-index: 7;
   transition: opacity 0.12s linear, filter 0.2s ease;
   will-change: transform, opacity;
-}
-.pf-welcome {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 28px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 16px;
-}
-.pf-welcome-badge {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: #00d4ff;
-  text-transform: uppercase;
-}
-.pf-welcome-title {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 700;
-  color: #ddddf0;
-  margin: 0;
-  line-height: 1.3;
-}
-.pf-welcome-body {
-  font-size: 14px;
-  line-height: 1.65;
-  color: #b4b9e8;
-  margin: 0;
 }
 .pf-msg {
   display: flex;
@@ -1392,11 +1394,11 @@ const frameworksJson = JSON.stringify(frameworks);
   font-family: var(--font-sans);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: #f59e0b;
-  align-self: center;
-  padding: 0 4px;
+  color: #94a1df;
+  width: 100%;
+  padding: 0 2px 2px;
 }
 .pf-chip-label.is-positive {
   color: #10b981;
@@ -1499,7 +1501,6 @@ function initProdforce(frameworks, options) {
   const pfFileName   = document.getElementById("pfFileName");
   const pfFileRemove = document.getElementById("pfFileRemove");
   const pfStatusDot  = document.getElementById("pfStatusDot");
-  const pfFwCount    = document.getElementById("pfFwCount");
   const pfSceneHud   = document.getElementById("pfSceneHud");
 
   if (
@@ -1513,7 +1514,6 @@ function initProdforce(frameworks, options) {
     !pfFileName ||
     !pfFileRemove ||
     !pfStatusDot ||
-    !pfFwCount ||
     !pfSceneHud
   ) {
     console.error("[prodforce-init] Missing required DOM nodes.");
@@ -1528,14 +1528,18 @@ function initProdforce(frameworks, options) {
     currentResponse: "",
     sceneActive: null, // 'orchestrator' | 'specialists' | 'synthesis'
     sceneMode: "idle",
-    sceneSummary: "Waiting for a PM decision to scope.",
+    sceneSummary: "",
     sceneCategories: [],
+    sceneCategoryDecisions: [],
     sceneNeedsInPlay: [],
     scenePresent: [],
     sceneMissing: [],
     sceneQuestions: [],
     sceneReplySuggestions: [],
     sceneFrameworks: [],
+    sceneFrameworkDecisions: [],
+    sceneSelectedCategory: null,
+    sceneSelectedFramework: null,
     sceneFocus: null,
     hadFrameworkMatch: false,
   };
@@ -1544,7 +1548,7 @@ function initProdforce(frameworks, options) {
   const SCENE_PHASE_META = {
     idle: {
       eyebrow: "Ready",
-      title: "Waiting for your challenge",
+      title: "Waiting to resolve uncertainty",
       body: "Describe a product decision — Prodforce will identify the right frameworks and walk you through them.",
     },
     intake: {
@@ -1583,6 +1587,20 @@ function initProdforce(frameworks, options) {
       body: "The analysis encountered an issue. Try rephrasing or send a new challenge.",
     },
   };
+  const SCENE_PHASE_META_V2 = {
+    idle: {
+      eyebrow: "Standing by",
+      title: "",
+      body: "",
+    },
+    intake: { eyebrow: "Analyzing", title: "Reading your situation", body: "" },
+    clarify: { eyebrow: "Gathering context", title: "Sharpening the recommendation", body: "" },
+    match: { eyebrow: "Matched", title: "Frameworks locked", body: "" },
+    specialists: { eyebrow: "Working", title: "Specialist agents running", body: "" },
+    synthesis: { eyebrow: "Synthesizing", title: "Building recommendation", body: "" },
+    done: { eyebrow: "Complete", title: "Recommendation ready", body: "" },
+    error: { eyebrow: "Error", title: "Something went wrong", body: "" },
+  };
 
   function dedupeList(list) {
     return Array.from(new Set((list || []).filter(Boolean)));
@@ -1601,6 +1619,19 @@ function initProdforce(frameworks, options) {
 
   function pickSuggestionSet(list, count) {
     return shuffleList(list).slice(0, Math.min(count || 4, (list || []).length));
+  }
+
+  function sortCategoryDecisions(list) {
+    return (Array.isArray(list) ? list.slice() : []).sort(function(a, b) {
+      return (b.confidence || 0) - (a.confidence || 0) || (b.score || 0) - (a.score || 0);
+    });
+  }
+
+  function sortFrameworkDecisions(list) {
+    return (Array.isArray(list) ? list.slice() : []).sort(function(a, b) {
+      return (b.confidence || b.decisionConfidence || 0) - (a.confidence || a.decisionConfidence || 0) ||
+        (b.score || 0) - (a.score || 0);
+    });
   }
 
   const CATEGORY_HEX = {
@@ -1717,9 +1748,45 @@ function initProdforce(frameworks, options) {
     return dedupeList(categories).slice(0, 5);
   }
 
+  var pfSceneProgress = document.getElementById("pfSceneProgress");
+
   function setSceneState(patch) {
     Object.assign(STATE, patch || {});
     renderSceneHud();
+    renderSceneProgress();
+  }
+
+  function renderSceneProgress() {
+    if (!pfSceneProgress) return;
+    var mode = STATE.sceneMode || "idle";
+    var percent = 0;
+    var color = "";
+    var glow = "";
+    if (mode === "idle") {
+      pfSceneProgress.innerHTML = "";
+      return;
+    } else if (mode === "intake") {
+      percent = 15; color = "#00d4ff"; glow = "rgba(0,212,255,0.4)";
+    } else if (mode === "clarify") {
+      var pres = dedupeList(STATE.scenePresent).length;
+      var miss = dedupeList(STATE.sceneMissing).length;
+      var cov = pres + miss > 0 ? pres / (pres + miss) : 0;
+      percent = Math.round(20 + cov * 35);
+      color = "#f59e0b"; glow = "rgba(245,158,11,0.4)";
+    } else if (mode === "match") {
+      percent = 60; color = "#8b5cf6"; glow = "rgba(139,92,246,0.4)";
+    } else if (mode === "specialists") {
+      percent = 75; color = "#6366f1"; glow = "rgba(99,102,241,0.4)";
+    } else if (mode === "synthesis") {
+      percent = 90; color = "#10b981"; glow = "rgba(16,185,129,0.4)";
+    } else if (mode === "done") {
+      percent = 100; color = "#10b981"; glow = "rgba(16,185,129,0.4)";
+    } else if (mode === "error") {
+      percent = 30; color = "#ef4444"; glow = "rgba(239,68,68,0.4)";
+    }
+    pfSceneProgress.innerHTML =
+      '<div class="pf-scene-progress-fill" style="width:' + percent +
+      '%;background:' + color + ';--bar-glow:' + glow + '"></div>';
   }
 
   function renderHudChips(items, tone, limit) {
@@ -1730,47 +1797,26 @@ function initProdforce(frameworks, options) {
   }
 
   function renderSceneHud() {
-    const meta = SCENE_PHASE_META[STATE.sceneMode] || SCENE_PHASE_META.idle;
-    const frameworkTitles = dedupeList(
-      (STATE.sceneFrameworks || []).map((framework) => framework.title)
-    );
-    const frameworkCategories = dedupeList(
-      (STATE.sceneFrameworks || []).map((framework) => framework.category).concat(STATE.sceneCategories || [])
-    );
-    const presentSignals = dedupeList(STATE.scenePresent);
-    const missingSignals = dedupeList(STATE.sceneMissing);
-    // Remove from missing anything that is now present
-    var presentSet = new Set(presentSignals);
-    var activeMissing = missingSignals.filter(function(s) { return !presentSet.has(s); });
-
+    var meta = SCENE_PHASE_META_V2[STATE.sceneMode] || SCENE_PHASE_META_V2.idle;
+    var bodyCopy = meta.body || "";
+    var isIdle = STATE.sceneMode === "idle";
+    if (isIdle) {
+      pfSceneHud.innerHTML =
+        '<div class="pf-scene-hud-standby-pill">Standing by</div>';
+      return;
+    }
     pfSceneHud.innerHTML =
       '<div class="pf-scene-hud-card">' +
         '<div class="pf-scene-hud-phase">' + escHtml(meta.eyebrow) + "</div>" +
         '<div class="pf-scene-hud-title">' + escHtml(meta.title) + "</div>" +
-        '<div class="pf-scene-hud-body">' +
-          escHtml(STATE.sceneSummary || meta.body || "") +
-        "</div>" +
-        (frameworkCategories.length
-          ? '<div class="pf-scene-hud-row"><div class="pf-scene-hud-label">Categories</div><div class="pf-scene-pill-row">' +
-              renderHudChips(frameworkCategories, "category", 6) +
-            "</div></div>"
-          : "") +
-        (frameworkTitles.length
-          ? '<div class="pf-scene-hud-row"><div class="pf-scene-hud-label">Frameworks</div><div class="pf-scene-pill-row">' +
-              renderHudChips(frameworkTitles, "focus") +
-            "</div></div>"
-          : "") +
-        ((presentSignals.length || activeMissing.length)
-          ? '<div class="pf-scene-hud-row"><div class="pf-scene-hud-label">Context signals</div><div class="pf-scene-pill-row">' +
-              renderHudChips(presentSignals, "present", 4) +
-              renderHudChips(activeMissing, "missing", 4) +
-            "</div></div>"
+        (bodyCopy
+          ? '<div class="pf-scene-hud-body">' + escHtml(bodyCopy) + "</div>"
           : "") +
       "</div>";
   }
 
+
   // ── Set framework count ─────────────────────────────────────────────────
-  pfFwCount.textContent = frameworks.length + " frameworks";
 
   // ── Input: auto-resize + enable send ────────────────────────────────────
   function syncComposerState() {
@@ -1811,20 +1857,24 @@ function initProdforce(frameworks, options) {
     if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
   });
 
-  // ── Welcome + suggestions ────────────────────────────────────────────────
-  renderWelcome();
+  // ── Starter suggestions ──────────────────────────────────────────────────
   try {
-    renderSuggestionChips(initialSuggestions);
+    renderSuggestionChips(initialSuggestions, {
+      labelText: "Start here",
+      submitOnClick: true,
+    });
   } catch (err) {
     console.error("[prodforce-suggestions]", err);
     pfSuggestions.style.display = "none";
   }
   renderSceneHud();
+  renderSceneProgress();
 
   // ── Three.js scene ──────────────────────────────────────────────────────
   window.requestAnimationFrame(() => {
     try {
-      initConstellationScene(frameworks);
+      if (options && options.preferThree && window.THREE) initScene(window.THREE, frameworks);
+      else initConstellationScene(frameworks);
     } catch (err) {
       console.error("[prodforce-scene]", err);
       initConstellationScene(frameworks);
@@ -1855,11 +1905,15 @@ function initProdforce(frameworks, options) {
       sceneMode: "intake",
       sceneSummary: "Scoping the PM decision before selecting frameworks.",
       sceneCategories: inferLikelyCategories(text),
+      sceneCategoryDecisions: [],
       sceneNeedsInPlay: [],
       sceneMissing: [],
       sceneQuestions: [],
       sceneReplySuggestions: [],
       sceneFrameworks: [],
+      sceneFrameworkDecisions: [],
+      sceneSelectedCategory: null,
+      sceneSelectedFramework: null,
       sceneFocus: null,
     });
 
@@ -1946,19 +2000,27 @@ function initProdforce(frameworks, options) {
                 : [];
             var suggestedReplies = Array.isArray(ev.suggestedReplies) ? ev.suggestedReplies : [];
             var candidateFrameworks = Array.isArray(ev.candidateFrameworks) ? ev.candidateFrameworks : [];
+            var categoryDecisions = Array.isArray(ev.categoryDecisions) ? ev.categoryDecisions : [];
+            var frameworkDecisions = Array.isArray(ev.frameworkDecisions) ? ev.frameworkDecisions : [];
             setSceneState({
               sceneActive: "orchestrator",
               sceneMode: "clarify",
               sceneSummary:
                 ev.situationSummary ||
                 "Prodforce has narrowed the likely frameworks and is collecting the final context that changes the recommendation.",
-              sceneCategories: Array.isArray(ev.candidateCategories) ? ev.candidateCategories : [],
+              sceneCategories: categoryDecisions.length
+                ? categoryDecisions.map(function(decision) { return decision.category; })
+                : Array.isArray(ev.candidateCategories)
+                  ? ev.candidateCategories
+                  : [],
+              sceneCategoryDecisions: categoryDecisions,
               scenePresent: Array.isArray(ev.presentInformation) ? ev.presentInformation : [],
               sceneNeedsInPlay: [],
               sceneMissing: dedupeList(askedInformation.concat(deferredInformation)),
               sceneQuestions: Array.isArray(ev.questions) ? ev.questions : [],
               sceneReplySuggestions: suggestedReplies,
               sceneFrameworks: candidateFrameworks,
+              sceneFrameworkDecisions: frameworkDecisions,
               sceneFocus: null,
             });
             window.__PF_PENDING_CLARIFY__ = {
@@ -1967,19 +2029,26 @@ function initProdforce(frameworks, options) {
               questions: Array.isArray(ev.questions) ? ev.questions : [],
               suggestedReplies: suggestedReplies,
               candidateFrameworks: candidateFrameworks,
+              categoryDecisions: categoryDecisions,
+              frameworkDecisions: frameworkDecisions,
             };
             if (ev.questions?.length) window.__PF_PENDING_SUGG__ = ev.questions;
           } else if (ev.type === "frameworks_matched") {
             STATE.hadFrameworkMatch = true;
             setPipelineStep(pipelineEl, "orchestrator", "done");
             renderFwCards(pipelineEl, ev.frameworks || []);
+            var matchedCategoryDecisions = Array.isArray(ev.categoryDecisions) ? ev.categoryDecisions : [];
+            var matchedFrameworkDecisions = Array.isArray(ev.frameworkDecisions) ? ev.frameworkDecisions : [];
             setSceneState({
               sceneActive: "orchestrator",
               sceneMode: "match",
               sceneSummary:
                 ev.situationSummary ||
                 "Framework fit has been established against the captured PM context.",
-              sceneCategories: dedupeList((ev.frameworks || []).map((fw) => fw.category)),
+              sceneCategories: matchedCategoryDecisions.length
+                ? matchedCategoryDecisions.map(function(decision) { return decision.category; })
+                : dedupeList((ev.frameworks || []).map((fw) => fw.category)),
+              sceneCategoryDecisions: matchedCategoryDecisions,
               scenePresent: dedupeList(
                 (ev.frameworks || []).flatMap((fw) => fw.presentInputs || [])
               ),
@@ -1990,6 +2059,7 @@ function initProdforce(frameworks, options) {
               sceneQuestions: Array.isArray(ev.suggestions) ? ev.suggestions : [],
               sceneReplySuggestions: [],
               sceneFrameworks: ev.frameworks || [],
+              sceneFrameworkDecisions: matchedFrameworkDecisions,
               sceneFocus: null,
             });
             if (ev.suggestions?.length) window.__PF_PENDING_SUGG__ = ev.suggestions;
@@ -2031,7 +2101,7 @@ function initProdforce(frameworks, options) {
                 body.appendChild(btn);
               }
             }
-            if (ev.mode === "clarify") setPipelineStep(pipelineEl, "orchestrator", "done");
+            if (ev.mode === "clarify" || ev.mode === "ask_problem") setPipelineStep(pipelineEl, "orchestrator", "done");
             else setPipelineStep(pipelineEl, "synthesis", "done");
             pipelineEl.remove();
             if (STATE.currentResponse) {
@@ -2046,54 +2116,60 @@ function initProdforce(frameworks, options) {
               if (clarifyState.suggestedReplies && clarifyState.suggestedReplies.length) {
                 renderSuggestionChips(clarifyState.suggestedReplies, {
                   tone: "reply",
-                  labelText: "Reply with details like",
-                  submitOnClick: false,
-                });
-              } else if (nextSuggestions?.length) {
-                renderSuggestionChips(nextSuggestions, {
-                  tone: "asked",
-                  labelText: "Reply to continue",
-                  submitOnClick: false,
-                });
-              } else if (clarifyState.questions && clarifyState.questions.length) {
-                renderSuggestionChips(clarifyState.questions, {
-                  tone: "asked",
-                  labelText: "Reply to continue",
-                  submitOnClick: false,
+                  labelText: "Suggested answers",
+                  submitOnClick: true,
                 });
               } else {
-                renderSuggestionChips(pickSuggestionSet(DEFAULT_SUGGESTIONS, 3));
+                renderSuggestionChips([]);
               }
               window.__PF_PENDING_CLARIFY__ = null;
               window.__PF_PENDING_SUGG__ = null;
             } else if (nextSuggestions?.length) {
-              renderSuggestionChips(nextSuggestions, {
-                labelText: "Explore another angle",
+                renderSuggestionChips(nextSuggestions, {
+                  labelText: "Explore another angle",
+                  submitOnClick: true,
+                });
+              window.__PF_PENDING_SUGG__ = null;
+            } else if (ev.mode === "ask_problem") {
+              renderSuggestionChips(pickSuggestionSet(DEFAULT_SUGGESTIONS, 3), {
+                labelText: "Start here",
                 submitOnClick: true,
               });
-              window.__PF_PENDING_SUGG__ = null;
             } else {
               renderSuggestionChips(pickSuggestionSet(DEFAULT_SUGGESTIONS, 3));
             }
             setSceneState({
               sceneActive: null,
-              sceneMode: ev.mode === "clarify" ? "clarify" : "done",
+              sceneMode:
+                ev.mode === "clarify"
+                  ? "clarify"
+                  : ev.mode === "ask_problem"
+                    ? "idle"
+                    : "done",
               sceneSummary:
                 ev.mode === "clarify"
                   ? "Prodforce has narrowed the framework field. Reply with whatever context you have and it will keep moving."
+                  : ev.mode === "ask_problem"
+                    ? "Waiting to resolve uncertainty."
                   : "Recommendation ready. Refine the context or ask Prodforce to compare another path.",
               sceneNeedsInPlay:
                 ev.mode === "clarify" && clarifyState
                   ? clarifyState.askedInformation || STATE.sceneNeedsInPlay
-                  : STATE.sceneNeedsInPlay,
+                  : ev.mode === "ask_problem"
+                    ? []
+                    : STATE.sceneNeedsInPlay,
               sceneMissing:
                 ev.mode === "clarify" && clarifyState
                   ? dedupeList((clarifyState.askedInformation || []).concat(clarifyState.deferredInformation || []))
-                  : STATE.sceneMissing,
+                  : ev.mode === "ask_problem"
+                    ? []
+                    : STATE.sceneMissing,
               sceneQuestions:
                 ev.mode === "clarify" && clarifyState
                   ? clarifyState.questions || STATE.sceneQuestions
-                  : nextSuggestions || STATE.sceneQuestions,
+                  : ev.mode === "ask_problem"
+                    ? []
+                    : nextSuggestions || STATE.sceneQuestions,
               sceneReplySuggestions:
                 ev.mode === "clarify" && clarifyState
                   ? clarifyState.suggestedReplies || []
@@ -2101,7 +2177,37 @@ function initProdforce(frameworks, options) {
               sceneFrameworks:
                 ev.mode === "clarify" && clarifyState
                   ? clarifyState.candidateFrameworks || STATE.sceneFrameworks
-                  : STATE.sceneFrameworks,
+                  : ev.mode === "ask_problem"
+                    ? []
+                    : STATE.sceneFrameworks,
+              sceneCategoryDecisions:
+                ev.mode === "clarify" && clarifyState
+                  ? clarifyState.categoryDecisions || STATE.sceneCategoryDecisions
+                  : ev.mode === "ask_problem"
+                    ? []
+                    : STATE.sceneCategoryDecisions,
+              sceneFrameworkDecisions:
+                ev.mode === "clarify" && clarifyState
+                  ? clarifyState.frameworkDecisions || STATE.sceneFrameworkDecisions
+                  : ev.mode === "ask_problem"
+                    ? []
+                    : STATE.sceneFrameworkDecisions,
+              sceneCategories:
+                ev.mode === "ask_problem"
+                  ? []
+                  : STATE.sceneCategories,
+              scenePresent:
+                ev.mode === "ask_problem"
+                  ? []
+                  : STATE.scenePresent,
+              sceneSelectedCategory:
+                ev.mode === "ask_problem"
+                  ? null
+                  : STATE.sceneSelectedCategory,
+              sceneSelectedFramework:
+                ev.mode === "ask_problem"
+                  ? null
+                  : STATE.sceneSelectedFramework,
               sceneFocus: null,
             });
           } else if (ev.type === "error") {
@@ -2109,10 +2215,11 @@ function initProdforce(frameworks, options) {
             pipelineEl.remove();
             appendError(ev.message);
             renderSuggestionChips(pickSuggestionSet(DEFAULT_SUGGESTIONS, 3));
+            var friendlyError = humanizeErrorMessage(ev.message);
             setSceneState({
               sceneActive: null,
               sceneMode: "error",
-              sceneSummary: ev.message || "The analysis pipeline hit an unexpected error.",
+              sceneSummary: friendlyError || "The analysis pipeline hit an unexpected error.",
               sceneNeedsInPlay: [],
               sceneReplySuggestions: [],
               sceneFocus: null,
@@ -2126,12 +2233,13 @@ function initProdforce(frameworks, options) {
       }
     } catch (err) {
       pipelineEl.remove();
-      appendError(err.message || "Unexpected error");
+      var friendlyError = humanizeErrorMessage(err.message || "Unexpected error");
+      appendError(friendlyError);
       renderSuggestionChips(pickSuggestionSet(DEFAULT_SUGGESTIONS, 3));
       setSceneState({
         sceneActive: null,
         sceneMode: "error",
-        sceneSummary: err.message || "Unexpected error",
+        sceneSummary: friendlyError,
         sceneNeedsInPlay: [],
         sceneReplySuggestions: [],
         sceneFocus: null,
@@ -2144,22 +2252,11 @@ function initProdforce(frameworks, options) {
       clearFile();
       pfSendBtn.disabled = !pfTextarea.value.trim();
       renderSceneHud();
-      scrollBottom();
+        scrollBottom();
     }
   }
 
   /* ── DOM helpers ─────────────────────────────────────────────────────────── */
-  function renderWelcome() {
-    var el = document.createElement("div");
-    el.className = "pf-welcome";
-    el.innerHTML =
-      '<div class="pf-welcome-badge">PRODFORCE</div>' +
-      '<h2 class="pf-welcome-title">Enterprise PM Intelligence</h2>' +
-      '<p class="pf-welcome-body">Describe a product decision. Prodforce will scope the context, ask for only the missing inputs, then match it to the right framework from ' +
-      frameworks.length + ' in the library.</p>';
-    pfMessages.appendChild(el);
-  }
-
   function appendMsg(role, content) {
     const el = document.createElement("div");
     el.className = "pf-msg pf-msg-" + role;
@@ -2182,10 +2279,18 @@ function initProdforce(frameworks, options) {
     return el;
   }
 
+  function humanizeErrorMessage(msg) {
+    var text = String(msg || "Unexpected error").replace(/\s+/g, " ").trim();
+    if (/rate limit/i.test(text)) {
+      return "Prodforce hit the current free-tier model limit. Wait a moment and continue — your context is still in place.";
+    }
+    return text;
+  }
+
   function appendError(msg) {
     const el = document.createElement("div");
     el.className = "pf-msg-error";
-    el.textContent = "Error: " + msg;
+    el.textContent = "Error: " + humanizeErrorMessage(msg);
     pfMessages.appendChild(el);
     scrollBottom();
   }
@@ -2195,11 +2300,11 @@ function initProdforce(frameworks, options) {
     el.className = "pf-pipeline";
     el.innerHTML =
       '<div class="pf-pipeline-steps">' +
-        '<div class="pf-pipeline-step" data-step="orchestrator"><div class="pf-step-dot"></div><span class="pf-step-label">Orchestrator</span></div>' +
+        '<div class="pf-pipeline-step" data-step="orchestrator"><div class="pf-step-dot"></div><span class="pf-step-label">Context</span></div>' +
         '<span class="pf-pipeline-arrow">›</span>' +
-        '<div class="pf-pipeline-step" data-step="specialists"><div class="pf-step-dot"></div><span class="pf-step-label">Specialists</span></div>' +
+        '<div class="pf-pipeline-step" data-step="specialists"><div class="pf-step-dot"></div><span class="pf-step-label">Frameworks</span></div>' +
         '<span class="pf-pipeline-arrow">›</span>' +
-        '<div class="pf-pipeline-step" data-step="synthesis"><div class="pf-step-dot"></div><span class="pf-step-label">Synthesis</span></div>' +
+        '<div class="pf-pipeline-step" data-step="synthesis"><div class="pf-step-dot"></div><span class="pf-step-label">Output</span></div>' +
       "</div>" +
       '<div class="pf-pipeline-status-msg" data-status></div>' +
       '<div class="pf-fw-cards" data-fw-cards></div>' +
@@ -2322,7 +2427,12 @@ function initProdforce(frameworks, options) {
         "</div>" +
         '<div class="pf-fw-title">' + escHtml(fw.title) + "</div>" +
         '<div class="pf-fw-reason">' + escHtml(fw.reason || fw.whenToUse) + "</div>" +
-        '<div class="pf-fw-meta">' + escHtml(fw.inputsRequired || "No explicit framework criteria were provided.") + "</div>" +
+        '<div class="pf-fw-section"><div class="pf-fw-section-label">When to use</div><div class="pf-fw-meta">' +
+          escHtml(fw.whenToUseFull || fw.whenToUse || "Prodforce is grounding when this framework becomes the right decision tool.") +
+        "</div></div>" +
+        '<div class="pf-fw-section"><div class="pf-fw-section-label">Input required</div><div class="pf-fw-meta">' +
+          escHtml(fw.inputsRequired || "No explicit framework criteria were provided.") +
+        "</div></div>" +
         '<div class="pf-fw-section"><div class="pf-fw-section-label">Produces</div><div class="pf-fw-output-card">' +
           '<div class="pf-fw-output-title">' +
             escHtml(fw.outputArtifact || "Decision artifact and recommendation structure") +
@@ -2603,12 +2713,21 @@ function initProdforce(frameworks, options) {
   }
 
   function getSceneHighlights() {
-    const frameworksInFocus = Array.isArray(STATE.sceneFrameworks) ? STATE.sceneFrameworks : [];
+    const frameworksInFocus = Array.isArray(STATE.sceneFrameworks) && STATE.sceneFrameworks.length
+      ? STATE.sceneFrameworks
+      : (Array.isArray(STATE.sceneFrameworkDecisions) ? STATE.sceneFrameworkDecisions : []);
     const exactFrameworks = frameworksInFocus
       .map((framework) => framework.slug || framework.title)
-      .filter(Boolean);
+      .filter(Boolean)
+      .concat(STATE.sceneSelectedFramework ? [STATE.sceneSelectedFramework] : []);
     const categories = dedupeList(
-      frameworksInFocus.map((framework) => framework.category).concat(STATE.sceneCategories || [])
+      (Array.isArray(STATE.sceneCategoryDecisions) ? STATE.sceneCategoryDecisions : [])
+        .map(function(decision) { return decision.category; })
+        .concat(
+          frameworksInFocus.map((framework) => framework.category)
+        )
+        .concat(STATE.sceneCategories || [])
+        .concat(STATE.sceneSelectedCategory ? [STATE.sceneSelectedCategory] : [])
     );
     return {
       frameworkKeys: new Set(exactFrameworks),
@@ -2823,6 +2942,11 @@ function initProdforce(frameworks, options) {
           screen: null,
         };
       });
+      var frameworkKeysByCategory = {};
+      frameworkNodes.forEach(function(node) {
+        if (!frameworkKeysByCategory[node.category]) frameworkKeysByCategory[node.category] = [];
+        frameworkKeysByCategory[node.category].push(node.slug || node.title);
+      });
 
       var stars = Array.from({ length: 180 }, function(_, index) {
         return {
@@ -2898,12 +3022,81 @@ function initProdforce(frameworks, options) {
       var rafId = 0;
       var disposed = false;
       var startTime = performance.now();
+      var categoryHotspots = [];
+      var frameworkHotspots = [];
+
+      function getPointerPosition(event) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top,
+        };
+      }
+
+      function hitTestScene(position) {
+        for (var i = frameworkHotspots.length - 1; i >= 0; i -= 1) {
+          var fwHit = frameworkHotspots[i];
+          var dxFw = position.x - fwHit.x;
+          var dyFw = position.y - fwHit.y;
+          if (dxFw * dxFw + dyFw * dyFw <= fwHit.radius * fwHit.radius) return fwHit;
+        }
+        for (var j = categoryHotspots.length - 1; j >= 0; j -= 1) {
+          var catHit = categoryHotspots[j];
+          var dxCat = position.x - catHit.x;
+          var dyCat = position.y - catHit.y;
+          if (dxCat * dxCat + dyCat * dyCat <= catHit.radius * catHit.radius) return catHit;
+        }
+        return null;
+      }
+
+      function handleSceneMove(event) {
+        var hit = hitTestScene(getPointerPosition(event));
+        canvas.style.cursor = hit ? "pointer" : "default";
+      }
+
+      function handleSceneLeave() {
+        canvas.style.cursor = "default";
+      }
+
+      function handleSceneClick(event) {
+        var hit = hitTestScene(getPointerPosition(event));
+        if (!hit) {
+          setSceneState({
+            sceneSelectedCategory: null,
+            sceneSelectedFramework: null,
+          });
+          return;
+        }
+        if (hit.type === "category") {
+          var nextCategory = STATE.sceneSelectedCategory === hit.category ? null : hit.category;
+          setSceneState({
+            sceneSelectedCategory: nextCategory,
+            sceneSelectedFramework: null,
+          });
+          return;
+        }
+        if (hit.type === "framework") {
+          setSceneState({
+            sceneSelectedCategory: hit.category,
+            sceneSelectedFramework:
+              STATE.sceneSelectedFramework === hit.key ? null : hit.key,
+          });
+        }
+      }
+
+      canvas.addEventListener("mousemove", handleSceneMove);
+      canvas.addEventListener("mouseleave", handleSceneLeave);
+      canvas.addEventListener("click", handleSceneClick);
 
       function cleanup() {
         disposed = true;
         if (rafId) window.cancelAnimationFrame(rafId);
         if (resizeObserver) resizeObserver.disconnect();
         else window.removeEventListener("resize", resizeCanvas);
+        canvas.removeEventListener("mousemove", handleSceneMove);
+        canvas.removeEventListener("mouseleave", handleSceneLeave);
+        canvas.removeEventListener("click", handleSceneClick);
+        canvas.style.cursor = "default";
       }
       window.__PF_SCENE_CLEANUP__ = cleanup;
 
@@ -2922,13 +3115,22 @@ function initProdforce(frameworks, options) {
         var highlights = getSceneHighlights();
         var activeCats = highlights.categories;
         var hasActiveCats = activeCats.size > 0;
+        var selectedCategory = STATE.sceneSelectedCategory;
+        var selectedFramework = STATE.sceneSelectedFramework;
         var matchedFrameworkKeys = new Set(
           (STATE.sceneFrameworks || [])
             .map(function(framework) { return framework.slug || framework.title; })
             .filter(Boolean)
         );
         var highlightedIndexes = new Set(findHighlightedFrameworkIndexes(fws, 18));
+        var expandedFrameworkKeys = new Set(
+          selectedCategory && frameworkKeysByCategory[selectedCategory]
+            ? frameworkKeysByCategory[selectedCategory]
+            : []
+        );
         var center = updateBodies(t, size, depth);
+        categoryHotspots = [];
+        frameworkHotspots = [];
 
         ctx.clearRect(0, 0, size.width, size.height);
 
@@ -2977,25 +3179,60 @@ function initProdforce(frameworks, options) {
         });
         nodeDrawList.forEach(function(node) {
           var point = node.screen;
+          var key = node.slug || node.title;
           var isMatched =
             matchedFrameworkKeys.has(node.slug) ||
             matchedFrameworkKeys.has(node.title);
-          var isHighlighted = highlightedIndexes.has(node.frameworkIndex);
-          var isActiveCat = activeCats.has(node.category);
-          var alpha = hasActiveCats && !isActiveCat ? 0.22 : isMatched ? 0.94 : 0.62;
-          var radius = (isMatched ? 3.8 : 2.05) * point.scale + node.size;
+          var isExpanded = expandedFrameworkKeys.has(key);
+          var isHighlighted =
+            highlightedIndexes.has(node.frameworkIndex) ||
+            selectedFramework === key;
+          var isActiveCat = activeCats.has(node.category) || selectedCategory === node.category;
+          var alpha = selectedCategory
+            ? isExpanded
+              ? isHighlighted
+                ? 1
+                : 0.94
+              : 0.08
+            : hasActiveCats && !isActiveCat
+              ? 0.18
+              : isMatched
+                ? 0.94
+                : 0.62;
+          var radius = (
+            selectedCategory
+              ? isExpanded
+                ? isHighlighted
+                  ? 4.9
+                  : 3.7
+                : 1.4
+              : isMatched
+                ? 3.8
+                : 2.05
+          ) * point.scale + node.size;
 
           ctx.fillStyle = rgbaFromHex(node.color, alpha);
           ctx.beginPath();
           ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
           ctx.fill();
 
-          if (isMatched) {
+          if (isMatched || isExpanded) {
             ctx.strokeStyle = getSceneRgba(phase, 0.42);
             ctx.lineWidth = 1.15;
             ctx.beginPath();
             ctx.arc(point.x, point.y, radius + 5, 0, Math.PI * 2);
             ctx.stroke();
+          }
+
+          if (isExpanded || isMatched) {
+            frameworkHotspots.push({
+              type: "framework",
+              key: key,
+              category: node.category,
+              x: point.x,
+              y: point.y,
+              radius: Math.max(12, radius + 8),
+            });
           }
         });
 
@@ -3004,7 +3241,7 @@ function initProdforce(frameworks, options) {
           .sort(function(a, b) { return a.z - b.z; })
           .forEach(function(body) {
             var point = body.screen;
-            var isActive = activeCats.has(body.cat);
+            var isActive = activeCats.has(body.cat) || selectedCategory === body.cat;
             var coreRadius = (isActive ? 9.6 : 7.2) * point.scale + body.size;
             ctx.strokeStyle = isActive ? getSceneRgba(phase, 0.34) : "rgba(255,255,255,0.1)";
             ctx.lineWidth = isActive ? 1.6 : 1;
@@ -3038,6 +3275,13 @@ function initProdforce(frameworks, options) {
                 fill: isActive ? "rgba(5, 9, 20, 0.9)" : "rgba(5, 9, 20, 0.76)",
               }
             );
+            categoryHotspots.push({
+              type: "category",
+              category: body.cat,
+              x: point.x,
+              y: point.y,
+              radius: Math.max(22, coreRadius + 18),
+            });
           });
 
         var hubPulse = 1 + Math.sin(t * 1.9) * 0.08;
@@ -3065,9 +3309,9 @@ function initProdforce(frameworks, options) {
 
         frameworkNodes.forEach(function(node) {
           var key = node.slug || node.title;
-          var shouldLabel =
-            matchedFrameworkKeys.has(node.slug) ||
-            matchedFrameworkKeys.has(node.title);
+          var shouldLabel = selectedCategory
+            ? expandedFrameworkKeys.has(key)
+            : matchedFrameworkKeys.has(node.slug) || matchedFrameworkKeys.has(node.title);
           if (!shouldLabel) return;
           drawScenePill(
             ctx,
@@ -3408,17 +3652,26 @@ function initProdforce(frameworks, options) {
             var isAct = activeCats.has(body.cat);
             body.mesh.position.copy(body.position);
             body.glow.position.copy(body.position);
-            body.mesh.scale.setScalar(isAct ? 1.6 : hasActive ? 1.0 : 1.15);
-            body.glow.scale.setScalar(isAct ? 1.9 : hasActive ? 1.2 : 1.4);
-            body.mesh.material.emissiveIntensity = isAct ? 1.0 : hasActive ? 0.45 : 0.55;
-            body.glow.material.opacity = isAct ? 0.3 : hasActive ? 0.1 : 0.16;
-            body.line.material.opacity = isAct ? 0.28 : hasActive ? 0.08 : 0.14;
+            body.mesh.scale.setScalar(isAct ? 1.6 : hasActive ? 0.7 : 1.15);
+            body.glow.scale.setScalar(isAct ? 1.9 : hasActive ? 0.8 : 1.4);
+            body.mesh.material.emissiveIntensity = isAct ? 1.0 : hasActive ? 0.15 : 0.55;
+            body.glow.material.opacity = isAct ? 0.3 : hasActive ? 0.04 : 0.16;
+            body.line.material.opacity = isAct ? 0.28 : hasActive ? 0.03 : 0.14;
+            // Gray out inactive category body color
+            if (hasActive && !isAct) {
+              body.mesh.material.color.setHex(0x333344);
+              body.mesh.material.emissive.setHex(0x222233);
+            } else {
+              body.mesh.material.color.setHex(body.colorHex);
+              body.mesh.material.emissive.setHex(body.colorHex);
+            }
             var lp = body.line.geometry.attributes.position.array;
             lp[3] = body.position.x; lp[4] = body.position.y; lp[5] = body.position.z;
             body.line.geometry.attributes.position.needsUpdate = true;
           });
 
-          // ── Framework points ─────────────────────────────
+          // ── Framework points — position + color per frame ──
+          var GRAY_R = 0.22, GRAY_G = 0.22, GRAY_B = 0.28;
           fws.forEach(function(fw, i) {
             var m = fwMotion[i];
             var body = categoryBodyByCat[m.category] || categoryBodies[0];
@@ -3427,8 +3680,28 @@ function initProdforce(frameworks, options) {
             fwPos[i * 3]     = body.position.x + Math.cos(a) * r;
             fwPos[i * 3 + 1] = body.position.y + m.lift + Math.sin(a * 1.1 + m.phase) * r * 0.5;
             fwPos[i * 3 + 2] = body.position.z + Math.sin(a + m.phase) * r * 0.7;
+            // Gray out non-active category nodes
+            if (hasActive) {
+              var isInActiveCat = activeCats.has(m.category);
+              var origColor = CAT_COL[m.category] || DEF_COL;
+              if (isInActiveCat) {
+                fwCol[i * 3]     = origColor[0];
+                fwCol[i * 3 + 1] = origColor[1];
+                fwCol[i * 3 + 2] = origColor[2];
+              } else {
+                fwCol[i * 3]     = GRAY_R;
+                fwCol[i * 3 + 1] = GRAY_G;
+                fwCol[i * 3 + 2] = GRAY_B;
+              }
+            } else {
+              var origC = CAT_COL[m.category] || DEF_COL;
+              fwCol[i * 3]     = origC[0];
+              fwCol[i * 3 + 1] = origC[1];
+              fwCol[i * 3 + 2] = origC[2];
+            }
           });
           fwGeo.attributes.position.needsUpdate = true;
+          fwGeo.attributes.color.needsUpdate = true;
           fwMat.size = hasActive ? 0.16 + depth * 0.03 : 0.12 + depth * 0.02;
           fwMat.opacity = hasActive ? 0.92 : 0.8;
 

@@ -138,6 +138,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 >
 
 <div class="toolkit" data-view="grid">
+  <div class="controlsBarSentinel" aria-hidden="true"></div>
   <div class="controlsBar" role="search" aria-label="Search and filter frameworks">
     <div class="field">
       <span class="icon" aria-hidden="true">⌕</span>
@@ -380,31 +381,46 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       }
 
       const controlsBar = document.querySelector(".controlsBar");
+      const controlsBarSentinel = document.querySelector(".controlsBarSentinel");
       const toolkitRoot = document.querySelector(".toolkit");
+      let stickyControlBarSyncFrame = 0;
+      let stickyControlBarState = false;
 
       function syncStickyControlBar() {
+        stickyControlBarSyncFrame = 0;
         if (!controlsBar) return;
 
         const stickyTop = parseFloat(getComputedStyle(controlsBar).top || "0") || 0;
-        const rect = controlsBar.getBoundingClientRect();
-        const isSticky = rect.top <= stickyTop + 0.5;
+        const markerRect = controlsBarSentinel
+          ? controlsBarSentinel.getBoundingClientRect()
+          : controlsBar.getBoundingClientRect();
+        const enterThreshold = stickyTop + 0.5;
+        const exitThreshold = stickyTop + (window.innerWidth > 720 ? 8 : 0.5);
+        const nextSticky = stickyControlBarState
+          ? markerRect.top <= exitThreshold
+          : markerRect.top <= enterThreshold;
 
-        controlsBar.classList.toggle("isStickyMobile", isSticky);
+        stickyControlBarState = nextSticky;
 
-        if (isSticky && toolkitRoot) {
+        controlsBar.classList.toggle("isStickyMobile", nextSticky);
+
+        if (nextSticky && toolkitRoot) {
           const hostRect = toolkitRoot.getBoundingClientRect();
           const leftExpand = Math.max(0, hostRect.left);
           const rightExpand = Math.max(0, window.innerWidth - hostRect.right);
           controlsBar.style.setProperty("--sticky-expand-left", `${leftExpand}px`);
           controlsBar.style.setProperty("--sticky-expand-right", `${rightExpand}px`);
+          controlsBar.style.setProperty("--sticky-expand-total", `${leftExpand + rightExpand}px`);
         } else {
           controlsBar.style.removeProperty("--sticky-expand-left");
           controlsBar.style.removeProperty("--sticky-expand-right");
+          controlsBar.style.removeProperty("--sticky-expand-total");
         }
       }
 
       function queueStickyControlBarSync() {
-        window.requestAnimationFrame(syncStickyControlBar);
+        if (stickyControlBarSyncFrame) return;
+        stickyControlBarSyncFrame = window.requestAnimationFrame(syncStickyControlBar);
       }
 
       function getHasActiveFilter() {
@@ -952,12 +968,23 @@ margin-right: 0;
     0 24px 46px rgba(4, 9, 18, 0.12);
   margin: 0 0 34px;
 transition:
+  width 0.38s var(--ease),
   box-shadow 0.34s var(--ease),
   border-color 0.34s var(--ease),
   border-radius 0.38s var(--ease),
   background 0.38s var(--ease),
+  padding-left 0.38s var(--ease),
+  padding-right 0.38s var(--ease),
   margin-left 0.38s var(--ease),
   margin-right 0.38s var(--ease);
+}
+
+.controlsBarSentinel {
+  position: relative;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 .controlsBar::before,
@@ -1002,7 +1029,7 @@ transition:
   }
 
   .controlsBar.isStickyMobile {
-    width: auto;
+    width: calc(100% + var(--sticky-expand-total, 0px));
     max-width: none;
     margin-left: calc(var(--sticky-expand-left, 0px) * -1);
     margin-right: calc(var(--sticky-expand-right, 0px) * -1);
@@ -1068,8 +1095,8 @@ transition:
 
  .select {
   width: 100%;
-  min-width: 260px;
-  max-width: 300px;
+  min-width: 248px;
+  max-width: 286px;
   height: 46px;
   padding: 0 40px 0 16px;
   border-radius: 15px;
@@ -1098,8 +1125,8 @@ transition:
 
 .selectWrap {
   position: relative;
-  min-width: 260px;
-  max-width: 300px;
+  min-width: 248px;
+  max-width: 286px;
   width: 100%;
 }
 
@@ -1160,6 +1187,7 @@ transition:
     font-size: 12px;
     font-weight: 500;
     color: rgba(221, 229, 245, 0.72);
+    margin-left: 6px;
     margin-right: 2px;
   }
 
