@@ -79,11 +79,11 @@ jobs:
               exit 1
             fi
 
-            cat > .env.prodforce <<EOF
-PRODFORCE_LLM_PROVIDER=$PROVIDER
-GROQ_API_KEY=$GROQ_KEY
-ANTHROPIC_API_KEY=$ANTHROPIC_KEY
-EOF
+            {
+              printf 'PRODFORCE_LLM_PROVIDER=%s\n' "$PROVIDER"
+              printf 'GROQ_API_KEY=%s\n' "$GROQ_KEY"
+              printf 'ANTHROPIC_API_KEY=%s\n' "$ANTHROPIC_KEY"
+            } > .env.prodforce
           fi
 
           scp -o StrictHostKeyChecking=no .env.prodforce "$USER@$HOST:$DEST/.env.prodforce"
