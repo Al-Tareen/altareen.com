@@ -16,6 +16,7 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.env.prodforce
 ops/ga4-key.json
 
 # macOS-specific files
@@ -26,4 +27,3 @@ ops/ga4-key.json
 
 # runtime feedback store
 .feedback-store.json
-

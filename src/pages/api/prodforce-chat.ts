@@ -1,6 +1,9 @@
 import type { APIRoute } from "astro";
 import Anthropic from "@anthropic-ai/sdk";
 import { getCollection } from "astro:content";
+import { config as loadDotenv } from "dotenv";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 
 export const prerender = false;
 
@@ -2563,20 +2566,51 @@ function makeSender(writer: WritableStreamDefaultWriter<Uint8Array>) {
   };
 }
 
+let runtimeEnvLoaded = false;
+
+function ensureRuntimeEnvLoaded() {
+  if (runtimeEnvLoaded) {
+    return;
+  }
+
+  runtimeEnvLoaded = true;
+
+  for (const envFile of [".env", ".env.production", ".env.prodforce"]) {
+    const envPath = resolve(process.cwd(), envFile);
+    if (existsSync(envPath)) {
+      loadDotenv({ path: envPath, override: false });
+    }
+  }
+}
+
+function getRuntimeEnv(name: string) {
+  ensureRuntimeEnvLoaded();
+
+  const runtimeValue = process.env[name]?.trim();
+  if (runtimeValue) {
+    return runtimeValue;
+  }
+
+  const viteEnv = import.meta.env as Record<string, string | undefined>;
+  const viteValue = viteEnv[name]?.trim();
+  return viteValue || undefined;
+}
+
 function getProvider(): Provider | null {
-  const preference = (import.meta.env.PRODFORCE_LLM_PROVIDER ?? "groq").toLowerCase();
-  const groqApiKey = import.meta.env.GROQ_API_KEY?.trim();
-  const anthropicApiKey = import.meta.env.ANTHROPIC_API_KEY?.trim();
+  const preference = (getRuntimeEnv("PRODFORCE_LLM_PROVIDER") ?? "groq").toLowerCase();
+  const groqApiKey = getRuntimeEnv("GROQ_API_KEY");
+  const anthropicApiKey = getRuntimeEnv("ANTHROPIC_API_KEY");
 
   const groqProvider = groqApiKey
       ? {
           kind: "groq" as const,
           apiKey: groqApiKey,
           models: {
-          intake: import.meta.env.GROQ_INTAKE_MODEL ?? "llama-3.1-8b-instant",
-          orchestrator: import.meta.env.GROQ_ORCHESTRATOR_MODEL ?? "openai/gpt-oss-20b",
-          specialist: import.meta.env.GROQ_SPECIALIST_MODEL ?? "llama-3.1-8b-instant",
-          synthesis: import.meta.env.GROQ_SYNTHESIS_MODEL ?? "llama-3.1-8b-instant",
+          intake: getRuntimeEnv("GROQ_INTAKE_MODEL") ?? "llama-3.1-8b-instant",
+          orchestrator:
+            getRuntimeEnv("GROQ_ORCHESTRATOR_MODEL") ?? "openai/gpt-oss-20b",
+          specialist: getRuntimeEnv("GROQ_SPECIALIST_MODEL") ?? "llama-3.1-8b-instant",
+          synthesis: getRuntimeEnv("GROQ_SYNTHESIS_MODEL") ?? "llama-3.1-8b-instant",
         },
       }
     : null;
@@ -2587,12 +2621,12 @@ function getProvider(): Provider | null {
           client: new Anthropic({ apiKey: anthropicApiKey }),
           models: {
           intake:
-            import.meta.env.ANTHROPIC_INTAKE_MODEL ?? "claude-haiku-4-5-20251001",
+            getRuntimeEnv("ANTHROPIC_INTAKE_MODEL") ?? "claude-haiku-4-5-20251001",
           orchestrator:
-            import.meta.env.ANTHROPIC_ORCHESTRATOR_MODEL ?? "claude-sonnet-4-6",
+            getRuntimeEnv("ANTHROPIC_ORCHESTRATOR_MODEL") ?? "claude-sonnet-4-6",
           specialist:
-            import.meta.env.ANTHROPIC_SPECIALIST_MODEL ?? "claude-haiku-4-5-20251001",
-          synthesis: import.meta.env.ANTHROPIC_SYNTHESIS_MODEL ?? "claude-sonnet-4-6",
+            getRuntimeEnv("ANTHROPIC_SPECIALIST_MODEL") ?? "claude-haiku-4-5-20251001",
+          synthesis: getRuntimeEnv("ANTHROPIC_SYNTHESIS_MODEL") ?? "claude-sonnet-4-6",
         },
       }
     : null;

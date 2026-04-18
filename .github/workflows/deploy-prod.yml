@@ -54,6 +54,41 @@ jobs:
             -e "ssh -o StrictHostKeyChecking=no" \
             package.json package-lock.json "$USER@$HOST:$DEST/"
 
+      - name: Write Prodforce runtime env
+        env:
+          HOST: ${{ secrets.PROD_SSH_HOST }}
+          USER: ${{ secrets.PROD_SSH_USER }}
+          DEST: ${{ secrets.PROD_DEPLOY_PATH }}
+          PROD_RUNTIME_ENV: ${{ secrets.PROD_RUNTIME_ENV }}
+          PROD_GROQ_API_KEY: ${{ secrets.PROD_GROQ_API_KEY }}
+          SHARED_GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          PROD_ANTHROPIC_API_KEY: ${{ secrets.PROD_ANTHROPIC_API_KEY }}
+          SHARED_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PROD_PROVIDER: ${{ secrets.PROD_PRODFORCE_LLM_PROVIDER }}
+        run: |
+          set -e
+          GROQ_KEY="${PROD_GROQ_API_KEY:-$SHARED_GROQ_API_KEY}"
+          ANTHROPIC_KEY="${PROD_ANTHROPIC_API_KEY:-$SHARED_ANTHROPIC_API_KEY}"
+          PROVIDER="${PROD_PROVIDER:-groq}"
+
+          if [ -n "$PROD_RUNTIME_ENV" ]; then
+            printf '%s\n' "$PROD_RUNTIME_ENV" > .env.prodforce
+          else
+            if [ -z "$GROQ_KEY" ] && [ -z "$ANTHROPIC_KEY" ]; then
+              echo "Missing Prodforce runtime secret. Set PROD_RUNTIME_ENV or PROD_GROQ_API_KEY / PROD_ANTHROPIC_API_KEY in GitHub Actions secrets."
+              exit 1
+            fi
+
+            cat > .env.prodforce <<EOF
+PRODFORCE_LLM_PROVIDER=$PROVIDER
+GROQ_API_KEY=$GROQ_KEY
+ANTHROPIC_API_KEY=$ANTHROPIC_KEY
+EOF
+          fi
+
+          scp -o StrictHostKeyChecking=no .env.prodforce "$USER@$HOST:$DEST/.env.prodforce"
+          rm -f .env.prodforce
+
       - name: Install production deps + restart service
         env:
           HOST: ${{ secrets.PROD_SSH_HOST }}
