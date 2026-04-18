@@ -140,6 +140,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 <div class="toolkit" data-view="grid">
   <div class="controlsBarSentinel" aria-hidden="true"></div>
   <div class="controlsBar" role="search" aria-label="Search and filter frameworks">
+    <div class="controlsBarBg" aria-hidden="true"></div>
     <div class="field">
       <span class="icon" aria-hidden="true">⌕</span>
       <input id="q" class="input" type="search" placeholder="Search frameworks…" />
@@ -385,6 +386,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       const toolkitRoot = document.querySelector(".toolkit");
       let stickyControlBarSyncFrame = 0;
       let stickyControlBarState = false;
+      let stickyControlBarCleanupTimer = 0;
 
       function syncStickyControlBar() {
         stickyControlBarSyncFrame = 0;
@@ -402,9 +404,8 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 
         stickyControlBarState = nextSticky;
 
-        controlsBar.classList.toggle("isStickyMobile", nextSticky);
-
         if (nextSticky && toolkitRoot) {
+          window.clearTimeout(stickyControlBarCleanupTimer);
           const hostRect = toolkitRoot.getBoundingClientRect();
           const leftExpand = Math.max(0, hostRect.left);
           const rightExpand = Math.max(0, window.innerWidth - hostRect.right);
@@ -412,10 +413,17 @@ breadcrumbs={pmtoolkitBreadcrumbs}
           controlsBar.style.setProperty("--sticky-expand-right", `${rightExpand}px`);
           controlsBar.style.setProperty("--sticky-expand-total", `${leftExpand + rightExpand}px`);
         } else {
-          controlsBar.style.removeProperty("--sticky-expand-left");
-          controlsBar.style.removeProperty("--sticky-expand-right");
-          controlsBar.style.removeProperty("--sticky-expand-total");
+          window.clearTimeout(stickyControlBarCleanupTimer);
+          stickyControlBarCleanupTimer = window.setTimeout(() => {
+            if (!stickyControlBarState) {
+              controlsBar.style.removeProperty("--sticky-expand-left");
+              controlsBar.style.removeProperty("--sticky-expand-right");
+              controlsBar.style.removeProperty("--sticky-expand-total");
+            }
+          }, 430);
         }
+
+        controlsBar.classList.toggle("isStickyMobile", nextSticky);
       }
 
       function queueStickyControlBarSync() {
@@ -956,10 +964,8 @@ margin-right: 0;
   width: 100%;
   box-sizing: border-box;
   border-radius: 22px;
-  border: 1px solid rgba(79, 101, 145, 0.34);
-  background:
-    radial-gradient(circle at top left, rgba(84, 111, 170, 0.18) 0%, rgba(84, 111, 170, 0) 34%),
-    linear-gradient(180deg, rgba(20, 30, 55, 0.92) 0%, rgba(10, 17, 33, 0.96) 100%);
+  border: 1px solid var(--controls-border-color, rgba(79, 101, 145, 0.34));
+  background: transparent;
   backdrop-filter: blur(22px) saturate(135%);
   -webkit-backdrop-filter: blur(22px) saturate(135%);
   box-shadow:
@@ -993,7 +999,6 @@ transition:
   position: absolute;
   top: -1px;
   bottom: -1px;
-  width: var(--sticky-side-size, 0px);
   pointer-events: none;
   z-index: -1;
   opacity: 0;
@@ -1001,8 +1006,8 @@ transition:
   transition:
     opacity 0.42s var(--ease),
     transform 0.42s var(--ease);
-  border-top: 1px solid rgba(79, 101, 145, 0.34);
-  border-bottom: 1px solid rgba(79, 101, 145, 0.34);
+  border-top: 1px solid var(--controls-border-color, rgba(79, 101, 145, 0.34));
+  border-bottom: 1px solid var(--controls-border-color, rgba(79, 101, 145, 0.34));
   background:
     radial-gradient(circle at top left, rgba(84, 111, 170, 0.18) 0%, rgba(84, 111, 170, 0) 34%),
     linear-gradient(180deg, rgba(20, 30, 55, 0.92) 0%, rgba(10, 17, 33, 0.96) 100%);
@@ -1012,12 +1017,47 @@ transition:
 
 .controlsBar::before {
   right: 100%;
+  width: var(--sticky-expand-left, 0px);
+  border-left: 1px solid var(--controls-border-color, rgba(79, 101, 145, 0.34));
   transform-origin: right center;
 }
 
 .controlsBar::after {
   left: 100%;
+  width: var(--sticky-expand-right, 0px);
+  border-right: 1px solid var(--controls-border-color, rgba(79, 101, 145, 0.34));
   transform-origin: left center;
+}
+
+.controlsBar::before,
+.controlsBar::after,
+.controlsBarBg {
+  background:
+    radial-gradient(circle at top left, rgba(84, 111, 170, 0.18) 0%, rgba(84, 111, 170, 0) 34%),
+    linear-gradient(180deg, rgba(20, 30, 55, 0.92) 0%, rgba(10, 17, 33, 0.96) 100%);
+}
+
+.controlsBar > :not(.controlsBarBg) {
+  position: relative;
+  z-index: 1;
+}
+
+.controlsBarBg {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  bottom: -1px;
+  left: -1px;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid var(--controls-border-color, rgba(79, 101, 145, 0.34));
+  border-radius: inherit;
+  transition:
+    left 0.38s var(--ease),
+    right 0.38s var(--ease),
+    border-radius 0.38s var(--ease),
+    border-color 0.34s var(--ease),
+    background 0.38s var(--ease);
 }
 
   .controlsBar:focus-within {
@@ -1038,6 +1078,47 @@ transition:
     border-right-color: transparent;
     padding-left: max(18px, env(safe-area-inset-left, 0px));
     padding-right: max(18px, env(safe-area-inset-right, 0px));
+  }
+
+  @media (min-width: 1081px) {
+    .controlsBar.isStickyMobile {
+      --controls-border-color: transparent;
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      padding-left: 16px;
+      padding-right: 16px;
+      grid-template-columns: minmax(280px, 520px) 286px max-content;
+      justify-content: center;
+    }
+
+    .controlsBar.isStickyMobile .controlsBarBg {
+      left: calc((var(--sticky-expand-left, 0px) + 1px) * -1);
+      right: calc((var(--sticky-expand-right, 0px) + 1px) * -1);
+      border-color: rgba(79, 101, 145, 0.34);
+      border-left-color: transparent;
+      border-right-color: transparent;
+      border-radius: 0;
+    }
+
+    .controlsBar.isStickyMobile::before,
+    .controlsBar.isStickyMobile::after {
+      opacity: 0;
+    }
+
+    .controlsBar.isStickyMobile .field {
+      max-width: 520px;
+    }
+
+    .controlsBar.isStickyMobile .selectWrap {
+      width: 286px;
+      max-width: 286px;
+    }
+
+    .controlsBar.isStickyMobile .rightActions {
+      width: auto;
+      justify-content: flex-start;
+    }
   }
 
   .field {
