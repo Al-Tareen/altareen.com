@@ -27,8 +27,14 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
     </nav>
 
     <!-- Mobile menu -->
-    <details class="mobileMenu" data-mobile-menu>
-      <summary class="menuBtn" aria-label="Open navigation menu">
+    <div class="mobileMenu" data-mobile-menu>
+      <button
+        type="button"
+        class="menuBtn"
+        aria-label="Open navigation menu"
+        aria-expanded="false"
+        data-mobile-menu-toggle
+      >
         <span class="menuBtnInner">
           <span class="menuIcon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" focusable="false" aria-hidden="true">
@@ -44,7 +50,7 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
             </svg>
           </span>
         </span>
-      </summary>
+      </button>
 
       <!-- Mobile backdrop overlay -->
       <button
@@ -65,7 +71,7 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
           </a>
         ))}
       </nav>
-    </details>
+    </div>
   </div>
 </header>
 
@@ -74,82 +80,62 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
     const menu = document.querySelector("[data-mobile-menu]");
     if (!menu) return;
 
-    const summary = menu.querySelector("summary");
+    const toggle = menu.querySelector("[data-mobile-menu-toggle]");
     const backdrop = menu.querySelector("[data-mobile-backdrop]");
     const panel = menu.querySelector(".mobilePanel");
     const links = menu.querySelectorAll(".mobileLink");
+    const headerWrap = menu.closest(".wrap");
 
-    let scrollYBeforeLock = 0;
     let isClosing = false;
     let closeTimer;
 
     const isMobile = () => window.innerWidth <= 720;
+    const isOpen = () => menu.classList.contains("isOpen");
 
-function lockScroll() {
-  if (!isMobile()) return;
-  scrollYBeforeLock = window.scrollY;
-  document.body.style.top = `-${scrollYBeforeLock}px`;
-  document.body.classList.add("menu-lock");
-}
-
-function unlockScroll() {
-  if (!isMobile()) return;
-  document.body.classList.remove("menu-lock");
-  document.body.style.top = "";
-  window.scrollTo(0, scrollYBeforeLock);
-}
-
-    function finishClose({ focusSummary = false } = {}) {
-      menu.removeAttribute("open");
-      menu.classList.remove("isClosing");
-      isClosing = false;
-      unlockScroll();
-      if (focusSummary) summary?.focus();
+    function syncMenuLayerState(isOpen) {
+      headerWrap?.classList.toggle("hasOpenMobileMenu", isOpen);
+      toggle?.setAttribute("aria-expanded", isOpen ? "true" : "false");
     }
 
-    function closeMenu({ focusSummary = false } = {}) {
-      if (!menu.hasAttribute("open") || isClosing) return;
+    function finishClose({ focusToggle = false } = {}) {
+      menu.classList.remove("isOpen");
+      menu.classList.remove("isClosing");
+      isClosing = false;
+      syncMenuLayerState(false);
+      if (focusToggle) toggle?.focus();
+    }
+
+    function closeMenu({ focusToggle = false } = {}) {
+      if (!isOpen() || isClosing) return;
 
       isClosing = true;
       menu.classList.add("isClosing");
 
       window.clearTimeout(closeTimer);
       closeTimer = window.setTimeout(() => {
-        finishClose({ focusSummary });
+        finishClose({ focusToggle });
       }, 180);
     }
 
 function openMenu() {
-  if (!menu.hasAttribute("open")) return;
+  if (isOpen()) return;
 
-  // Store current scroll
-  scrollYBeforeLock = window.scrollY;
-
+  menu.classList.add("isOpen");
   menu.classList.remove("isClosing");
   isClosing = false;
   window.clearTimeout(closeTimer);
-  lockScroll();
-
-  // Prevent jumping
-  setTimeout(() => {
-    window.scrollTo(0, scrollYBeforeLock);
-  }, 0);
+  syncMenuLayerState(true);
 }
 
-// Intercept summary click to handle toggle and prevent scroll
-summary?.addEventListener("click", (e) => {
+// Toggle the mobile menu without relying on native <summary> behavior.
+toggle?.addEventListener("click", () => {
   if (!isMobile()) return;
 
-  // Prevent default jump behavior
-  e.preventDefault();
-  e.stopPropagation();
-
-  if (menu.hasAttribute("open")) {
+  if (isOpen()) {
     // Menu is open → close
-    closeMenu({ focusSummary: true });
+    closeMenu({ focusToggle: true });
   } else {
     // Menu is closed → open
-    menu.setAttribute("open", "");
     openMenu();
   }
 });
@@ -159,19 +145,16 @@ summary?.addEventListener("click", (e) => {
       "pointerdown",
       (e) => {
         if (!isMobile()) return;
-        if (!menu.hasAttribute("open") || isClosing) return;
+        if (!isOpen() || isClosing) return;
 
         const target = e.target;
         if (!(target instanceof Node)) return;
 
-        const clickedSummary = summary?.contains(target);
+        const clickedToggle = toggle?.contains(target);
         const clickedPanel = panel?.contains(target);
-        const clickedInsideMenu = menu.contains(target);
 
-        // If click is not on summary/panel, close
-        if (!clickedSummary && !clickedPanel) {
-          // If backdrop exists this may be redundant, but it's a safe fallback
-          if (!clickedInsideMenu || target === backdrop) {
+        if (!clickedToggle && !clickedPanel) {
+          if (target === backdrop || !menu.contains(target)) {
             closeMenu();
           }
         }
@@ -181,23 +164,32 @@ summary?.addEventListener("click", (e) => {
 
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape") return;
-      if (!menu.hasAttribute("open")) return;
-      closeMenu({ focusSummary: true });
+      if (!isOpen()) return;
+      closeMenu({ focusToggle: true });
     });
 
     window.addEventListener("resize", () => {
       if (window.innerWidth > 720) {
         window.clearTimeout(closeTimer);
         menu.classList.remove("isClosing");
+        menu.classList.remove("isOpen");
         isClosing = false;
-        unlockScroll();
-        menu.removeAttribute("open");
+        syncMenuLayerState(false);
       }
     });
 
     window.addEventListener("pagehide", () => {
       window.clearTimeout(closeTimer);
-      unlockScroll();
+      menu.classList.remove("isClosing");
+      menu.classList.remove("isOpen");
+      isClosing = false;
+      syncMenuLayerState(false);
+    });
+
+    links.forEach((link) => {
+      link.addEventListener("click", () => {
+        closeMenu();
+      });
     });
   });
 </script>
@@ -221,6 +213,10 @@ summary?.addEventListener("click", (e) => {
       );
     -webkit-backdrop-filter: blur(12px) saturate(120%);
     backdrop-filter: blur(12px) saturate(120%);
+  }
+
+  .wrap.hasOpenMobileMenu {
+    z-index: 1100;
   }
 
   .wrap::before {
@@ -308,18 +304,6 @@ summary?.addEventListener("click", (e) => {
     display: none;
   }
 
-  :global(html.menu-lock),
-  :global(body.menu-lock) {
-    overflow: hidden;
-  }
-
-  :global(body.menu-lock) {
-    position: fixed;
-    left: 0;
-    right: 0;
-    width: 100%;
-  }
-
   @media (max-width: 720px) {
     :global(:root) {
       --siteHeaderH: 64px;
@@ -345,14 +329,9 @@ summary?.addEventListener("click", (e) => {
       position: relative;
     }
 
-    .mobileMenu > summary {
-      list-style: none;
+    .mobileMenu > .menuBtn {
       position: relative;
       z-index: 3;
-    }
-
-    .mobileMenu > summary::-webkit-details-marker {
-      display: none;
     }
 
     .menuBtn {
@@ -361,6 +340,8 @@ summary?.addEventListener("click", (e) => {
       justify-content: center;
       min-height: 36px;
       padding: 0;
+      font: inherit;
+      appearance: none;
       border-radius: 11px;
       border: 1px solid color-mix(in srgb, var(--border) 66%, transparent);
       background:
@@ -454,7 +435,7 @@ summary?.addEventListener("click", (e) => {
       stroke-linejoin: round;
     }
 
-    .mobileMenu[open] .menuBtn {
+    .mobileMenu.isOpen .menuBtn {
       color: var(--ink);
       border-color: color-mix(in srgb, var(--border) 86%, transparent);
       background:
@@ -468,7 +449,7 @@ summary?.addEventListener("click", (e) => {
         0 8px 20px rgba(0,0,0,0.07);
     }
 
-    .mobileMenu[open] .menuCaret {
+    .mobileMenu.isOpen .menuCaret {
       transform: rotate(180deg);
       opacity: 1;
     }
@@ -477,7 +458,7 @@ summary?.addEventListener("click", (e) => {
   display: none;
 }
 
-.mobileMenu[open] .mobileBackdrop {
+.mobileMenu.isOpen .mobileBackdrop {
   display: block;
   position: fixed;
   inset: var(--siteHeaderH) 0 0 0;
@@ -541,7 +522,7 @@ summary?.addEventListener("click", (e) => {
     visibility 0s linear 220ms;
 }
 
-.mobileMenu[open] .mobilePanel {
+.mobileMenu.isOpen .mobilePanel {
   position: fixed;
   top: var(--siteHeaderH);
   right: 16px;
@@ -652,7 +633,7 @@ summary?.addEventListener("click", (e) => {
     }
 
     @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .mobileMenu[open] .mobileBackdrop {
+  .mobileMenu.isOpen .mobileBackdrop {
     background: rgba(0, 0, 0, 0.10);
   }
 

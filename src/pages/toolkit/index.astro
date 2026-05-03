@@ -1988,6 +1988,18 @@ transition:
   }
 
   @media (max-width: 720px) {
+    :global(html),
+    :global(body) {
+      overflow-x: hidden;
+    }
+
+    @supports (overflow: clip) {
+      :global(html),
+      :global(body) {
+        overflow-x: clip;
+      }
+    }
+
     .spotlightGrid {
       grid-template-columns: 1fr;
       gap: 12px;
@@ -2007,6 +2019,10 @@ transition:
     row-gap: 10px;
     padding: 12px 12px;
     top: calc(var(--siteHeaderH, 64px) + -4px);
+    transition:
+      box-shadow 0.24s var(--ease),
+      border-color 0.24s var(--ease),
+      background 0.24s var(--ease);
   }
 
     .controlsBar.isStickyMobile {
