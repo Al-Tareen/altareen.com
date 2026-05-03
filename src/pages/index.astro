@@ -407,6 +407,8 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
 
   <Footer />
 
+  <button id="toTop" class="toTop" type="button" aria-label="Back to top">↑ Top</button>
+
   <script is:inline>
     window.addEventListener("DOMContentLoaded", () => {
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -466,6 +468,22 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
           else start();
         });
       });
+    });
+  </script>
+
+  <script is:inline>
+    window.addEventListener("DOMContentLoaded", () => {
+      const toTop = document.getElementById("toTop");
+
+      function updateToTop() {
+        if (!toTop) return;
+        const show = window.scrollY > 420;
+        toTop.classList.toggle("isVisible", show);
+      }
+
+      window.addEventListener("scroll", updateToTop, { passive: true });
+      toTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+      updateToTop();
     });
   </script>
 </BaseLayout>
@@ -970,6 +988,57 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     opacity: 1;
   }
 
+  :global(.toTop) {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 200;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid rgba(79, 101, 145, 0.34);
+    border-radius: 999px;
+    background:
+      linear-gradient(180deg, rgba(20, 30, 55, 0.92) 0%, rgba(10, 17, 33, 0.96) 100%);
+    color: rgba(248, 250, 255, 0.94);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.08) inset,
+      0 12px 26px rgba(4, 9, 18, 0.24),
+      0 24px 46px rgba(4, 9, 18, 0.12);
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition:
+      opacity 0.2s var(--ease),
+      transform 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease);
+  }
+
+  :global(.toTop.isVisible) {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  :global(.toTop:hover) {
+    border-color: rgba(116, 145, 206, 0.48);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.1) inset,
+      0 16px 30px rgba(4, 9, 18, 0.28),
+      0 30px 56px rgba(4, 9, 18, 0.16);
+  }
+
   .card-arrow {
     position: absolute;
     right: 16px;
@@ -1173,6 +1242,11 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
 
     .previewDot.isActive {
       width: 20px;
+    }
+
+    :global(.toTop) {
+      right: 12px;
+      bottom: 12px;
     }
   }
 </style>
