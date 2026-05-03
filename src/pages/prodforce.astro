@@ -4159,6 +4159,269 @@ function initProdforce(frameworks, options) {
     };
   }
 
+  function clampSceneMetric(value, min, max) {
+    var num = Number(value);
+    if (!Number.isFinite(num)) num = 0;
+    var low = typeof min === "number" ? min : 0;
+    var high = typeof max === "number" ? max : 1;
+    return Math.min(high, Math.max(low, num));
+  }
+
+  function lerpSceneValue(current, target, rate) {
+    var from = Number.isFinite(Number(current)) ? Number(current) : target;
+    return from + (target - from) * clampSceneMetric(rate, 0, 1);
+  }
+
+  function normalizeSceneConfidence(value) {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return clampSceneMetric(value > 1 ? value / 100 : value);
+    }
+    var label = String(value || "").toLowerCase();
+    if (!label) return 0;
+    if (label.includes("locked")) return 0.94;
+    if (label.includes("high") || label.includes("ready")) return 0.84;
+    if (label.includes("strong")) return 0.76;
+    if (label.includes("medium") || label.includes("nearly")) return 0.62;
+    if (label.includes("emerging")) return 0.5;
+    if (label.includes("low")) return 0.34;
+    if (label.includes("exploring")) return 0.28;
+    return 0;
+  }
+
+  function getRecentDecisionText() {
+    return STATE.messages
+      .filter(function(message) { return message && message.role === "user"; })
+      .slice(-5)
+      .map(function(message) { return message.content || ""; })
+      .join(" ")
+      .toLowerCase();
+  }
+
+  function listHasSceneSignal(list, pattern) {
+    return dedupeList(list).some(function(item) {
+      return pattern.test(String(item || ""));
+    });
+  }
+
+  function scoreRiskKeywords(text) {
+    var lower = String(text || "").toLowerCase();
+    var score = 0;
+    if (/\b(risk|risks|assumption|assumptions|uncertain|uncertainty|unknown|derail)\b/.test(lower)) score += 0.28;
+    if (/\b(blocker|blocked|dependency|dependencies|constraint|capacity|timeline|deadline)\b/.test(lower)) score += 0.22;
+    if (/\b(security|privacy|legal|compliance|trust|safety|misuse|bias|fairness)\b/.test(lower)) score += 0.26;
+    if (/\b(churn|revenue|pricing|renewal|enterprise|launch|go-to-market|gtm)\b/.test(lower)) score += 0.16;
+    return clampSceneMetric(score);
+  }
+
+  function getCategoryIntrinsicRisk(category) {
+    var text = String(category || "").toLowerCase();
+    var score = 0.06;
+    if (/risk|safety|ai|model/.test(text)) score += 0.22;
+    if (/prioritization|decision|roadmap|portfolio|operating|alignment/.test(text)) score += 0.12;
+    if (/growth|gtm|market|business/.test(text)) score += 0.08;
+    if (/data|analytics|evaluation/.test(text)) score += 0.06;
+    return clampSceneMetric(score);
+  }
+
+  function inferSceneUrgencyScore(text) {
+    var lower = String(text || "").toLowerCase();
+    var score = 0;
+    if (/\b(urgent|asap|immediate|immediately|right now|critical|escalat|blocked|blocker)\b/.test(lower)) score += 0.38;
+    if (/\b(today|tomorrow|this week|next week|eow|end of week|deadline|launch date|renewal|board|exec|executive)\b/.test(lower)) score += 0.28;
+    if (/\b(q[1-4]|quarter|sprint|weeks?|months?|before|by)\b/.test(lower)) score += 0.18;
+    if (/\b(churn|retention|revenue|pricing|compliance|security|trust|privacy)\b/.test(lower)) score += 0.14;
+    if (listHasSceneSignal(STATE.scenePresent, /timeline|constraint|deadline|resource|capacity|budget/i)) score += 0.14;
+    if (listHasSceneSignal(STATE.sceneMissing, /timeline|constraint|deadline|resource|capacity|budget/i)) score += 0.08;
+    if (STATE.sceneMode === "match" || STATE.sceneMode === "specialists" || STATE.sceneMode === "synthesis") score += 0.12;
+    else if (STATE.sceneMode === "clarify") score += 0.06;
+    return clampSceneMetric(score);
+  }
+
+  function getFrameworkIdentityKey(item) {
+    if (!item) return "";
+    return String(item.slug || item.title || "").toLowerCase();
+  }
+
+  function buildSceneFrameworkRecordIndex() {
+    var records = []
+      .concat(Array.isArray(STATE.sceneFrameworks) ? STATE.sceneFrameworks : [])
+      .concat(Array.isArray(STATE.sceneFrameworkDecisions) ? STATE.sceneFrameworkDecisions : []);
+    var bySlug = {};
+    var byTitle = {};
+    records.forEach(function(record) {
+      if (!record) return;
+      var slug = String(record.slug || "").toLowerCase();
+      var title = String(record.title || "").toLowerCase();
+      var existing = (slug && bySlug[slug]) || (title && byTitle[title]) || {};
+      var merged = Object.assign({}, existing, record);
+      if (slug) bySlug[slug] = merged;
+      if (title) byTitle[title] = merged;
+    });
+    return { bySlug: bySlug, byTitle: byTitle };
+  }
+
+  function findSceneFrameworkRecord(framework, indexes) {
+    var slug = String(framework && framework.slug || "").toLowerCase();
+    var title = String(framework && framework.title || "").toLowerCase();
+    return (slug && indexes.bySlug[slug]) || (title && indexes.byTitle[title]) || null;
+  }
+
+  function getFrameworkCoverageScore(record) {
+    if (!record) return 0;
+    var present = Array.isArray(record.presentInputs) ? record.presentInputs.length : 0;
+    var required = Array.isArray(record.requiredInputs) ? record.requiredInputs.length : 0;
+    if (required > 0) return clampSceneMetric(present / required);
+    return normalizeSceneConfidence(record.confidence);
+  }
+
+  function getFrameworkMissingRatio(record) {
+    if (!record) return 0.45;
+    var missing = Array.isArray(record.missingInputs) ? record.missingInputs.length : 0;
+    var required = Array.isArray(record.requiredInputs) ? record.requiredInputs.length : 0;
+    if (required > 0) return clampSceneMetric(missing / required);
+    if (missing > 0) return clampSceneMetric(missing / 4);
+    return 1 - getFrameworkCoverageScore(record);
+  }
+
+  function getFrameworkAppliedScore(record) {
+    if (!record) return 0;
+    return Math.max(
+      normalizeSceneConfidence(record.decisionConfidence),
+      normalizeSceneConfidence(record.confidence),
+      normalizeSceneConfidence(record.score),
+      getFrameworkCoverageScore(record)
+    );
+  }
+
+  function buildSceneMotionMetrics(fws) {
+    var recentText = getRecentDecisionText();
+    var textRisk = scoreRiskKeywords(recentText);
+    var globalUrgency = inferSceneUrgencyScore(recentText);
+    var highlights = getSceneHighlights();
+    var indexes = buildSceneFrameworkRecordIndex();
+    var categoryDecisions = {};
+    (Array.isArray(STATE.sceneCategoryDecisions) ? STATE.sceneCategoryDecisions : []).forEach(function(decision) {
+      if (decision && decision.category) categoryDecisions[decision.category] = decision;
+    });
+
+    var categoryBuckets = {};
+    var frameworkMetrics = (fws || []).map(function(framework) {
+      var record = findSceneFrameworkRecord(framework, indexes);
+      var category = framework.category || (record && record.category) || "Uncategorized";
+      var key = framework.slug || framework.title;
+      var isLive =
+        Boolean(record) ||
+        highlights.frameworkKeys.has(framework.slug) ||
+        highlights.frameworkKeys.has(framework.title) ||
+        highlights.frameworkKeys.has(key) ||
+        highlights.categories.has(category);
+      var applied = getFrameworkAppliedScore(record);
+      var missingRatio = getFrameworkMissingRatio(record);
+      var frameworkRiskText = [
+        framework.inputsRequired,
+        framework.commonMistakes,
+        framework.tags,
+        record && record.reason,
+        record && record.inputsRequired,
+        record && record.commonMistakes,
+        record && Array.isArray(record.missingInputs) ? record.missingInputs.join(" ") : "",
+      ].filter(Boolean).join(" ");
+      var unresolvedRisk =
+        record && Array.isArray(record.missingInputs) &&
+        record.missingInputs.some(function(input) { return /risk|assumption|dependency|constraint|timeline/i.test(String(input)); })
+          ? 0.16
+          : 0;
+      var knownRisk = listHasSceneSignal(STATE.scenePresent, /risk|assumption|dependency|constraint/i) ? 0.08 : 0;
+      var intrinsicRisk = getCategoryIntrinsicRisk(category);
+      var risk = clampSceneMetric(
+        0.12 +
+        (1 - applied) * (isLive ? 0.34 : 0.16) +
+        missingRatio * 0.24 +
+        textRisk * (isLive ? 0.28 : 0.1) +
+        scoreRiskKeywords(frameworkRiskText) * 0.24 +
+        intrinsicRisk +
+        unresolvedRisk +
+        knownRisk
+      );
+      if (record && record.locked && applied >= 0.74) risk = clampSceneMetric(risk - 0.08);
+
+      var urgency = clampSceneMetric(
+        globalUrgency +
+        (isLive ? 0.12 : 0) +
+        (record && record.locked ? 0.05 : 0) +
+        (highlights.categories.has(category) ? 0.08 : 0)
+      );
+      var pull = clampSceneMetric(applied * 0.64 + urgency * 0.36);
+      var distanceFactor = clampSceneMetric(
+        1.16 - pull * 0.44 + (risk > 0.68 && applied < 0.46 ? 0.08 : 0),
+        0.68,
+        1.26
+      );
+      var speedFactor = clampSceneMetric(
+        0.72 + risk * 1.38 + urgency * 0.32 + (isLive ? 0.18 : 0),
+        0.62,
+        2.5
+      );
+      var metric = {
+        risk: risk,
+        urgency: urgency,
+        applied: applied,
+        speedFactor: speedFactor,
+        distanceFactor: distanceFactor,
+        isLive: isLive,
+      };
+      if (!categoryBuckets[category]) categoryBuckets[category] = [];
+      categoryBuckets[category].push(metric);
+      return metric;
+    });
+
+    var categoryMetrics = {};
+    dedupeList(
+      (fws || []).map(function(framework) { return framework.category; })
+        .concat(Object.keys(categoryDecisions))
+        .concat(Array.from(highlights.categories))
+    ).forEach(function(category) {
+      var bucket = categoryBuckets[category] || [];
+      var decision = categoryDecisions[category] || {};
+      var decisionApplied = normalizeSceneConfidence(decision.confidence);
+      var active = highlights.categories.has(category) || STATE.sceneSelectedCategory === category;
+      var avgRisk = bucket.length
+        ? bucket.reduce(function(total, metric) { return total + metric.risk; }, 0) / bucket.length
+        : getCategoryIntrinsicRisk(category) + textRisk * 0.12;
+      var maxRisk = bucket.length
+        ? Math.max.apply(null, bucket.map(function(metric) { return metric.risk; }))
+        : avgRisk;
+      var applied = Math.max(
+        decisionApplied,
+        bucket.length
+          ? Math.max.apply(null, bucket.map(function(metric) { return metric.applied; }))
+          : 0
+      );
+      var urgency = clampSceneMetric(
+        globalUrgency +
+        (active ? 0.14 : 0) +
+        (decision.locked ? 0.06 : 0)
+      );
+      var risk = clampSceneMetric(Math.max(avgRisk, maxRisk * 0.82) + (active ? 0.04 : 0));
+      var pull = clampSceneMetric(applied * 0.58 + urgency * 0.42);
+      categoryMetrics[category] = {
+        risk: risk,
+        urgency: urgency,
+        applied: applied,
+        speedFactor: clampSceneMetric(0.68 + risk * 1.45 + urgency * 0.36 + (active ? 0.18 : 0), 0.62, 2.55),
+        distanceFactor: clampSceneMetric(1.18 - pull * 0.45 + (risk > 0.7 && applied < 0.46 ? 0.08 : 0), 0.7, 1.28),
+        isLive: active || bucket.some(function(metric) { return metric.isLive; }),
+      };
+    });
+
+    return {
+      frameworks: frameworkMetrics,
+      categories: categoryMetrics,
+      urgency: globalUrgency,
+      textRisk: textRisk,
+    };
+  }
+
   function findHighlightedFrameworkIndexes(fws, maxCount) {
     const highlights = getSceneHighlights();
     const exact = [];
@@ -4313,6 +4576,7 @@ function initProdforce(frameworks, options) {
       var categoryBodies = categories.map(function(cat, ci) {
         var lane = ci % 4;
         var band = Math.floor(ci / 4);
+        var baseSpeed = 0.11 + lane * 0.018 + (ci % 5) * 0.01;
         return {
           cat: cat,
           label: formatCategoryLabel(cat),
@@ -4320,7 +4584,12 @@ function initProdforce(frameworks, options) {
           baseAngle: (ci / Math.max(categories.length, 1)) * Math.PI * 2 - Math.PI / 2,
           orbitXFactor: 0.18 + lane * 0.048 + band * 0.03,
           orbitYFactor: 0.14 + (ci % 3) * 0.055 + band * 0.028,
-          speed: 0.11 + lane * 0.018 + (ci % 5) * 0.01,
+          baseSpeed: baseSpeed,
+          speed: baseSpeed,
+          distanceFactor: 1,
+          riskLevel: 0,
+          urgencyLevel: 0,
+          appliedLevel: 0,
           bobAmp: 18 + (ci % 4) * 5,
           bobSpeed: 0.62 + (ci % 3) * 0.08,
           zAmp: 1.6 + lane * 0.4,
@@ -4345,6 +4614,7 @@ function initProdforce(frameworks, options) {
         seenByCategory[fw.category] = groupIndex + 1;
         var ring = Math.floor(groupIndex / 6);
         var spoke = groupIndex % 6;
+        var baseSpeed = 0.34 + (groupIndex % 7) * 0.032;
         return {
           frameworkIndex: index,
           slug: fw.slug,
@@ -4354,7 +4624,12 @@ function initProdforce(frameworks, options) {
           baseAngle: (spoke / 6) * Math.PI * 2 + ring * 0.38,
           orbitRadius: 18 + ring * 11 + (groupIndex % 3) * 3,
           orbitRadiusY: 10 + ring * 6 + (groupIndex % 4) * 2,
-          speed: 0.34 + (groupIndex % 7) * 0.032,
+          baseSpeed: baseSpeed,
+          speed: baseSpeed,
+          distanceFactor: 1,
+          riskLevel: 0,
+          urgencyLevel: 0,
+          appliedLevel: 0,
           phase: groupIndex * 0.41 + index * 0.07,
           zAmp: 1.1 + (groupIndex % 5) * 0.24,
           lift: ((groupIndex % 5) - 2) * 7,
@@ -4405,13 +4680,22 @@ function initProdforce(frameworks, options) {
         };
       }
 
-      function updateBodies(t, size, depth) {
+      function updateBodies(t, size, depth, motionMetrics) {
         var centerX = size.width * 0.47;
         var centerY = size.height * 0.52;
         categoryBodies.forEach(function(body) {
-          var orbitX = Math.min(size.width * body.orbitXFactor, size.width * 0.42) + depth * 18;
-          var orbitY = Math.min(size.height * body.orbitYFactor, size.height * 0.34) + depth * 14;
+          var metric = motionMetrics.categories[body.cat] || {};
+          body.speed = lerpSceneValue(body.speed, body.baseSpeed * (metric.speedFactor || 1), 0.045);
+          body.distanceFactor = lerpSceneValue(body.distanceFactor || 1, metric.distanceFactor || 1, 0.05);
+          body.riskLevel = lerpSceneValue(body.riskLevel || 0, metric.risk || 0, 0.06);
+          body.urgencyLevel = lerpSceneValue(body.urgencyLevel || 0, metric.urgency || 0, 0.06);
+          body.appliedLevel = lerpSceneValue(body.appliedLevel || 0, metric.applied || 0, 0.06);
+          var orbitX = (Math.min(size.width * body.orbitXFactor, size.width * 0.42) + depth * 18) * body.distanceFactor;
+          var orbitY = (Math.min(size.height * body.orbitYFactor, size.height * 0.34) + depth * 14) * body.distanceFactor;
           var angle = body.baseAngle + t * body.speed * (1 + depth * 0.18);
+          body.currentAngle = angle;
+          body.orbitX = orbitX;
+          body.orbitY = orbitY;
           body.x = Math.cos(angle) * orbitX;
           body.y =
             Math.sin(angle + body.tilt) * orbitY +
@@ -4422,13 +4706,20 @@ function initProdforce(frameworks, options) {
 
         frameworkNodes.forEach(function(node) {
           var body = categoryBodyByCat[node.category] || categoryBodies[0];
+          var metric = motionMetrics.frameworks[node.frameworkIndex] || {};
+          node.speed = lerpSceneValue(node.speed, node.baseSpeed * (metric.speedFactor || 1), 0.055);
+          node.distanceFactor = lerpSceneValue(node.distanceFactor || 1, metric.distanceFactor || 1, 0.06);
+          node.riskLevel = lerpSceneValue(node.riskLevel || 0, metric.risk || 0, 0.06);
+          node.urgencyLevel = lerpSceneValue(node.urgencyLevel || 0, metric.urgency || 0, 0.06);
+          node.appliedLevel = lerpSceneValue(node.appliedLevel || 0, metric.applied || 0, 0.06);
           var angle = node.baseAngle + t * node.speed + body.baseAngle * 0.22;
-          var orbitRadius = node.orbitRadius + depth * 7;
+          var orbitRadius = (node.orbitRadius + depth * 7) * node.distanceFactor;
+          var orbitRadiusY = node.orbitRadiusY * node.distanceFactor;
           node.x = body.x + Math.cos(angle) * orbitRadius;
           node.y =
             body.y +
             node.lift +
-            Math.sin(angle * 1.07 + node.phase) * node.orbitRadiusY;
+            Math.sin(angle * 1.07 + node.phase) * orbitRadiusY;
           node.z = body.z + Math.sin(angle + node.phase) * node.zAmp;
           node.screen = projectPoint(node.x, node.y, node.z, centerX, centerY);
         });
@@ -4551,7 +4842,8 @@ function initProdforce(frameworks, options) {
             ? frameworkKeysByCategory[selectedCategory]
             : []
         );
-        var center = updateBodies(t, size, depth);
+        var motionMetrics = buildSceneMotionMetrics(fws);
+        var center = updateBodies(t, size, depth, motionMetrics);
         categoryHotspots = [];
         frameworkHotspots = [];
 
@@ -4582,18 +4874,27 @@ function initProdforce(frameworks, options) {
         });
 
         categoryBodies.forEach(function(body) {
-          var orbitX = Math.min(size.width * body.orbitXFactor, size.width * 0.42) + depth * 18;
-          var orbitY = Math.min(size.height * body.orbitYFactor, size.height * 0.34) + depth * 14;
+          var orbitX = body.orbitX || Math.min(size.width * body.orbitXFactor, size.width * 0.42) + depth * 18;
+          var orbitY = body.orbitY || Math.min(size.height * body.orbitYFactor, size.height * 0.34) + depth * 14;
+          var isLiveMotion = motionMetrics.categories[body.cat] && motionMetrics.categories[body.cat].isLive;
           ctx.save();
           ctx.translate(center.centerX, center.centerY);
           ctx.rotate(body.tilt * 0.45);
           ctx.strokeStyle = activeCats.has(body.cat)
-            ? rgbaFromHex(body.color, 0.26)
+            ? rgbaFromHex(body.color, 0.22 + body.riskLevel * 0.18)
             : "rgba(255,255,255,0.08)";
           ctx.lineWidth = activeCats.has(body.cat) ? 1.35 : 1;
           ctx.beginPath();
           ctx.ellipse(0, 0, orbitX, orbitY, 0, 0, Math.PI * 2);
           ctx.stroke();
+          if (isLiveMotion || body.riskLevel > 0.5 || body.urgencyLevel > 0.42) {
+            var trail = 0.28 + body.riskLevel * 0.72;
+            ctx.strokeStyle = rgbaFromHex(body.color, 0.28 + body.riskLevel * 0.34);
+            ctx.lineWidth = 1.4 + body.riskLevel * 2.2;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, orbitX, orbitY, 0, body.currentAngle - trail, body.currentAngle);
+            ctx.stroke();
+          }
           ctx.restore();
         });
 
@@ -4632,7 +4933,7 @@ function initProdforce(frameworks, options) {
               : isMatched
                 ? 3.8
                 : 2.05
-          ) * point.scale + node.size;
+          ) * point.scale + node.size + node.riskLevel * 1.4 + node.appliedLevel * 1.1;
 
           ctx.fillStyle = rgbaFromHex(node.color, alpha);
           ctx.beginPath();
@@ -4640,10 +4941,10 @@ function initProdforce(frameworks, options) {
           ctx.fill();
 
           if (isMatched || isExpanded) {
-            ctx.strokeStyle = getSceneRgba(phase, 0.42);
-            ctx.lineWidth = 1.15;
+            ctx.strokeStyle = getSceneRgba(phase, 0.34 + node.urgencyLevel * 0.26);
+            ctx.lineWidth = 1.1 + node.riskLevel * 0.9;
             ctx.beginPath();
-            ctx.arc(point.x, point.y, radius + 5, 0, Math.PI * 2);
+            ctx.arc(point.x, point.y, radius + 5 + node.appliedLevel * 5, 0, Math.PI * 2);
             ctx.stroke();
           }
 
@@ -4665,9 +4966,9 @@ function initProdforce(frameworks, options) {
           .forEach(function(body) {
             var point = body.screen;
             var isActive = activeCats.has(body.cat) || selectedCategory === body.cat;
-            var coreRadius = (isActive ? 9.6 : 7.2) * point.scale + body.size;
-            ctx.strokeStyle = isActive ? getSceneRgba(phase, 0.34) : "rgba(255,255,255,0.1)";
-            ctx.lineWidth = isActive ? 1.6 : 1;
+            var coreRadius = (isActive ? 9.6 : 7.2) * point.scale + body.size + body.riskLevel * 2.4;
+            ctx.strokeStyle = isActive ? getSceneRgba(phase, 0.26 + body.urgencyLevel * 0.22) : "rgba(255,255,255,0.1)";
+            ctx.lineWidth = isActive ? 1.4 + body.riskLevel * 1.1 : 1;
             ctx.beginPath();
             ctx.moveTo(center.centerX, center.centerY);
             ctx.lineTo(point.x, point.y);
@@ -4682,6 +4983,20 @@ function initProdforce(frameworks, options) {
             ctx.beginPath();
             ctx.arc(point.x, point.y, coreRadius + 8, 0, Math.PI * 2);
             ctx.fill();
+
+            if (isActive || body.riskLevel > 0.58) {
+              ctx.strokeStyle = rgbaFromHex(body.color, 0.44 + body.urgencyLevel * 0.22);
+              ctx.lineWidth = 1.2 + body.riskLevel * 1.4;
+              ctx.beginPath();
+              ctx.arc(
+                point.x,
+                point.y,
+                coreRadius + 12 + body.appliedLevel * 7,
+                -Math.PI / 2,
+                -Math.PI / 2 + Math.PI * 2 * clampSceneMetric(body.riskLevel)
+              );
+              ctx.stroke();
+            }
 
             drawScenePill(
               ctx,
@@ -4892,12 +5207,18 @@ function initProdforce(frameworks, options) {
           // Orbital params — spread categories across distinct orbits
           var baseAngle = (ci / N_CATS) * Math.PI * 2 - Math.PI / 2;
           var tier = ci % 3;
+          var baseSpeed = 0.16 + tier * 0.03 + (ci % 5) * 0.016;
           var body = {
             cat: cat, mesh: mesh, glow: glow, line: line,
             baseAngle: baseAngle,
             orbitR: 3.9 + tier * 0.9,
             flatness: 0.72 + tier * 0.08,
-            speed: 0.16 + tier * 0.03 + (ci % 5) * 0.016,
+            baseSpeed: baseSpeed,
+            speed: baseSpeed,
+            distanceFactor: 1,
+            riskLevel: 0,
+            urgencyLevel: 0,
+            appliedLevel: 0,
             phase: ci * 0.57,
             tilt: (ci % 2 === 0 ? 1 : -1) * (0.12 + tier * 0.03),
             verticalAmp: 0.48 + tier * 0.12,
@@ -4920,9 +5241,15 @@ function initProdforce(frameworks, options) {
         });
 
         // Compute a category body position for a given time
-        function catPos(body, t, depth) {
+        function catPos(body, t, depth, motionMetrics) {
+          var metric = motionMetrics && motionMetrics.categories ? motionMetrics.categories[body.cat] || {} : {};
+          body.speed = lerpSceneValue(body.speed, body.baseSpeed * (metric.speedFactor || 1), 0.045);
+          body.distanceFactor = lerpSceneValue(body.distanceFactor || 1, metric.distanceFactor || 1, 0.05);
+          body.riskLevel = lerpSceneValue(body.riskLevel || 0, metric.risk || 0, 0.06);
+          body.urgencyLevel = lerpSceneValue(body.urgencyLevel || 0, metric.urgency || 0, 0.06);
+          body.appliedLevel = lerpSceneValue(body.appliedLevel || 0, metric.applied || 0, 0.06);
           var angle = body.baseAngle + t * body.speed * (1 + depth * 0.18);
-          var r = body.orbitR + depth * 0.65 + Math.sin(t * 0.32 + body.phase) * 0.18;
+          var r = (body.orbitR + depth * 0.65 + Math.sin(t * 0.32 + body.phase) * 0.18) * body.distanceFactor;
           var x = r * Math.cos(angle);
           var z = r * Math.sin(angle) * body.flatness;
           var y = Math.sin(angle * 1.08 + body.tilt) * (body.verticalAmp + depth * 0.14) +
@@ -4946,12 +5273,18 @@ function initProdforce(frameworks, options) {
           var group = catGroups[fw.category] || [];
           var idx = group.indexOf(i);
           var count = Math.max(group.length, 1);
+          var baseSpeed = 0.12 + (idx % 7) * 0.015;
           fwMotion[i] = {
             category: fw.category,
             angle: (idx / count) * Math.PI * 2 + idx * 0.6,
             radius: 0.4 + (idx / count) * 0.8,
             lift: ((idx % 5) - 2) * 0.08,
-            speed: 0.12 + (idx % 7) * 0.015,
+            baseSpeed: baseSpeed,
+            speed: baseSpeed,
+            distanceFactor: 1,
+            riskLevel: 0,
+            urgencyLevel: 0,
+            appliedLevel: 0,
             phase: idx * 0.5,
           };
           var color = CAT_COL[fw.category] || DEF_COL;
@@ -4960,7 +5293,7 @@ function initProdforce(frameworks, options) {
 
         // Compute initial positions at t=0
         categoryBodies.forEach(function(body) {
-          catPos(body, 0, 0);
+          catPos(body, 0, 0, { categories: {} });
           body.mesh.position.copy(body.position);
           body.glow.position.copy(body.position);
           var linePos = body.line.geometry.attributes.position.array;
@@ -5049,6 +5382,7 @@ function initProdforce(frameworks, options) {
             (STATE.sceneFrameworks || [])
               .map(function(f) { return f.slug || f.title; }).filter(Boolean)
           );
+          var motionMetrics = buildSceneMotionMetrics(fws);
 
           // Lights & hub
           stars.rotation.y = t * 0.012;
@@ -5071,15 +5405,15 @@ function initProdforce(frameworks, options) {
 
           // ── Category bodies ──────────────────────────────
           categoryBodies.forEach(function(body) {
-            catPos(body, t, depth);
+            catPos(body, t, depth, motionMetrics);
             var isAct = activeCats.has(body.cat);
             body.mesh.position.copy(body.position);
             body.glow.position.copy(body.position);
-            body.mesh.scale.setScalar(isAct ? 1.6 : hasActive ? 0.7 : 1.15);
-            body.glow.scale.setScalar(isAct ? 1.9 : hasActive ? 0.8 : 1.4);
-            body.mesh.material.emissiveIntensity = isAct ? 1.0 : hasActive ? 0.15 : 0.55;
-            body.glow.material.opacity = isAct ? 0.3 : hasActive ? 0.04 : 0.16;
-            body.line.material.opacity = isAct ? 0.28 : hasActive ? 0.03 : 0.14;
+            body.mesh.scale.setScalar((isAct ? 1.45 : hasActive ? 0.7 : 1.08) + body.riskLevel * 0.38 + body.appliedLevel * 0.22);
+            body.glow.scale.setScalar((isAct ? 1.75 : hasActive ? 0.8 : 1.3) + body.riskLevel * 0.6 + body.urgencyLevel * 0.28);
+            body.mesh.material.emissiveIntensity = isAct ? 0.82 + body.riskLevel * 0.38 : hasActive ? 0.15 : 0.46 + body.riskLevel * 0.22;
+            body.glow.material.opacity = isAct ? 0.18 + body.riskLevel * 0.22 : hasActive ? 0.04 : 0.12 + body.riskLevel * 0.08;
+            body.line.material.opacity = isAct ? 0.16 + body.urgencyLevel * 0.18 : hasActive ? 0.03 : 0.1 + body.riskLevel * 0.08;
             // Gray out inactive category body color
             if (hasActive && !isAct) {
               body.mesh.material.color.setHex(0x333344);
@@ -5098,8 +5432,14 @@ function initProdforce(frameworks, options) {
           fws.forEach(function(fw, i) {
             var m = fwMotion[i];
             var body = categoryBodyByCat[m.category] || categoryBodies[0];
+            var metric = motionMetrics.frameworks[i] || {};
+            m.speed = lerpSceneValue(m.speed, m.baseSpeed * (metric.speedFactor || 1), 0.055);
+            m.distanceFactor = lerpSceneValue(m.distanceFactor || 1, metric.distanceFactor || 1, 0.06);
+            m.riskLevel = lerpSceneValue(m.riskLevel || 0, metric.risk || 0, 0.06);
+            m.urgencyLevel = lerpSceneValue(m.urgencyLevel || 0, metric.urgency || 0, 0.06);
+            m.appliedLevel = lerpSceneValue(m.appliedLevel || 0, metric.applied || 0, 0.06);
             var a = m.angle + t * m.speed + m.phase;
-            var r = m.radius * (1 + depth * 0.15);
+            var r = m.radius * (1 + depth * 0.15) * m.distanceFactor;
             fwPos[i * 3]     = body.position.x + Math.cos(a) * r;
             fwPos[i * 3 + 1] = body.position.y + m.lift + Math.sin(a * 1.1 + m.phase) * r * 0.5;
             fwPos[i * 3 + 2] = body.position.z + Math.sin(a + m.phase) * r * 0.7;
@@ -5125,7 +5465,7 @@ function initProdforce(frameworks, options) {
           });
           fwGeo.attributes.position.needsUpdate = true;
           fwGeo.attributes.color.needsUpdate = true;
-          fwMat.size = hasActive ? 0.16 + depth * 0.03 : 0.12 + depth * 0.02;
+          fwMat.size = hasActive ? 0.16 + depth * 0.03 + motionMetrics.textRisk * 0.04 : 0.12 + depth * 0.02;
           fwMat.opacity = hasActive ? 0.92 : 0.8;
 
           // Focus highlights
@@ -5156,6 +5496,8 @@ function initProdforce(frameworks, options) {
             var isDim = hasActive && !isAct;
             el.classList.toggle("is-active", isAct);
             el.classList.toggle("is-dim", isDim);
+            el.classList.toggle("is-risk-high", body.riskLevel > 0.64);
+            el.classList.toggle("is-urgent", body.urgencyLevel > 0.48);
             el.style.opacity = isDim ? "0.3" : isAct ? "1" : "0.7";
           });
 
@@ -5215,6 +5557,7 @@ function initProdforce(frameworks, options) {
         var catGroup = fws.filter(function(f) { return f.category === fw.category; });
         var inIdx = catGroup.indexOf(fw);
         var spread = 0.34 + (inIdx / Math.max(catGroup.length, 1)) * 0.72;
+        var baseSpeed = 0.22 + (0.54 + (inIdx % 7) * 0.08) * 0.03;
         return {
           slug: fw.slug,
           title: fw.title,
@@ -5225,17 +5568,29 @@ function initProdforce(frameworks, options) {
           phase: Math.random() * Math.PI * 2,
           wave: 0.7 + Math.random() * 0.55,
           wobble: 0.54 + (inIdx % 7) * 0.08,
+          baseSpeed: baseSpeed,
+          speed: baseSpeed,
+          distanceFactor: 1,
+          riskLevel: 0,
+          urgencyLevel: 0,
+          appliedLevel: 0,
           color: CAT_COL[fw.category] || DEF_COL,
         };
       });
 
       const categoryBodies = ALL_CATS_2D.map(function(cat, ci) {
+        var baseSpeed = 0.46 + (ci % 5) * 0.1;
         return {
           cat: cat,
           color: CAT_COL[cat] || DEF_COL,
           orbitX: 166 + (ci % 4) * 38 + (ALL_CATS_2D.length > 9 ? 18 : 0),
           orbitY: 78 + (ci % 3) * 28 + (Math.floor(ci / 4) % 2) * 12,
-          speed: 0.46 + (ci % 5) * 0.1,
+          baseSpeed: baseSpeed,
+          speed: baseSpeed,
+          distanceFactor: 1,
+          riskLevel: 0,
+          urgencyLevel: 0,
+          appliedLevel: 0,
           phase: ci * 0.72,
           tilt: ((ci % 2 === 0 ? 1 : -1) * (0.08 + (ci % 3) * 0.03)),
           x: 0,
@@ -5321,6 +5676,7 @@ function initProdforce(frameworks, options) {
         const activeCats = getSceneHighlights().categories;
         const hasActiveCats = activeCats.size > 0;
         const conversationDepth = getConversationDepth();
+        const motionMetrics = buildSceneMotionMetrics(frameworks);
 
         const gradient = ctx.createRadialGradient(
           size.width * 0.5,
@@ -5356,9 +5712,18 @@ function initProdforce(frameworks, options) {
         ctx.restore();
 
         categoryBodies.forEach(function(body, index) {
+          const metric = motionMetrics.categories[body.cat] || {};
+          body.speed = lerpSceneValue(body.speed, body.baseSpeed * (metric.speedFactor || 1), 0.045);
+          body.distanceFactor = lerpSceneValue(body.distanceFactor || 1, metric.distanceFactor || 1, 0.05);
+          body.riskLevel = lerpSceneValue(body.riskLevel || 0, metric.risk || 0, 0.06);
+          body.urgencyLevel = lerpSceneValue(body.urgencyLevel || 0, metric.urgency || 0, 0.06);
+          body.appliedLevel = lerpSceneValue(body.appliedLevel || 0, metric.applied || 0, 0.06);
           const angle = t * body.speed * (1 + conversationDepth * 0.42) + body.phase;
-          const orbitX = body.orbitX + Math.sin(t * 0.3 + body.phase) * 8 + conversationDepth * 44;
-          const orbitY = body.orbitY + Math.cos(t * 0.24 + body.phase) * 6 + conversationDepth * 26;
+          const orbitX = (body.orbitX + Math.sin(t * 0.3 + body.phase) * 8 + conversationDepth * 44) * body.distanceFactor;
+          const orbitY = (body.orbitY + Math.cos(t * 0.24 + body.phase) * 6 + conversationDepth * 26) * body.distanceFactor;
+          body.currentAngle = angle;
+          body.currentOrbitX = orbitX;
+          body.currentOrbitY = orbitY;
           body.x = Math.cos(angle) * orbitX;
           body.y = Math.sin(angle + body.tilt) * orbitY;
           body.z = Math.sin(angle * 1.05 + body.phase) * 2.4;
@@ -5373,24 +5738,47 @@ function initProdforce(frameworks, options) {
           ctx.ellipse(
             size.width * 0.5,
             size.height * 0.5,
-            body.orbitX + conversationDepth * 44,
-            body.orbitY + conversationDepth * 26,
+            body.currentOrbitX || body.orbitX + conversationDepth * 44,
+            body.currentOrbitY || body.orbitY + conversationDepth * 26,
             body.tilt,
             0,
             Math.PI * 2
           );
           ctx.stroke();
+          if ((motionMetrics.categories[body.cat] && motionMetrics.categories[body.cat].isLive) || body.riskLevel > 0.5) {
+            const trail = 0.26 + body.riskLevel * 0.7;
+            ctx.globalAlpha = 0.2 + body.riskLevel * 0.34;
+            ctx.lineWidth = 1.2 + body.riskLevel * 2;
+            ctx.beginPath();
+            ctx.ellipse(
+              size.width * 0.5,
+              size.height * 0.5,
+              body.currentOrbitX || body.orbitX + conversationDepth * 44,
+              body.currentOrbitY || body.orbitY + conversationDepth * 26,
+              body.tilt,
+              body.currentAngle - trail,
+              body.currentAngle
+            );
+            ctx.stroke();
+          }
           ctx.restore();
         });
 
         frameworks.forEach((node, index) => {
           const body = categoryBodyByCat[node.category] || categoryBodies[0];
-          const angle = node.clusterAngle + t * (0.22 + node.wobble * 0.03) + node.phase;
-          const x = body.x + Math.cos(angle) * node.clusterRadius;
+          const metric = motionMetrics.frameworks[index] || {};
+          node.speed = lerpSceneValue(node.speed, node.baseSpeed * (metric.speedFactor || 1), 0.055);
+          node.distanceFactor = lerpSceneValue(node.distanceFactor || 1, metric.distanceFactor || 1, 0.06);
+          node.riskLevel = lerpSceneValue(node.riskLevel || 0, metric.risk || 0, 0.06);
+          node.urgencyLevel = lerpSceneValue(node.urgencyLevel || 0, metric.urgency || 0, 0.06);
+          node.appliedLevel = lerpSceneValue(node.appliedLevel || 0, metric.applied || 0, 0.06);
+          const angle = node.clusterAngle + t * node.speed + node.phase;
+          const clusterRadius = node.clusterRadius * node.distanceFactor;
+          const x = body.x + Math.cos(angle) * clusterRadius;
           const y =
             body.y +
             node.vertical +
-            Math.sin(angle * 1.08 + node.phase) * (12 + node.wave * 10);
+            Math.sin(angle * 1.08 + node.phase) * (12 + node.wave * 10) * node.distanceFactor;
           const z = body.z + Math.sin(angle + node.phase) * node.wave * 2.8;
           const point = project(x, y, z, size.width, size.height);
           const isHighlighted = highlightSet.has(index);
@@ -5417,16 +5805,16 @@ function initProdforce(frameworks, options) {
           ctx.arc(
             point.x,
             point.y,
-            (isHighlighted ? 3.6 : 1.7) + point.scale * (isHighlighted ? 4.6 : 2.4),
+            (isHighlighted ? 3.6 : 1.7) + point.scale * (isHighlighted ? 4.6 : 2.4) + node.riskLevel * 1.2 + node.appliedLevel * 0.9,
             0,
             Math.PI * 2
           );
           ctx.fill();
           if (isHighlighted) {
-            ctx.strokeStyle = getSceneRgba(phase, 0.42);
-            ctx.lineWidth = 1.1;
+            ctx.strokeStyle = getSceneRgba(phase, 0.32 + node.urgencyLevel * 0.28);
+            ctx.lineWidth = 1.1 + node.riskLevel * 0.8;
             ctx.beginPath();
-            ctx.arc(point.x, point.y, 7 + point.scale * 5, 0, Math.PI * 2);
+            ctx.arc(point.x, point.y, 7 + point.scale * 5 + node.appliedLevel * 5, 0, Math.PI * 2);
             ctx.stroke();
           }
         });
@@ -5448,8 +5836,8 @@ function initProdforce(frameworks, options) {
           const point = project(body.x, body.y, body.z, size.width, size.height);
           const isActive = activeCats.has(body.cat);
 
-          ctx.strokeStyle = isActive ? getSceneRgba(phase, 0.34) : "rgba(255,255,255,0.09)";
-          ctx.lineWidth = isActive ? 1.4 : 1;
+          ctx.strokeStyle = isActive ? getSceneRgba(phase, 0.26 + body.urgencyLevel * 0.22) : "rgba(255,255,255,0.09)";
+          ctx.lineWidth = isActive ? 1.25 + body.riskLevel * 1.05 : 1;
           ctx.beginPath();
           ctx.moveTo(hubX, hubY);
           ctx.lineTo(point.x, point.y);
@@ -5458,13 +5846,29 @@ function initProdforce(frameworks, options) {
           ctx.fillStyle = body.color;
           ctx.globalAlpha = isActive ? 1 : hasActiveCats ? 0.58 : 0.84;
           ctx.beginPath();
-          ctx.arc(point.x, point.y, (isActive ? 8.2 : 6.2) + point.scale * 4.2, 0, Math.PI * 2);
+          const categoryRadius = (isActive ? 8.2 : 6.2) + point.scale * 4.2 + body.riskLevel * 2.2;
+          ctx.arc(point.x, point.y, categoryRadius, 0, Math.PI * 2);
           ctx.fill();
           ctx.globalAlpha = isActive ? 0.22 : 0.12;
           ctx.beginPath();
-          ctx.arc(point.x, point.y, (isActive ? 16 : 11) + point.scale * 5.1, 0, Math.PI * 2);
+          ctx.arc(point.x, point.y, (isActive ? 16 : 11) + point.scale * 5.1 + body.appliedLevel * 5, 0, Math.PI * 2);
           ctx.fill();
           ctx.globalAlpha = 1;
+          if (isActive || body.riskLevel > 0.58) {
+            ctx.strokeStyle = body.color;
+            ctx.globalAlpha = 0.42 + body.urgencyLevel * 0.22;
+            ctx.lineWidth = 1.1 + body.riskLevel * 1.3;
+            ctx.beginPath();
+            ctx.arc(
+              point.x,
+              point.y,
+              categoryRadius + 11 + body.appliedLevel * 6,
+              -Math.PI / 2,
+              -Math.PI / 2 + Math.PI * 2 * clampSceneMetric(body.riskLevel)
+            );
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
         });
 
         ALL_CATS_2D.forEach(function(cat) {
@@ -5485,6 +5889,8 @@ function initProdforce(frameworks, options) {
           label.style.opacity = String(isActive ? 1 : hasActiveCats ? 0.58 : 0.82);
           label.classList.toggle("is-active", isActive);
           label.classList.toggle("is-dim", hasActiveCats && !isActive);
+          label.classList.toggle("is-risk-high", body.riskLevel > 0.64);
+          label.classList.toggle("is-urgent", body.urgencyLevel > 0.48);
         });
 
         frameworks.forEach(function(node, index) {

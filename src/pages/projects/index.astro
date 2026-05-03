@@ -457,14 +457,30 @@ const projectsSchema = {
     const controlsBar = document.querySelector(".controlsBar");
     const controlsBarSentinel = document.querySelector(".controlsBarSentinel");
     const projectsRoot = document.querySelector(".projectsRoot");
+    const MOBILE_STICKY_BREAKPOINT = 720;
     let stickyControlBarSyncFrame = 0;
     let stickyControlBarState = false;
     let stickyControlBarCleanupTimer = 0;
+
+    function updateStickyControlBarOffset() {
+      if (!controlsBar || !controlsBarSentinel) return;
+
+      const controlsBarStyles = getComputedStyle(controlsBar);
+      const controlsBarOffset =
+        controlsBar.offsetHeight +
+        (parseFloat(controlsBarStyles.marginBottom || "0") || 0);
+
+      controlsBarSentinel.style.setProperty(
+        "--mobile-sticky-controls-offset",
+        `${controlsBarOffset}px`
+      );
+    }
 
     function syncStickyControlBar() {
       stickyControlBarSyncFrame = 0;
       if (!controlsBar) return;
 
+      const isMobileStickyMode = window.innerWidth <= MOBILE_STICKY_BREAKPOINT;
       const stickyTop = parseFloat(getComputedStyle(controlsBar).top || "0") || 0;
       const markerRect = controlsBarSentinel
         ? controlsBarSentinel.getBoundingClientRect()
@@ -476,8 +492,14 @@ const projectsSchema = {
         : markerRect.top <= enterThreshold;
 
       stickyControlBarState = nextSticky;
+      updateStickyControlBarOffset();
 
-      if (nextSticky && projectsRoot) {
+      if (isMobileStickyMode) {
+        window.clearTimeout(stickyControlBarCleanupTimer);
+        controlsBar.style.removeProperty("--sticky-expand-left");
+        controlsBar.style.removeProperty("--sticky-expand-right");
+        controlsBar.style.removeProperty("--sticky-expand-total");
+      } else if (nextSticky && projectsRoot) {
         window.clearTimeout(stickyControlBarCleanupTimer);
         const hostRect = projectsRoot.getBoundingClientRect();
         const leftExpand = Math.max(0, hostRect.left);
@@ -497,6 +519,10 @@ const projectsSchema = {
       }
 
       controlsBar.classList.toggle("isStickyMobile", nextSticky);
+      controlsBarSentinel?.classList.toggle(
+        "isStickyMobile",
+        nextSticky && isMobileStickyMode
+      );
     }
 
     function queueStickyControlBarSync() {
@@ -622,7 +648,10 @@ const projectsSchema = {
     }
 
     window.addEventListener("scroll", queueStickyControlBarSync, { passive: true });
-    window.addEventListener("resize", queueStickyControlBarSync);
+    window.addEventListener("resize", () => {
+      updateStickyControlBarOffset();
+      queueStickyControlBarSync();
+    });
 
     q?.addEventListener("input", applyFilter);
     cat?.addEventListener("change", applyFilter);
@@ -897,6 +926,9 @@ if (kind === "image") {
         closePreview();
       }
     });
+
+    updateStickyControlBarOffset();
+    queueStickyControlBarSync();
   });
 </script>
 
@@ -981,6 +1013,11 @@ transition:
   margin: 0;
   pointer-events: none;
   visibility: hidden;
+  transition: height 0.24s var(--ease);
+}
+
+.controlsBarSentinel.isStickyMobile {
+  height: var(--mobile-sticky-controls-offset, 0px);
 }
 
 .controlsBar::before,
@@ -2427,6 +2464,28 @@ footer,
 }
 
 @media (max-width: 720px) {
+  :global(html),
+  :global(body) {
+    overflow-x: hidden;
+  }
+
+  @supports (overflow: clip) {
+    :global(html),
+    :global(body) {
+      overflow-x: clip;
+    }
+  }
+
+  .projectsPage {
+    overflow-x: hidden;
+  }
+
+  @supports (overflow: clip) {
+    .projectsPage {
+      overflow-x: clip;
+    }
+  }
+
   .controlsBar {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
@@ -2437,6 +2496,34 @@ footer,
     row-gap: 10px;
     padding: 12px 14px;
     top: calc(var(--siteHeaderH, 64px) + -4px);
+  }
+
+  .controlsBar.isStickyMobile {
+    position: fixed;
+    top: calc(var(--siteHeaderH, 64px) + -4px);
+    left: 0;
+    right: 0;
+    width: auto;
+    margin: 0;
+    z-index: 95;
+    border-radius: 0;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+    padding-right: max(14px, env(safe-area-inset-right, 0px));
+  }
+
+  .controlsBar.isStickyMobile::before,
+  .controlsBar.isStickyMobile::after {
+    opacity: 0;
+  }
+
+  .controlsBar.isStickyMobile .controlsBarBg {
+    left: -1px;
+    right: -1px;
+    border-radius: 0;
+    border-left-color: transparent;
+    border-right-color: transparent;
   }
 
   .field {
