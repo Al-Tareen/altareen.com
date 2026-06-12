@@ -11,7 +11,6 @@
     "toolkit:analytics": "node ./scripts/pull-toolkit-analytics.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.89.0",
     "@astrojs/node": "^9.5.0",
     "@astrojs/sitemap": "^3.7.2",
     "@google-analytics/data": "^5.2.1",
