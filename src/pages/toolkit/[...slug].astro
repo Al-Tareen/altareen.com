@@ -5,7 +5,7 @@ import PageShell from "../../components/PageShell.astro";
 import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {
-  const items = await getCollection("toolkit");
+  const items = (await getCollection("toolkit")).map((e) => ({ ...e, slug: e.id }));
   return items.map((item) => ({
     params: { slug: item.slug },
     props: { item },
@@ -19,7 +19,7 @@ const routeSlug = Array.isArray(Astro.params.slug)
 let item = Astro.props?.item;
 
 if (!item) {
-  const items = await getCollection("toolkit");
+  const items = (await getCollection("toolkit")).map((e) => ({ ...e, slug: e.id }));
   item = items.find((entry) => entry.slug === routeSlug);
 }
 

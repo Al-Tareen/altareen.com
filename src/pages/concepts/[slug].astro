@@ -7,7 +7,7 @@ import { getCollection } from "astro:content";
 export async function getStaticPaths() {
   const allowedCategories = new Set(["Concepts", "Business Plans"]);
 
-  const all = await getCollection("toolkit");
+  const all = (await getCollection("toolkit")).map((e) => ({ ...e, slug: e.id }));
   const items = all.filter((item) =>
     allowedCategories.has((item.data.primaryCategory || "Uncategorized").trim())
   );
@@ -25,7 +25,7 @@ const routeSlug = Array.isArray(Astro.params.slug)
 let item = Astro.props?.item;
 
 if (!item) {
-  const all = await getCollection("toolkit");
+  const all = (await getCollection("toolkit")).map((e) => ({ ...e, slug: e.id }));
   item = all.find((entry) => entry.slug === routeSlug);
 }
 

@@ -5,7 +5,7 @@ import analyticsData from "../../data/toolkit-analytics.json";
 
 const HIDDEN_CATEGORIES = new Set(["Business Plans", "TBA", "Financial Models"]);
 
-const all = await getCollection("toolkit");
+const all = (await getCollection("toolkit")).map((e) => ({ ...e, slug: e.id }));
 
 // DEBUG
 const dbTitles = Array.from(new Set(all.map((i) => i.data.dbTitle || ""))).sort();

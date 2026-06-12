@@ -11,11 +11,11 @@
     "toolkit:analytics": "node ./scripts/pull-toolkit-analytics.mjs"
   },
   "dependencies": {
-    "@astrojs/node": "^9.5.0",
+    "@astrojs/node": "^10.1.4",
     "@astrojs/sitemap": "^3.7.2",
     "@google-analytics/data": "^5.2.1",
     "@notionhq/client": "^5.9.0",
-    "astro": "^5.18.1",
+    "astro": "^6.4.6",
     "dotenv": "^17.3.1"
   },
   "devDependencies": {

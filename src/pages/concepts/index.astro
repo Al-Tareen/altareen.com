@@ -4,7 +4,7 @@ import { getCollection } from "astro:content";
 
 const IDEAS_CATEGORY = "Business Plans";
 
-const all = await getCollection("toolkit");
+const all = (await getCollection("toolkit")).map((e) => ({ ...e, slug: e.id }));
 
 const items = all.filter(
   (item) => (item.data.primaryCategory || "Uncategorized").trim() === IDEAS_CATEGORY

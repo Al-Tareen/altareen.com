@@ -60,7 +60,7 @@ function isPdfExt(ext = "") {
   return ext === ".pdf";
 }
 
-const all = await getCollection("projects");
+const all = (await getCollection("projects")).map((e) => ({ ...e, slug: e.id }));
 
 const rawProjects = all.filter((item) => {
   const dbTitle = String(item.data.dbTitle || "").trim().toLowerCase();
