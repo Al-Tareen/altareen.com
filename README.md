@@ -28,7 +28,6 @@ The site is intentionally designed to feel:
 - Homepage (curated product surface)
 - Projects (portfolio + previews)
 - PM Toolkit (114+ frameworks, dynamic)
-- Finance Toolkit (financial models)
 - Concepts (editorial insights)
 - About (profile + contact system)
 - Executive Dashboard (private analytics layer)

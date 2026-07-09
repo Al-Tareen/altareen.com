@@ -16,7 +16,7 @@ const metaKeywords = typeof keywords === "string" ? keywords : "";
 const siteUrl = Astro.site ?? "https://dev.altareen.com";
 const canonical = new URL(Astro.url.pathname, siteUrl).toString();
 
-const isToolkitDetail = ["pm", "finance", "concepts"].includes(toolkitType) && Boolean(slug);
+const isToolkitDetail = ["pm", "concepts"].includes(toolkitType) && Boolean(slug);
 
 const ogImage = isToolkitDetail
   ? new URL(`/toolkit-covers/${slug}.png`, siteUrl).toString()

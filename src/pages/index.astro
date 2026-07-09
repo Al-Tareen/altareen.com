@@ -16,10 +16,6 @@ const frameworkPool = all
   .filter((item) => !HIDDEN_FRAMEWORK_CATEGORIES.has((item.data.primaryCategory || "Uncategorized").trim()))
   .filter(hasCover);
 
-const financePool = all
-  .filter((item) => (item.data.primaryCategory || "").trim() === "Financial Models")
-  .filter(hasCover);
-
 const conceptPool = all
   .filter((item) => CONCEPT_CATEGORIES.has((item.data.primaryCategory || "Uncategorized").trim()))
   .filter(hasCover);
@@ -71,11 +67,6 @@ const pmPreviewItems = buildPreviewItems(
 const pmPagesDesktop = chunkItems(pmPreviewItems, 3);
 const pmPagesMobile = chunkItems(pmPreviewItems, 2);
 
-const financePages = chunkItems(
-  buildPreviewItems(financePool, 4, homepagePreviewSeed + 0.202),
-  2
-);
-
 const conceptPages = chunkItems(buildPreviewItems(conceptPool, 2, "concepts"), 2);
 
 const homepageSchema = [
@@ -110,7 +101,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
 <BaseLayout
   title="Al Tareen | AI Transformation, Product Management, Product Strategy"
   description="Explore Al Tareen’s work across AI transformation, product management, product strategy, PM frameworks, financial models, concepts, and selected projects."
-  keywords="Al Tareen, AI transformation, product management, product strategy, PM toolkit, finance toolkit, concepts, projects"
+  keywords="Al Tareen, AI transformation, product management, product strategy, PM toolkit, concepts, projects"
   schema={homepageSchema}
   breadcrumbs={homepageBreadcrumbs}
 >
@@ -124,8 +115,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
 
       <p class="lead">
         Welcome to my website. Explore selected Projects, a PM Toolkit for effective decision-making,
-        a Finance Toolkit containing various models, and Concepts that reflect how I think through new
-        opportunities.
+        and Concepts that reflect how I think through new opportunities.
       </p>
     </section>
 
@@ -216,68 +206,6 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
             {pmPagesMobile.length > 1 && (
               <div class="previewIndicators">
                 {pmPagesMobile.map((_, index) => (
-                  <span
-                    class={`previewDot ${index === 0 ? "isActive" : ""}`}
-                    data-preview-dot
-                  ></span>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        <span class="card-arrow" aria-hidden="true">↗</span>
-      </a>
-
-      <a
-        class="card card-premium card-finance"
-        href="/finance-toolkit"
-        onclick="trackEvent('homepage_section_click', { section: 'finance_toolkit', destination: '/finance-toolkit', position: 2 })"
-      >
-        <div class="card-ambience" aria-hidden="true">
-          <img
-            class="card-ambience-media"
-            src="/homepage/finance.png"
-            alt=""
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-
-        <div class="card-premium-overlay" aria-hidden="true"></div>
-
-        <div class="card-copy">
-          <h2>Finance Toolkit</h2>
-          <p>Financial models for founders and finance professionals.</p>
-        </div>
-
-        {financePages.length > 0 && (
-          <div class="previewDeck" data-rotator data-interval="6200">
-            <div class="previewWindow">
-              <div class="previewTrack" data-preview-track>
-                {financePages.map((page) => (
-                  <div class="previewPage" data-preview-page>
-                    {page.map((entry) => (
-                      <div class="previewCard">
-                        <div class="previewCoverShell">
-                          <img
-                            class="previewCover"
-                            src={entry.cover}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {financePages.length > 1 && (
-              <div class="previewIndicators">
-                {financePages.map((_, index) => (
                   <span
                     class={`previewDot ${index === 0 ? "isActive" : ""}`}
                     data-preview-dot
@@ -610,7 +538,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     grid-template-columns: repeat(12, minmax(0, 1fr));
     grid-template-areas:
       "projects projects projects projects pm pm pm pm pm pm pm pm"
-      "finance finance finance finance concepts concepts concepts concepts about about about about";
+      "concepts concepts concepts concepts about about about about about about about about";
     gap: 14px;
     align-items: stretch;
   }
@@ -691,12 +619,6 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     min-height: 360px;
   }
 
-  .card-finance {
-    --card-accent: rgba(104, 214, 136, 0.11);
-    grid-area: finance;
-    min-height: 290px;
-  }
-
   .card-concepts {
     --card-accent: rgba(110, 176, 255, 0.1);
     grid-area: concepts;
@@ -729,10 +651,6 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     max-width: 34ch;
   }
 
-  .card-finance .card-copy {
-    max-width: 24ch;
-  }
-
   .card-concepts .card-copy,
   .card-projects .card-copy,
   .card-about .card-copy {
@@ -749,8 +667,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     text-shadow: 0 1px 1px rgba(0,0,0,0.14);
   }
 
-  .card-pm h2,
-  .card-finance h2 {
+  .card-pm h2 {
     font-size: 1.28rem;
     letter-spacing: -0.028em;
   }
@@ -800,11 +717,6 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
   .card-pm .card-ambience-media {
     object-position: 52% 48%;
     transform: scale(1.05);
-  }
-
-  .card-finance .card-ambience-media {
-    object-position: 52% 50%;
-    transform: scale(1.06);
   }
 
   .card-concepts .card-ambience-media,
@@ -1071,8 +983,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-template-areas:
         "projects pm"
-        "finance concepts"
-        "about about";
+        "concepts about";
       gap: 12px;
     }
 
@@ -1086,7 +997,6 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     }
 
     .card-pm,
-    .card-finance,
     .card-concepts,
     .card-projects,
     .card-about {
@@ -1161,7 +1071,6 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
       grid-template-areas:
         "projects"
         "pm"
-        "finance"
         "concepts"
         "about";
       gap: 10px;
@@ -1179,7 +1088,6 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     }
 
     .card-pm,
-    .card-finance,
     .card-concepts,
     .card-projects,
     .card-about {
@@ -1191,8 +1099,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
       font-size: 1.02rem;
     }
 
-    .card-pm h2,
-    .card-finance h2 {
+    .card-pm h2 {
       font-size: 1.16rem;
     }
 
