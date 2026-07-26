@@ -116,7 +116,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
       <a
         class="card card-premium card-pm"
         href="/toolkit"
-        onclick="trackEvent('homepage_section_click', { section: 'pm_toolkit', destination: '/toolkit', position: 1 })"
+        onclick="trackEvent('homepage_section_click', { section: 'pm_toolkit', destination: '/toolkit', position: 3 })"
       >
         <div class="card-ambience" aria-hidden="true">
           <img
@@ -216,7 +216,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
       <a
         class="card card-premium card-projects"
         href="/projects"
-        onclick="trackEvent('homepage_section_click', { section: 'projects', destination: '/projects', position: 4 })"
+        onclick="trackEvent('homepage_section_click', { section: 'projects', destination: '/projects', position: 2 })"
       >
         <div class="card-ambience" aria-hidden="true">
           <img
@@ -244,7 +244,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
         href="https://prodforce.app"
         target="_blank"
         rel="noopener noreferrer"
-        onclick="trackEvent('homepage_section_click', { section: 'prodforce', destination: 'https://prodforce.app', position: 3 })"
+        onclick="trackEvent('homepage_section_click', { section: 'prodforce', destination: 'https://prodforce.app', position: 1 })"
       >
         <div class="card-ambience" aria-hidden="true">
           <img
@@ -269,7 +269,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
       <a
         class="card card-premium card-about"
         href="/about"
-        onclick="trackEvent('homepage_section_click', { section: 'about', destination: '/about', position: 5 })"
+        onclick="trackEvent('homepage_section_click', { section: 'about', destination: '/about', position: 4 })"
       >
         <div class="card-ambience" aria-hidden="true"></div>
 
@@ -497,8 +497,8 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     grid-template-areas:
-      "projects projects projects projects pm pm pm pm pm pm pm pm"
-      "prodforce prodforce prodforce prodforce about about about about about about about about";
+      "prodforce prodforce prodforce prodforce projects projects projects projects projects projects projects projects"
+      "pm pm pm pm pm pm pm pm about about about about";
     gap: 14px;
     align-items: stretch;
   }
@@ -961,8 +961,8 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     .grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-template-areas:
-        "projects pm"
-        "prodforce about";
+        "prodforce projects"
+        "pm about";
       gap: 12px;
     }
 
@@ -1048,9 +1048,9 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     .grid {
       grid-template-columns: 1fr;
       grid-template-areas:
+        "prodforce"
         "projects"
         "pm"
-        "prodforce"
         "about";
       gap: 10px;
     }

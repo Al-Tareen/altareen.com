@@ -177,6 +177,10 @@ const FEATURED_TITLES = [
   "apacen",
 ];
 
+const featuredLogo =
+  normalized.find((item) => item.projectTitle.toLowerCase() === "executive analytics dashboard")?.logo ||
+  "/logo.png";
+
 const featuredItems = FEATURED_TITLES
   .map((title) => normalized.find((item) => item.projectTitle.toLowerCase() === title))
   .filter(Boolean)
@@ -184,6 +188,7 @@ const featuredItems = FEATURED_TITLES
     ...item,
     slugId: `featured-${item.slugId}`,
     primaryCategory: "Featured",
+    logo: featuredLogo,
     position: index,
   }));
 const groupsMap = new Map<string, typeof normalized>();

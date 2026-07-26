@@ -41,7 +41,7 @@ function catId(name) {
 // Optional featured entries are selected through local frontmatter.
 const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 
-const getFrameworkName = (item) => item?.data?.title || "—";
+const getFrameworkName = (item) => item?.data?.title || "â€”";
 
 function prettifyFrameworkName(value) {
   return String(value || "")
@@ -71,7 +71,7 @@ function buildAnalyticsCard(title, rawFrameworkName, metricLabel, metricValue, t
     title,
     frameworkName: matchedItem
       ? matchedItem.data.title
-      : prettifyFrameworkName(rawFrameworkName) || "—",
+      : prettifyFrameworkName(rawFrameworkName) || "â€”",
     frameworkCategory: matchedItem
       ? (matchedItem.data.primaryCategory || "Uncategorized")
       : null,
@@ -88,7 +88,7 @@ const analyticsCards = [
     frameworkName:
       analyticsData?.topCategory?.categoryName ||
       analyticsData?.topCategory?.frameworkName ||
-      "—",
+      "â€”",
     frameworkCategory: "Most engaged category",
     href: null,
     metricLabel: "Selections",
@@ -136,8 +136,8 @@ breadcrumbs={pmtoolkitBreadcrumbs}
   <div class="controlsBar" role="search" aria-label="Search and filter frameworks">
     <div class="controlsBarBg" aria-hidden="true"></div>
     <div class="field">
-      <span class="icon" aria-hidden="true">⌕</span>
-      <input id="q" class="input" type="search" placeholder="Search frameworks…" />
+      <span class="icon" aria-hidden="true">âŒ•</span>
+      <input id="q" class="input" type="search" placeholder="Search frameworksâ€¦" />
     </div>
 
 <div class="selectWrap">
@@ -179,7 +179,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
 
             <div class={`analyticsCenter ${card.theme === "category" ? "analyticsCenter--category" : ""}`}>
               {card.href ? (
-                <a class="analyticsFrameworkName analyticsFrameworkLink" href={card.href}>
+                <a class="analyticsFrameworkName analyticsFrameworkLink" href={card.href} onclick={`event.preventDefault(); window.openToolkitFramework?.('${card.href}')`}>
                   {card.frameworkName}
                 </a>
               ) : (
@@ -230,7 +230,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
   data-category={item.data.primaryCategory || "Uncategorized"}
   data-when={item.data.whenToUse || ""}
   data-featured="true"
-  onclick={`trackEvent('framework_click', { framework: '${item.slug}', framework_name: '${item.data.title.replace(/'/g, "\\'")}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: true })`}
+  onclick={`event.preventDefault(); window.openToolkitFramework?.('/toolkit/${item.slug}/'); trackEvent('framework_click', { framework: '${item.slug}', framework_name: '${item.data.title.replace(/'/g, "\\'")}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: true })`}
 >
 
                 {item.data.cover ? (
@@ -249,7 +249,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
                   <div class="excerpt">
                     <div class="excerptLabel">When to use</div>
                     <div class="whenToUse">
-                      {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
+                      {item.data.whenToUse ? item.data.whenToUse : <span class="muted">â€”</span>}
                     </div>
                   </div>
                 </div>
@@ -303,7 +303,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
   data-title={item.data.title}
   data-category={item.data.primaryCategory || "Uncategorized"}
   data-when={item.data.whenToUse || ""}
-  onclick={`trackEvent('framework_click', { framework: '${item.slug}', framework_name: '${item.data.title.replace(/'/g, "\\'")}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: false })`}
+  onclick={`event.preventDefault(); window.openToolkitFramework?.('/toolkit/${item.slug}/'); trackEvent('framework_click', { framework: '${item.slug}', framework_name: '${item.data.title.replace(/'/g, "\\'")}', category: '${(item.data.primaryCategory || "Uncategorized").replace(/'/g, "\\'")}', featured: false })`}
 >
                 {item.data.cover ? (
                   <div class="thumb" aria-hidden="true">
@@ -321,7 +321,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
                   <div class="excerpt">
                     <div class="excerptLabel">When to use</div>
                     <div class="whenToUse">
-                      {item.data.whenToUse ? item.data.whenToUse : <span class="muted">—</span>}
+                      {item.data.whenToUse ? item.data.whenToUse : <span class="muted">â€”</span>}
                     </div>
                   </div>
                 </div>
@@ -347,8 +347,67 @@ breadcrumbs={pmtoolkitBreadcrumbs}
       </section>
     ))}
 
+    <div class="frameworkModal" data-framework-modal role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="framework-modal-title">
+      <div class="frameworkModalPanel">
+        <div class="frameworkModalTopbar">
+          <div id="framework-modal-title" class="frameworkModalTitle">PM Toolkit</div>
+          <button class="frameworkModalClose" type="button" data-framework-modal-close aria-label="Close framework">Ã—</button>
+        </div>
+        <iframe class="frameworkModalFrame" data-framework-modal-frame title="PM Toolkit framework" scrolling="yes"></iframe>
+      </div>
+    </div>
+
+    <script is:inline>
+    window.openToolkitFramework = (url) => {
+    const modal = document.querySelector("[data-framework-modal]");
+    const frame = document.querySelector("[data-framework-modal-frame]");
+    if (!(modal instanceof HTMLElement) || !(frame instanceof HTMLIFrameElement)) return;
+    frame.src = url;
+    modal.setAttribute("data-open", "");
+    modal.setAttribute("aria-hidden", "false");
+    document.documentElement.classList.add("frameworkModalOpen");
+    document.querySelector("[data-framework-modal-close]")?.focus();
+  };
+
+  const closeFrameworkModal = () => {
+    const modal = document.querySelector("[data-framework-modal]");
+    const frame = document.querySelector("[data-framework-modal-frame]");
+    modal?.removeAttribute("data-open");
+    modal?.setAttribute("aria-hidden", "true");
+    if (frame instanceof HTMLIFrameElement) frame.src = "about:blank";
+    document.documentElement.classList.remove("frameworkModalOpen");
+  };
+
+  document.addEventListener("click", (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const frameworkLink = target?.closest('a[href^="/toolkit/"]');
+    if (frameworkLink && frameworkLink.getAttribute("href") !== "/toolkit/") {
+      const modal = document.querySelector("[data-framework-modal]");
+      const frame = document.querySelector("[data-framework-modal-frame]");
+      if (!(modal instanceof HTMLElement) || !(frame instanceof HTMLIFrameElement)) return;
+      event.preventDefault();
+      frame.src = frameworkLink.href;
+      modal.setAttribute("data-open", "");
+      modal.setAttribute("aria-hidden", "false");
+      document.documentElement.classList.add("frameworkModalOpen");
+      document.querySelector("[data-framework-modal-close]")?.focus();
+      return;
+    }
+
+    if (target?.closest("[data-framework-modal-close]") || target?.matches("[data-framework-modal]")) {
+      closeFrameworkModal();
+    }
+  }, true);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.querySelector("[data-framework-modal][data-open]")) {
+      event.preventDefault();
+      closeFrameworkModal();
+    }
+  });
+</script>
     <!-- Back to top -->
-    <button id="toTop" class="toTop" type="button" aria-label="Back to top">↑ Top</button>
+    <button id="toTop" class="toTop" type="button" aria-label="Back to top">â†‘ Top</button>
 
 <script is:inline>
   window.addEventListener("DOMContentLoaded", () => {
@@ -1374,7 +1433,7 @@ transition:
 }
     
     /* =========================================================
-   ANALYTICS STRIP — ULTRA PREMIUM WHITE GLASS
+   ANALYTICS STRIP â€” ULTRA PREMIUM WHITE GLASS
    ========================================================= */
 
 .analyticsStrip {
@@ -2304,6 +2363,87 @@ transition:
     .ghost:hover,
     .analyticsCard:hover {
       transform: none !important;
+    }
+  }
+
+  :global(html.frameworkModalOpen) {
+    overflow: hidden;
+  }
+
+  .frameworkModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    place-items: center;
+    padding: 16px;
+    border: 0;
+    background: rgba(8, 10, 16, 0.64);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .frameworkModal[data-open] {
+    display: grid;
+  }
+  .frameworkModalPanel {
+    width: min(1180px, calc(100vw - 32px));
+    height: min(860px, calc(100dvh - 32px));
+    border-radius: 22px;
+    box-shadow: 0 32px 90px rgba(0, 0, 0, 0.32);
+    display: grid;
+    grid-template-rows: 54px minmax(0, 1fr);
+    overflow: hidden;
+    background: var(--surface, #fff);
+  }
+
+  .frameworkModalTopbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 14px 0 20px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+    background: color-mix(in srgb, var(--surface) 96%, black 4%);
+  }
+
+  .frameworkModalTitle {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .frameworkModalClose {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    border-radius: 999px;
+    background: var(--surface, #fff);
+    color: var(--ink, #111);
+    font: 500 24px/1 sans-serif;
+    cursor: pointer;
+  }
+
+  .frameworkModalFrame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    overflow: hidden;
+    background: var(--surface, #fff);
+  }
+
+  @media (max-width: 720px) {
+    .frameworkModal {
+      padding: 0;
+    }
+
+    .frameworkModalPanel {
+      width: 100vw;
+      height: 100dvh;
+      border-radius: 0;
     }
   }
 </style>
