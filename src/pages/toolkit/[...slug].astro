@@ -1841,6 +1841,140 @@ dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
   line-height: 1.58;
   white-space: pre-wrap;
 }
-</style>
+
+:global(html.isFrameworkEmbed),
+:global(html.isFrameworkEmbed body) {
+  width: 100%;
+  height: 100%;
+  overflow: hidden !important;
+}
+
+:global(html.isFrameworkEmbed .toolkitDetail) {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100dvh;
+  padding: 14px 16px;
+  overflow: hidden;
+}
+
+:global(html.isFrameworkEmbed .hero) {
+  height: 100%;
+  margin: 0;
+}
+
+:global(html.isFrameworkEmbed .heroGrid) {
+  grid-template-columns: minmax(0, 1.65fr) minmax(270px, 0.85fr);
+  gap: 14px;
+  height: 100%;
+  align-items: stretch;
+}
+
+:global(html.isFrameworkEmbed .coverFrame) {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100%;
+  min-height: 0;
+  padding: 0 0 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-radius: 18px;
+  background: #f7f7f6 !important;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08) !important;
+}
+
+:global(html.isFrameworkEmbed .coverWrap) {
+  min-height: 0;
+  height: 100%;
+  border-radius: 17px 17px 0 0;
+  background: #0a0d13 !important;
+}
+
+:global(html.isFrameworkEmbed .cover) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+:global(html.isFrameworkEmbed .coverFeedback) {
+  left: 12px;
+  bottom: 12px;
+  padding: 6px;
+}
+
+:global(html.isFrameworkEmbed .feedbackStats) {
+  margin-top: 8px;
+  padding: 0 14px;
+}
+
+:global(html.isFrameworkEmbed .feedbackBar) {
+  height: 5px;
+}
+
+:global(html.isFrameworkEmbed .feedbackMeta) {
+  margin-top: 6px;
+  font-size: 10px;
+}
+
+:global(html.isFrameworkEmbed .heroRail) {
+  order: initial;
+  height: 100%;
+  min-height: 0;
+  gap: 10px;
+  overflow: hidden;
+}
+
+:global(html.isFrameworkEmbed .heroRail .sideCard) {
+  flex: 0 0 auto;
+  padding: 14px;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.055);
+}
+
+:global(html.isFrameworkEmbed .sideTop) {
+  margin-bottom: 10px;
+}
+
+:global(html.isFrameworkEmbed .sideTitle) {
+  font-size: 0.96rem;
+}
+
+:global(html.isFrameworkEmbed .sideMeta) {
+  gap: 8px;
+}
+
+:global(html.isFrameworkEmbed .qaRow) {
+  min-height: 38px;
+  padding: 9px 11px;
+}
+
+:global(html.isFrameworkEmbed .whenToUseSideBody p) {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 7;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+:global(html.isFrameworkEmbed .layout) {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  :global(html.isFrameworkEmbed .toolkitDetail) {
+    padding: 10px;
+  }
+
+  :global(html.isFrameworkEmbed .heroGrid) {
+    grid-template-columns: minmax(0, 1.25fr) minmax(220px, 0.75fr);
+    gap: 10px;
+  }
+
+  :global(html.isFrameworkEmbed .fbLabel),
+  :global(html.isFrameworkEmbed .feedbackCountsRow),
+  :global(html.isFrameworkEmbed .feedbackDot) {
+    display: none;
+  }
+}</style>
   </div>
 </PageShell>
