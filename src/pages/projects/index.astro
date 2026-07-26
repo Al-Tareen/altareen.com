@@ -3,6 +3,7 @@ import PageShell from "../../components/PageShell.astro";
 import { getCollection } from "astro:content";
 
 const CATEGORY_ORDER = [
+  "Concepts & Business Plans",
   "Product Platforms",
   "AI Systems",
   "Enterprise Systems",
@@ -61,13 +62,19 @@ function isPdfExt(ext = "") {
 }
 
 const all = (await getCollection("projects")).map((e) => ({ ...e, slug: e.id }));
+const conceptCategories = new Set(["Concepts", "Business Plans"]);
+const concepts = (await getCollection("toolkit"))
+  .map((e) => ({ ...e, slug: e.id }))
+  .filter((item) =>
+    conceptCategories.has(String(item.data.primaryCategory || "").trim())
+  );
 
 const rawProjects = all.filter((item) => {
   const dbTitle = String(item.data.dbTitle || "").trim().toLowerCase();
   return dbTitle === "projects" || dbTitle === "project";
 });
 
-const normalized = rawProjects.map((item) => {
+const normalizedProjects = rawProjects.map((item) => {
   const title = String(
     item.data.project ||
       item.data.title ||
@@ -132,11 +139,41 @@ const normalized = rawProjects.map((item) => {
     logo,
     description,
     comingSoon,
+    isInternal: false,
     position,
     sortKey: title.toLowerCase(),
   };
 });
 
+const normalizedConcepts = concepts.map((item, index) => {
+  const title = String(item.data.title || item.slug || "Untitled Concept").trim();
+  const description = String(
+    item.data.whenToUseFull ||
+      item.data.whenToUse ||
+      "Explore this concept and its practical application."
+  ).replace(/\s+/g, " ").trim();
+
+  return {
+    ...item,
+    slugId: `concept-${slugify(title)}`,
+    projectTitle: title,
+    primaryCategory: "Concepts & Business Plans",
+    tags: Array.isArray(item.data.tags)
+      ? item.data.tags.map(String).map((tag) => tag.trim()).filter(Boolean).slice(0, 3)
+      : [],
+    externalLink: `/concepts/${item.slug}/`,
+    previewUrl: "",
+    previewKind: "file",
+    logo: String(item.data.cover || "").trim(),
+    description,
+    comingSoon: false,
+    isInternal: true,
+    position: 1000 + index,
+    sortKey: title.toLowerCase(),
+  };
+});
+
+const normalized = [...normalizedConcepts, ...normalizedProjects];
 const groupsMap = new Map<string, typeof normalized>();
 for (const category of CATEGORY_ORDER) groupsMap.set(category, []);
 
@@ -178,7 +215,7 @@ const projectsSchema = {
   "@type": "CollectionPage",
   name: "Projects",
   description:
-    "Selected work across AI systems, enterprise platforms, software engineering, and more.",
+    "Selected projects, early-stage concepts, and strategic business ideas across AI systems, enterprise platforms, software engineering, and more.",
   url: "https://altareen.com/projects/",
   breadcrumb: {
     "@type": "BreadcrumbList",
@@ -204,8 +241,8 @@ const projectsSchema = {
 <PageShell
   title="Projects"
   hidePageHead={false}
-  description="Selected work across AI systems, enterprise platforms and more."
-  keywords="Al Tareen projects, AI product manager, AI systems, enterprise systems, product platforms, software engineering"
+  description="Selected projects, early-stage concepts, and strategic business ideas across AI systems, enterprise platforms and more."
+  keywords="Al Tareen projects, business concepts, AI product manager, AI systems, enterprise systems, product platforms, software engineering"
   breadcrumbs={projectsBreadcrumbs}
   schema={projectsSchema}
 >
