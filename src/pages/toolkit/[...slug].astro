@@ -141,6 +141,16 @@ const showQuickActions = quickActions.length > 0;
 const showHeroRail = showQuickActions || hasMultipleDownloads;
 
 const category = item.data.primaryCategory || "PM Toolkit";
+const rawFrameworkSummary = String(
+  item.data.description ||
+  item.data.whenToUseFull ||
+  item.data.whenToUse ||
+  `A practical framework for structured product decisions and execution.`
+).replace(/\s+/g, " ").trim();
+
+const frameworkSummary = rawFrameworkSummary.length <= 210
+  ? rawFrameworkSummary
+  : `${rawFrameworkSummary.slice(0, 207).replace(/\s+\S*$/, "")}...`;
 const baseTitle = item.data.title || "Framework";
 
 // SEO-optimized page title
@@ -327,13 +337,13 @@ const pmFrameworkBreadcrumbs = [
   </div>
 )}
 
-{(item.data.whenToUseFull || item.data.whenToUse) && (
-  <section class="sideCard whenToUseSideCard" id={sectionIds.when} data-section aria-label="When to use">
+{frameworkSummary && (
+  <section class="sideCard whenToUseSideCard" id={sectionIds.when} data-section aria-label="Framework summary">
     <div class="sideTop">
-      <div class="sideTitle">When to use</div>
+      <div class="sideTitle">Summary</div>
     </div>
     <div class="whenToUseSideBody">
-      <p>{item.data.whenToUseFull || item.data.whenToUse}</p>
+      <p>{frameworkSummary}</p>
     </div>
   </section>
 )}
