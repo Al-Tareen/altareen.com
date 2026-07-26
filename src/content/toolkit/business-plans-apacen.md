@@ -2,8 +2,8 @@
 title: "Apacen"
 primaryCategory: "Business Plans"
 categories: ["Business Plans"]
-whenToUse: "Apacen™ is a strategic supply intelligence platform focused on critical mineral risk foresight for defense-critical industries. It fuses public and private datasets to deliver fast, actionable supply-risk briefings—espec"
-whenToUseFull: "Apacen™ is a strategic supply intelligence platform focused on critical mineral risk foresight for defense-critical industries. It fuses public and private datasets to deliver fast, actionable supply-risk briefings—especially around chokepoints like cobalt, gallium, and lithium—so leaders can make smarter, faster decisions on resilience, sourcing, and national-security-aligned operations."
+whenToUse: "Apacen is a strategic supply intelligence platform focused on critical mineral risk foresight for defense-critical industries. It fuses public and private datasets to deliver fast, actionable supply-risk briefings—especially around chokepoints like cobalt, gallium, and lithium—enabling optimal decisions on resilience, sourcing, and national-security-aligned operations."
+whenToUseFull: "Apacen is a strategic supply intelligence platform focused on critical mineral risk foresight for defense-critical industries. It fuses public and private datasets to deliver fast, actionable supply-risk briefings—especially around chokepoints like cobalt, gallium, and lithium—enabling optimal decisions on resilience, sourcing, and national-security-aligned operations."
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
@@ -20,4 +20,4 @@ tags: ["DefenseTech","Agentic AI","Rare Earths"]
 - Rare Earths
 
 ## When to use
-Apacen™ is a strategic supply intelligence platform focused on critical mineral risk foresight for defense-critical industries. It fuses public and private datasets to deliver fast, actionable supply-risk briefings—especially around chokepoints like cobalt, gallium, and lithium—so leaders can make smarter, faster decisions on resilience, sourcing, and national-security-aligned operations.
+Apacen is a strategic supply intelligence platform focused on critical mineral risk foresight for defense-critical industries. It fuses public and private datasets to deliver fast, actionable supply-risk briefings—especially around chokepoints like cobalt, gallium, and lithium—enabling optimal decisions on resilience, sourcing, and national-security-aligned operations.
