@@ -2,7 +2,7 @@
 title: "Evaluation Framework (Offline + Online)"
 primaryCategory: "Data & Model Evaluation"
 categories: ["Data & Model Evaluation"]
-whenToUse: "When you must compare models/prompt approaches and need a defensible way to decide what ships."
+whenToUse: "Decide what ships with a defensible way to compare models and prompt approaches, offline and online."
 whenToUseFull: "When you must compare models/prompt approaches and need a defensible way to decide what ships."
 inputsRequired: "Clear task definition + “correct” criteria; golden set (and rubric); baseline model/prompt; metrics (quality + latency + cost); acceptance thresholds; segmentation (easy/hard cases, user types, edge cases); online instrumentation plan."
 outputArtifact: "Evaluation plan + scorecards: offline results by segment, online experiment plan (A/B or shadow), ship/no-ship thresholds, and regression cadence."

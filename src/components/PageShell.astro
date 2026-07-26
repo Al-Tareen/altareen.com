@@ -9,6 +9,7 @@ const {
   keywords = "",
   subtitle,
   hidePageHead = false,
+  wide = false,
   slug = "",
   toolkitType = "",
   datePublished,
@@ -28,7 +29,7 @@ const {
   breadcrumbs={breadcrumbs}
 >
   <Header />
-  <main class={`wrap ${hidePageHead ? "isHeadHidden" : ""}`}>
+  <main class={`wrap ${hidePageHead ? "isHeadHidden" : ""} ${wide ? "isWide" : ""}`}>
     {!hidePageHead && (
       <header class="pagehead">
         <h1>{title}</h1>
@@ -53,6 +54,10 @@ const {
     padding: 40px 28px 56px;
     flex: 1;
     width: 100%;
+  }
+
+  .wrap.isWide {
+    max-width: 1320px;
   }
 
   /* Detail pages (framework/concepts) already render their own internal header */

@@ -2,7 +2,7 @@
 title: "Roadmap Formats (Now/Next/Later + Theme-based)"
 primaryCategory: "Roadmap & Portfolio"
 categories: ["Roadmap & Portfolio"]
-whenToUse: "When you need to communicate direction without committing to fake dates."
+whenToUse: "Communicate direction without committing to fake dates."
 whenToUseFull: "When you need to communicate direction without committing to fake dates."
 inputsRequired: "Strategy bets; capacity constraints; dependency map; stakeholder needs."
 outputArtifact: "Roadmap view + narrative + assumptions."

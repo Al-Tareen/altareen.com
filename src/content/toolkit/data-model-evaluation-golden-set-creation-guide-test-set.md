@@ -2,7 +2,7 @@
 title: "Golden Set Creation Guide (Test Set)"
 primaryCategory: "Data & Model Evaluation"
 categories: ["Data & Model Evaluation"]
-whenToUse: "When quality is subjective and you need a stable test set to prevent “it feels better” arguments."
+whenToUse: "Build a stable test set that settles \"it feels better\" arguments when quality is subjective."
 whenToUseFull: "When quality is subjective and you need a stable test set to prevent “it feels better” arguments."
 inputsRequired: "Representative cases; edge cases; labeling guidelines; adjudication process; version control."
 outputArtifact: "Curated test set; labeling rubric; dataset versions; coverage report."

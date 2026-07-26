@@ -2,7 +2,7 @@
 title: "Pricing & Packaging Framework"
 primaryCategory: "GTM & Growth"
 categories: ["GTM & Growth"]
-whenToUse: "When you’re monetizing and need tiering that matches value + controls AI cost-to-serve."
+whenToUse: "Design tiering that matches value and controls AI cost-to-serve as you monetize."
 whenToUseFull: "When you’re monetizing and need tiering that matches value + controls AI cost-to-serve."
 inputsRequired: "WTP research; unit economics; competitor pricing; value metric hypothesis."
 outputArtifact: "Tier structure; pricing; value metric; rationale + experiment plan."

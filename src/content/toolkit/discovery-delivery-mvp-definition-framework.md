@@ -2,7 +2,7 @@
 title: "MVP Definition Framework"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
-whenToUse: "When scope is ballooning and you need the smallest version that can validate value."
+whenToUse: "Cut scope to the smallest version that can validate value when it's ballooning."
 whenToUseFull: "When scope is ballooning and you need the smallest version that can validate value."
 inputsRequired: "Value hypothesis; constraints; riskiest assumptions; timeline; must-have UX path."
 outputArtifact: "MVP scope; excluded scope; learning goal; success metric; next iteration plan."

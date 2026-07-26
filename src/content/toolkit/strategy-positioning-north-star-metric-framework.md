@@ -2,7 +2,7 @@
 title: "North Star Metric Framework"
 primaryCategory: "Strategy & Positioning"
 categories: ["Strategy & Positioning"]
-whenToUse: "When success is being debated or you have too many metrics and no single “win condition.”"
+whenToUse: "Define a single win condition when success is debated or you have too many metrics."
 whenToUseFull: "When success is being debated or you have too many metrics and no single “win condition.”"
 inputsRequired: "Value model (how users get value); retention drivers; baseline metrics; instrumentation reality."
 outputArtifact: "North Star metric; input metrics; guardrails; review cadence."

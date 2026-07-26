@@ -2,7 +2,7 @@
 title: "KPI Tree"
 primaryCategory: "Metrics & Analytics"
 categories: ["Metrics & Analytics"]
-whenToUse: "When teams disagree on what drives success or you need to diagnose why metrics moved."
+whenToUse: "Diagnose why metrics moved, and settle disagreements on what drives success."
 whenToUseFull: "When teams disagree on what drives success or you need to diagnose why metrics moved."
 inputsRequired: "North Star; funnel/value model; instrumentation availability; segmentation."
 outputArtifact: "KPI tree linking drivers → outcome; ownership per branch."

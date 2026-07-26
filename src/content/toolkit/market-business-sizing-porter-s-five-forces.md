@@ -2,7 +2,7 @@
 title: "Porter’s Five Forces"
 primaryCategory: "Market & Business Sizing"
 categories: ["Market & Business Sizing"]
-whenToUse: "When you’re entering a market and need to understand competitive pressure and “why margins will/won’t get crushed.”"
+whenToUse: "Gauge competitive pressure, and why margins will or won't get crushed, before entering a market."
 whenToUseFull: "When you’re entering a market and need to understand competitive pressure and “why margins will/won’t get crushed.”"
 inputsRequired: "Buyer power; supplier power; substitute threats; entry barriers; rivalry dynamics."
 outputArtifact: "Force-by-force assessment; margin/risk implications; strategic moves (where to defend/attack)."

@@ -2,7 +2,7 @@
 title: "Abuse / Misuse Threat Model"
 primaryCategory: "AI Product Quality, Risk & Safety"
 categories: ["AI Product Quality, Risk & Safety"]
-whenToUse: "When your AI feature could be exploited (prompt injection, data exfiltration, jailbreaks, harmful content, fraud), especially if it connects to tools, sensitive data, or enterprise systems."
+whenToUse: "Map how your AI feature could be exploited (prompt injection, data exfiltration, jailbreaks, harmful content, fraud), especially once it connects to tools, sensitive data, or enterprise systems."
 whenToUseFull: "When your AI feature could be exploited (prompt injection, data exfiltration, jailbreaks, harmful content, fraud), especially if it connects to tools, sensitive data, or enterprise systems."
 inputsRequired: "Intended use + non-goals; user roles and permissions; data types handled; system architecture (tools, connectors, logging); known failure modes; attacker assumptions; relevant policies/regulatory constraints."
 outputArtifact: "Threat model doc: abuse scenarios, likelihood/impact, mitigations (product + policy + technical), detection/monitoring signals, and escalation/response steps."

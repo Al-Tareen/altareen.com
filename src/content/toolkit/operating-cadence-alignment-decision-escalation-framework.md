@@ -2,7 +2,7 @@
 title: "Decision Escalation Framework"
 primaryCategory: "Operating Cadence & Alignment"
 categories: ["Operating Cadence & Alignment"]
-whenToUse: "When a decision is blocked and you need a clear path to get it decided at the right level."
+whenToUse: "Get a blocked decision made at the right level with a clear escalation path."
 whenToUseFull: "When a decision is blocked and you need a clear path to get it decided at the right level."
 inputsRequired: "Decision type; owner; impact; risk; deadline; options + recommendation."
 outputArtifact: "Escalation path + SLA + decision package format."

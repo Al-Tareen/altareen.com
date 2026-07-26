@@ -2,7 +2,7 @@
 title: "Competitive Landscape Analysis"
 primaryCategory: "Strategy & Positioning"
 categories: ["Strategy & Positioning"]
-whenToUse: "When you need a defensible differentiation and people keep saying “Competitor X already does this.”"
+whenToUse: "Build defensible differentiation when people keep saying \"Competitor X already does this.\""
 whenToUseFull: "When you need a defensible differentiation and people keep saying “Competitor X already does this.”"
 inputsRequired: "Competitor + substitutes list; pricing/packaging; positioning; distribution channels; win/loss or user feedback."
 outputArtifact: "Competitive map; differentiation thesis; wedge strategy; risks + counters."

@@ -2,7 +2,7 @@
 title: "Market Segmentation Framework"
 primaryCategory: "Strategy & Positioning"
 categories: ["Strategy & Positioning"]
-whenToUse: "When you’re trying to decide “which customer segment do we serve first?” (and you can’t justify it)."
+whenToUse: "Decide which customer segment to serve first, and justify the choice."
 whenToUseFull: "When you’re trying to decide “which customer segment do we serve first?” (and you can’t justify it)."
 inputsRequired: "Market map; user/customer data; WTP/budget signals; constraints (integration/regulatory); channel access."
 outputArtifact: "Segment definitions; ICP selection rationale; “why now” wedge segment; implications for product/GTM."

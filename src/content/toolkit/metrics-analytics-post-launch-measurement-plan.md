@@ -2,7 +2,7 @@
 title: "Post-launch Measurement Plan"
 primaryCategory: "Metrics & Analytics"
 categories: ["Metrics & Analytics"]
-whenToUse: "When you’re about to ship and want measurement/instrumentation ready on day one."
+whenToUse: "Get measurement and instrumentation ready on day one before you ship."
 whenToUseFull: "When you’re about to ship and want measurement/instrumentation ready on day one."
 inputsRequired: "Success + guardrails; cohort plan; dashboards; owners; instrumentation plan."
 outputArtifact: "Measurement checklist; schedule; dashboards; alerting ownership."

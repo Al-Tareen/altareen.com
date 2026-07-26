@@ -2,7 +2,7 @@
 title: "Value Proposition Canvas"
 primaryCategory: "Strategy & Positioning"
 categories: ["Strategy & Positioning"]
-whenToUse: "When you need to clarify “why would anyone choose us?” or messaging feels feature-y and weak."
+whenToUse: "Clarify \"why would anyone choose us?\" when messaging feels feature-y and weak."
 whenToUseFull: "When you need to clarify “why would anyone choose us?” or messaging feels feature-y and weak."
 inputsRequired: "JTBD + pains/gains; top alternatives; proof points; segmentation/ICP hypothesis."
 outputArtifact: "Pains/gains map; value prop claims; differentiation bullets; evidence list (why believe us)."

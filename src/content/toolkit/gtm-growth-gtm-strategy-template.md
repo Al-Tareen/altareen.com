@@ -2,7 +2,7 @@
 title: "GTM Strategy Template"
 primaryCategory: "GTM & Growth"
 categories: ["GTM & Growth"]
-whenToUse: "When you have a product/feature ready and need a plan to drive adoption in the target segment."
+whenToUse: "Plan how to drive adoption in the target segment once a product or feature is ready."
 whenToUseFull: "When you have a product/feature ready and need a plan to drive adoption in the target segment."
 inputsRequired: "ICP; positioning; channel plan; pricing; rollout plan; enablement needs."
 outputArtifact: "GTM plan with timeline, owners, messaging, channels, measurement."

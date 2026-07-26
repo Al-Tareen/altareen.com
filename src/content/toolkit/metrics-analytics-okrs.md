@@ -2,7 +2,7 @@
 title: "OKRs"
 primaryCategory: "Metrics & Analytics"
 categories: ["Metrics & Analytics"]
-whenToUse: "When you need quarterly alignment on outcomes and ownership across teams."
+whenToUse: "Align teams quarterly on outcomes and ownership."
 whenToUseFull: "When you need quarterly alignment on outcomes and ownership across teams."
 inputsRequired: "Strategy one-pager; baseline metrics; ownership; review cadence."
 outputArtifact: "OKRs with owners; targets; check-in schedule."

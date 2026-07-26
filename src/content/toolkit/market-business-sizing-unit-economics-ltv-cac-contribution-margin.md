@@ -2,7 +2,7 @@
 title: "Unit Economics (LTV/CAC, Contribution margin)"
 primaryCategory: "Market & Business Sizing"
 categories: ["Market & Business Sizing"]
-whenToUse: "When you’re deciding if growth is profitable—or you suspect the product can’t scale economically."
+whenToUse: "Decide whether growth is profitable when you suspect the product can't scale economically."
 whenToUseFull: "When you’re deciding if growth is profitable—or you suspect the product can’t scale economically."
 inputsRequired: "CAC by channel; conversion rates; retention/churn; ARPA; cost-to-serve; margins."
 outputArtifact: "Unit economics model; contribution margin; break-even; key levers to improve."

@@ -1771,6 +1771,12 @@ transition:
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--ink-muted) 76%, var(--ink) 24%);
+    display: none;
+  }
+
+  .card:hover .excerptLabel,
+  .card:focus-within .excerptLabel {
+    display: block;
   }
 
   .whenToUse {

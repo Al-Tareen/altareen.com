@@ -2,7 +2,7 @@
 title: "AI UX Patterns & Disclosure Guidelines (1 Pager)"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
-whenToUse: "When users might overtrust the AI, or when inconsistent UI behavior (confidence, citations, refusals) would damage trust and adoption."
+whenToUse: "Keep AI UX consistent (confidence, citations, refusals) so overtrust and mixed signals don't damage adoption."
 whenToUseFull: "When users might overtrust the AI, or when inconsistent UI behavior (confidence, citations, refusals) would damage trust and adoption."
 inputsRequired: "Model/system limitations; uncertainty patterns; key failure modes; brand/legal requirements; user trust risks; UX flows (where AI appears); feedback channels."
 outputArtifact: "1-page UX policy: disclosure language, confidence/uncertainty cues, citations/source rules (if applicable), refusal/fallback behavior, user control (edit/undo), feedback/reporting, and “don’ts.”"

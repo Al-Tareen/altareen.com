@@ -2,7 +2,7 @@
 title: "Interview Script + Research Plan Template"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
-whenToUse: "When you need primary customer evidence (not opinions) to validate needs, workflows, or pricing."
+whenToUse: "Gather primary customer evidence, not opinions, to validate needs, workflows, or pricing."
 whenToUseFull: "When you need primary customer evidence (not opinions) to validate needs, workflows, or pricing."
 inputsRequired: "Research questions; participant criteria; recruitment plan; interview guide; synthesis method."
 outputArtifact: "Script; research plan; insight summary + implications."

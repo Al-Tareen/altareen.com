@@ -2,7 +2,7 @@
 title: "Metric Taxonomy: HEART"
 primaryCategory: "Metrics & Analytics"
 categories: ["Metrics & Analytics"]
-whenToUse: "When UX quality and trust matter as much as growth (common for AI assistants/copilots)."
+whenToUse: "Measure UX quality and trust alongside growth, common for AI assistants and copilots."
 whenToUseFull: "When UX quality and trust matter as much as growth (common for AI assistants/copilots)."
 inputsRequired: "UX goals; behavioral proxies; survey method; trust/safety needs."
 outputArtifact: "HEART metric set + mapping to events/surveys."

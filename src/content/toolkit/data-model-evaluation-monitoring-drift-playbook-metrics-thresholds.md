@@ -2,7 +2,7 @@
 title: "Monitoring & Drift Playbook (Metrics, Thresholds)"
 primaryCategory: "Data & Model Evaluation"
 categories: ["Data & Model Evaluation"]
-whenToUse: "When an AI feature is live (or about to go live) and you need to detect quality decay, drift, or abuse fast."
+whenToUse: "Detect quality decay, drift, or abuse fast once an AI feature is live (or about to be)."
 whenToUseFull: "When an AI feature is live (or about to go live) and you need to detect quality decay, drift, or abuse fast."
 inputsRequired: "Instrumentation events; quality signals; thresholds; on-call ownership; dashboards tools."
 outputArtifact: "Monitoring plan; alert rules; dashboards; runbooks for common failures."

@@ -2,7 +2,7 @@
 title: "Quarterly Planning Doc (Inputs → Bets → Outcomes)"
 primaryCategory: "Roadmap & Portfolio"
 categories: ["Roadmap & Portfolio"]
-whenToUse: "When you’re locking the next quarter’s priorities and assigning owners, outcomes, and kill criteria."
+whenToUse: "Lock the next quarter's priorities and assign owners, outcomes, and kill criteria."
 whenToUseFull: "When you’re locking the next quarter’s priorities and assigning owners, outcomes, and kill criteria."
 inputsRequired: "Strategy one-pager; performance data; capacity plan; risk list; cost constraints."
 outputArtifact: "Quarterly bets; owners; expected outcomes; guardrails; kill criteria."

@@ -2,7 +2,7 @@
 title: "Customer Understanding Pack"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
-whenToUse: "When the user journey is complex or multi-role and misunderstandings are causing bad requirements."
+whenToUse: "Untangle complex, multi-role user journeys when misunderstandings are causing bad requirements."
 whenToUseFull: "When the user journey is complex or multi-role and misunderstandings are causing bad requirements."
 inputsRequired: "Research findings; workflow/journey notes; role definitions; pain points; key moments."
 outputArtifact: "Lightweight persona + workflow/journey map + top pains + opportunities."

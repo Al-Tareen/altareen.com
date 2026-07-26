@@ -2,7 +2,7 @@
 title: "Exec Update Template"
 primaryCategory: "Operating Cadence & Alignment"
 categories: ["Operating Cadence & Alignment"]
-whenToUse: "When leaders need status and decisions—fast, metrics-driven, and with clear asks."
+whenToUse: "Give leaders fast, metrics-driven status and decisions with clear asks."
 whenToUseFull: "When leaders need status and decisions—fast, metrics-driven, and with clear asks."
 inputsRequired: "KPI status; bet progress; risks/issues; asks/decisions needed; timeline changes."
 outputArtifact: "Exec update memo (outcomes-first) + clear asks."

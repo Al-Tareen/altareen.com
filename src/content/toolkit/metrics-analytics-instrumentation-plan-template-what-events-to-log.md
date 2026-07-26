@@ -2,7 +2,7 @@
 title: "Instrumentation Plan Template (What events to log)"
 primaryCategory: "Metrics & Analytics"
 categories: ["Metrics & Analytics"]
-whenToUse: "When engineers ask “what do you want tracked?” and you need an event-level plan."
+whenToUse: "Answer \"what do you want tracked?\" with an event-level logging plan."
 whenToUseFull: "When engineers ask “what do you want tracked?” and you need an event-level plan."
 inputsRequired: "KPI tree; event taxonomy; privacy rules; analytics tools constraints."
 outputArtifact: "Event spec (events + properties); dashboard mapping; QA plan."

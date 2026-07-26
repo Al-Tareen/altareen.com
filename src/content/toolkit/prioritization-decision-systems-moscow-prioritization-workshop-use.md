@@ -2,7 +2,7 @@
 title: "MoSCoW Prioritization (Workshop-use)"
 primaryCategory: "Prioritization & Decision Systems"
 categories: ["Prioritization & Decision Systems"]
-whenToUse: "When stakeholders can’t agree on scope and you need to force “must vs nice-to-have” decisions."
+whenToUse: "Force \"must vs nice-to-have\" decisions when stakeholders can't agree on scope."
 whenToUseFull: "When stakeholders can’t agree on scope and you need to force “must vs nice-to-have” decisions."
 inputsRequired: "Candidate scope list; constraints (time/people); dependency map; stakeholder attendance."
 outputArtifact: "Must/Should/Could/Won’t list; release scope agreement."

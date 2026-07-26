@@ -2,7 +2,7 @@
 title: "Acceptance Criteria Templates"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
-whenToUse: "When requirements are being interpreted differently by PM/Eng/QA and you need testable clarity."
+whenToUse: "Give PM, Eng, and QA testable clarity when requirements are being interpreted differently."
 whenToUseFull: "When requirements are being interpreted differently by PM/Eng/QA and you need testable clarity."
 inputsRequired: "Requirements; expected behaviors; edge cases; failure behavior."
 outputArtifact: "Testable Given/When/Then criteria + quality thresholds."

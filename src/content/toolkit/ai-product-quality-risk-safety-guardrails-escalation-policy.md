@@ -2,7 +2,7 @@
 title: "Guardrails & Escalation Policy"
 primaryCategory: "AI Product Quality, Risk & Safety"
 categories: ["AI Product Quality, Risk & Safety"]
-whenToUse: "When failures would harm trust and you need clear behavior for refusal, fallback, and escalation."
+whenToUse: "Define clear refusal, fallback, and escalation behavior for failures that would harm trust."
 whenToUseFull: "When failures would harm trust and you need clear behavior for refusal, fallback, and escalation."
 inputsRequired: "Failure modes; confidence/quality thresholds; fallback options; escalation owners; logging."
 outputArtifact: "Guardrail rules (refuse/fallback/hand-off); escalation map; severity levels."

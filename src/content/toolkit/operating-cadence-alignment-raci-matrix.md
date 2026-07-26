@@ -2,7 +2,7 @@
 title: "RACI Matrix"
 primaryCategory: "Operating Cadence & Alignment"
 categories: ["Operating Cadence & Alignment"]
-whenToUse: "When ownership is unclear and decisions/work keep stalling."
+whenToUse: "Clarify ownership when decisions and work keep stalling."
 whenToUseFull: "When ownership is unclear and decisions/work keep stalling."
 inputsRequired: "Workstreams; roles; decisions list; handoffs."
 outputArtifact: "RACI chart + decision ownership clarity."

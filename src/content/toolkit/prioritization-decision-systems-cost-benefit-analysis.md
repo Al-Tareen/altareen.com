@@ -2,7 +2,7 @@
 title: "Cost-Benefit Analysis"
 primaryCategory: "Prioritization & Decision Systems"
 categories: ["Prioritization & Decision Systems"]
-whenToUse: "When you must choose between initiatives and need to justify ROI with costs + uncertainty."
+whenToUse: "Justify ROI with costs and uncertainty when choosing between initiatives."
 whenToUseFull: "When you must choose between initiatives and need to justify ROI with costs + uncertainty."
 inputsRequired: "Build + run costs; benefit hypothesis; time horizon; confidence levels; dependencies."
 outputArtifact: "ROI table; sensitivity analysis; recommended option + assumptions."

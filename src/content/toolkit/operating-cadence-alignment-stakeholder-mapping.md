@@ -2,7 +2,7 @@
 title: "Stakeholder Mapping"
 primaryCategory: "Operating Cadence & Alignment"
 categories: ["Operating Cadence & Alignment"]
-whenToUse: "When alignment is fragile and you need to manage influence, incentives, and resistance."
+whenToUse: "Manage influence, incentives, and resistance when alignment is fragile."
 whenToUseFull: "When alignment is fragile and you need to manage influence, incentives, and resistance."
 inputsRequired: "Stakeholder list; influence level; incentives; concerns; history/conflicts."
 outputArtifact: "Stakeholder map + engagement plan (who, when, how)."

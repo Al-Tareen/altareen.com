@@ -2,7 +2,7 @@
 title: "Leading vs Lagging indicators"
 primaryCategory: "Metrics & Analytics"
 categories: ["Metrics & Analytics"]
-whenToUse: "When outcomes take time and you need early signals you’re on track."
+whenToUse: "Find early signals you're on track when outcomes take time to show up."
 whenToUseFull: "When outcomes take time and you need early signals you’re on track."
 inputsRequired: "KPI tree; time-to-impact; historical correlations (if available)."
 outputArtifact: "Leading indicators list with justification + validation plan."

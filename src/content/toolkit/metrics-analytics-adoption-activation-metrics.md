@@ -2,7 +2,7 @@
 title: "Adoption & Activation Metrics"
 primaryCategory: "Metrics & Analytics"
 categories: ["Metrics & Analytics"]
-whenToUse: "When launch is done but users aren’t “getting value” fast enough (activation is weak)"
+whenToUse: "Diagnose weak activation when launch is done but users aren't getting value fast enough."
 whenToUseFull: "When launch is done but users aren’t “getting value” fast enough (activation is weak)"
 inputsRequired: "Activation definition; key actions; segments; onboarding flow; instrumentation."
 outputArtifact: "Activation funnel; targets; experiment backlog."

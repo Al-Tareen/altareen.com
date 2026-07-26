@@ -2,7 +2,7 @@
 title: "Data Strategy One-Pager"
 primaryCategory: "Data & Model Evaluation"
 categories: ["Data & Model Evaluation"]
-whenToUse: "When you’re considering an AI feature and you’re not 100% sure you have the right data (or a viable plan to get it)."
+whenToUse: "Lay out whether you have the right data, or a viable plan to get it, for an AI feature you're weighing."
 whenToUseFull: "When you’re considering an AI feature and you’re not 100% sure you have the right data (or a viable plan to get it)."
 inputsRequired: "Target use cases/tasks; current data inventory (what exists + access); data gaps; privacy/security constraints; labeling/collection options; ownership/stewardship; expected data volume/refresh needs."
 outputArtifact: "1-page data plan covering: required data sources, acquisition/labeling approach, governance/permissions, quality criteria, refresh cadence, and top risks + mitigations."

@@ -2,7 +2,7 @@
 title: "Model / System Card Template"
 primaryCategory: "Data & Model Evaluation"
 categories: ["Data & Model Evaluation"]
-whenToUse: "When you’re launching or sharing an AI capability and need to document intended use, limits, and risks."
+whenToUse: "Document intended use, limits, and risks when launching or sharing an AI capability."
 whenToUseFull: "When you’re launching or sharing an AI capability and need to document intended use, limits, and risks."
 inputsRequired: "Intended use; limitations; eval results; safety risks; data handling; deployment details."
 outputArtifact: "System card (what it does/doesn’t; risks; mitigations; metrics; change history)."

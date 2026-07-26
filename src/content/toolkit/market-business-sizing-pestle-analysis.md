@@ -2,7 +2,7 @@
 title: "PESTLE Analysis"
 primaryCategory: "Market & Business Sizing"
 categories: ["Market & Business Sizing"]
-whenToUse: "When regulation, privacy, policy, or macro trends could block/enable your product."
+whenToUse: "Assess how regulation, privacy, policy, and macro trends could block or enable your product."
 whenToUseFull: "When regulation, privacy, policy, or macro trends could block/enable your product."
 inputsRequired: "Regulatory/policy landscape; security/privacy constraints; macro trends; industry standards."
 outputArtifact: "External risk/opportunity map; mitigation plan; watchlist (what to monitor)."

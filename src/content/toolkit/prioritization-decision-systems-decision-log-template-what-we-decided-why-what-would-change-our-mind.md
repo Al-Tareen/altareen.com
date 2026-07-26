@@ -2,7 +2,7 @@
 title: "Decision Log Template (What we decided, Why, What would change our mind)"
 primaryCategory: "Prioritization & Decision Systems"
 categories: ["Prioritization & Decision Systems"]
-whenToUse: "When decisions keep getting revisited and you need a single source of truth for “what we decided and why.”"
+whenToUse: "Keep a single source of truth for what you decided and why when decisions keep getting revisited."
 whenToUseFull: "When decisions keep getting revisited and you need a single source of truth for “what we decided and why.”"
 inputsRequired: "Decision context; options; criteria; evidence; dissent; owner."
 outputArtifact: "Decision record with “what would change our mind” + revisit date."

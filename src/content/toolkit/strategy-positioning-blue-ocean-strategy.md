@@ -2,7 +2,7 @@
 title: "Blue Ocean Strategy"
 primaryCategory: "Strategy & Positioning"
 categories: ["Strategy & Positioning"]
-whenToUse: "When your industry is highly competitive with shrinking margins, and you seek to create new market spaces where competition is irrelevant."
+whenToUse: "Create new market spaces where competition is irrelevant in a crowded industry with shrinking margins."
 whenToUseFull: "When your industry is highly competitive with shrinking margins, and you seek to create new market spaces where competition is irrelevant."
 inputsRequired: ""
 outputArtifact: ""

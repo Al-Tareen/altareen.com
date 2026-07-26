@@ -2,7 +2,7 @@
 title: "Prompt / Model Regression Testing Template"
 primaryCategory: "Data & Model Evaluation"
 categories: ["Data & Model Evaluation"]
-whenToUse: "When you’re changing prompts/models/tools and need to ensure you didn’t quietly break performance."
+whenToUse: "Catch quiet performance regressions when you change prompts, models, or tools."
 whenToUseFull: "When you’re changing prompts/models/tools and need to ensure you didn’t quietly break performance."
 inputsRequired: "Golden set; expected behavior specs; thresholds; change log (what changed)."
 outputArtifact: "Regression suite; diff report; pass/fail outcome; rollback recommendation."

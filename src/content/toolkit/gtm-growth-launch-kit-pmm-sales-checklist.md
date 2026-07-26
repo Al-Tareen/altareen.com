@@ -2,7 +2,7 @@
 title: "Launch Kit (PMM + Sales + Checklist)"
 primaryCategory: "GTM & Growth"
 categories: ["GTM & Growth"]
-whenToUse: "When a launch involves multiple teams and you need readiness, comms, and support aligned."
+whenToUse: "Align readiness, comms, and support across teams for a multi-team launch."
 whenToUseFull: "When a launch involves multiple teams and you need readiness, comms, and support aligned."
 inputsRequired: "Messaging; docs; release notes; support plan; known issues; rollback plan."
 outputArtifact: "Launch package + checklist + comms calendar + readiness sign-offs."

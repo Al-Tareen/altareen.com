@@ -2,7 +2,7 @@
 title: "AI Risk Assessment Checklist (Privacy, Safety, Misuse)"
 primaryCategory: "AI Product Quality, Risk & Safety"
 categories: ["AI Product Quality, Risk & Safety"]
-whenToUse: "When an AI feature touches sensitive data, high-stakes decisions, or could be misused."
+whenToUse: "Assess risk before shipping an AI feature that touches sensitive data, high-stakes decisions, or potential misuse."
 whenToUseFull: "When an AI feature touches sensitive data, high-stakes decisions, or could be misused."
 inputsRequired: "Use case description; data types; user harm analysis; threat scenarios; compliance requirements."
 outputArtifact: "Risk register; mitigations; risk owners; sign-off criteria."

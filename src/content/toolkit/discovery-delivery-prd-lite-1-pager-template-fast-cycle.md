@@ -2,7 +2,7 @@
 title: "PRD-lite (1 Pager) Template (Fast Cycle)"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
-whenToUse: "When you need quick alignment for a small bet before writing a full PRD."
+whenToUse: "Get quick alignment for a small bet before writing a full PRD."
 whenToUseFull: "When you need quick alignment for a small bet before writing a full PRD."
 inputsRequired: "Problem; target user; proposed approach; risks; metric; next step."
 outputArtifact: "1-page “small bet” spec + success metric + timebox."

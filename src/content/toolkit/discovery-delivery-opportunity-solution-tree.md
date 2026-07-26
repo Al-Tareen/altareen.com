@@ -2,7 +2,7 @@
 title: "Opportunity Solution Tree"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
-whenToUse: "When your team jumps to features too fast and you need to map problems → opportunities → solutions."
+whenToUse: "Map problems → opportunities → solutions when your team jumps to features too fast."
 whenToUseFull: "When your team jumps to features too fast and you need to map problems → opportunities → solutions."
 inputsRequired: "Desired outcome metric; research insights; opportunity list; solution ideas; experiment ideas."
 outputArtifact: "OST map linking outcome → opportunities → solutions → tests."

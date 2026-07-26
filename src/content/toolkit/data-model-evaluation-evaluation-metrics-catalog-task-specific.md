@@ -2,7 +2,7 @@
 title: "Evaluation Metrics Catalog (Task-specific)"
 primaryCategory: "Data & Model Evaluation"
 categories: ["Data & Model Evaluation"]
-whenToUse: "When you must choose a model/prompt approach and need a repeatable, defensible way to compare options."
+whenToUse: "Compare model and prompt approaches with a repeatable, defensible set of metrics."
 whenToUseFull: "When you must choose a model/prompt approach and need a repeatable, defensible way to compare options."
 inputsRequired: "Golden set; metrics definitions; baseline approach; acceptance thresholds; test harness."
 outputArtifact: "Eval plan; scorecards; ship/no-ship thresholds; comparison results."

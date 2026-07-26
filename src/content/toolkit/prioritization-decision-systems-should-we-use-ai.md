@@ -2,7 +2,7 @@
 title: "Should We Use AI?"
 primaryCategory: "Prioritization & Decision Systems"
 categories: ["Prioritization & Decision Systems"]
-whenToUse: "When stakeholders ask for AI and you need to determine if AI is actually the right solution."
+whenToUse: "Determine whether AI is actually the right solution when stakeholders ask for it."
 whenToUseFull: "When stakeholders ask for AI and you need to determine if AI is actually the right solution."
 inputsRequired: "Problem statement; baseline approach; data availability; accuracy needs; risk tolerance; cost constraints."
 outputArtifact: "AI suitability memo; recommendation (AI vs non-AI); constraints + gating requirements."

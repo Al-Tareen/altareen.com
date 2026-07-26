@@ -2,7 +2,7 @@
 title: "Jobs-to-be-Done (JTBD)"
 primaryCategory: "Strategy & Positioning"
 categories: ["Strategy & Positioning"]
-whenToUse: "When user needs are unclear, or users describe goals in messy, inconsistent ways."
+whenToUse: "Clarify user needs when people describe goals in messy, inconsistent ways."
 whenToUseFull: "When user needs are unclear, or users describe goals in messy, inconsistent ways."
 inputsRequired: "Real situations (triggers + context); interview notes; desired outcomes; alternatives; emotional/social drivers."
 outputArtifact: "JTBD statements; outcome drivers; “forces” (push/pull/anxiety/habit); prioritized jobs list."

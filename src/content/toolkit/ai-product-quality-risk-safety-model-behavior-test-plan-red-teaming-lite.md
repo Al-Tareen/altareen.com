@@ -2,7 +2,7 @@
 title: "Model Behavior Test Plan (Red Teaming-lite)"
 primaryCategory: "AI Product Quality, Risk & Safety"
 categories: ["AI Product Quality, Risk & Safety"]
-whenToUse: "When you suspect the model may hallucinate, jailbreak, or produce unsafe outputs—and you need to test it before launch."
+whenToUse: "Test for hallucinations, jailbreaks, and unsafe outputs before you launch."
 whenToUseFull: "When you suspect the model may hallucinate, jailbreak, or produce unsafe outputs—and you need to test it before launch."
 inputsRequired: "Abuse prompts; adversarial scenarios; policy rules; golden set; known failure modes."
 outputArtifact: "Red-team suite; results; fixes; re-test cadence."

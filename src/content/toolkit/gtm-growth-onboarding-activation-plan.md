@@ -2,7 +2,7 @@
 title: "Onboarding / Activation Plan"
 primaryCategory: "GTM & Growth"
 categories: ["GTM & Growth"]
-whenToUse: "When users sign up but don’t reach “aha”—you need a path to value."
+whenToUse: "Build a path to value when users sign up but never reach \"aha.\""
 whenToUseFull: "When users sign up but don’t reach “aha”—you need a path to value."
 inputsRequired: "Activation definition; top user paths; friction points; instrumented funnel."
 outputArtifact: "Onboarding flow plan + experiments + activation targets."

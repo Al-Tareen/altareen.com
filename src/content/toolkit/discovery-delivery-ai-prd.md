@@ -2,7 +2,7 @@
 title: "AI PRD"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
-whenToUse: "When you’re building an AI feature for real and need full alignment on requirements, risks, and evaluation."
+whenToUse: "Align the team on requirements, risks, and evaluation when you're building an AI feature for real."
 whenToUseFull: "When you’re building an AI feature for real and need full alignment on requirements, risks, and evaluation."
 inputsRequired: "Problem/JTBD; requirements; data needs; eval plan; risks/guardrails; rollout plan; metrics."
 outputArtifact: "PRD with scope + non-goals + acceptance + evaluation + monitoring + success metrics."

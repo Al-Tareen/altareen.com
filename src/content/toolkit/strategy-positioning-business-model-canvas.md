@@ -2,7 +2,7 @@
 title: "Business Model Canvas"
 primaryCategory: "Strategy & Positioning"
 categories: ["Strategy & Positioning"]
-whenToUse: "When launching a new business, refining an existing model, or exploring new market opportunities."
+whenToUse: "Map a new business, refine an existing model, or explore new market opportunities."
 whenToUseFull: "When launching a new business, refining an existing model, or exploring new market opportunities."
 inputsRequired: ""
 outputArtifact: ""

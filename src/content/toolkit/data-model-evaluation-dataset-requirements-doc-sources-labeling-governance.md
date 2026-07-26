@@ -2,7 +2,7 @@
 title: "Dataset Requirements Doc (Sources, Labeling, Governance)"
 primaryCategory: "Data & Model Evaluation"
 categories: ["Data & Model Evaluation"]
-whenToUse: "When you’re considering an AI feature and don’t know if you have the right data (or any usable data) to build it."
+whenToUse: "Pin down whether you have the right data (or any usable data) to build an AI feature you're considering."
 whenToUseFull: "When you’re considering an AI feature and don’t know if you have the right data (or any usable data) to build it."
 inputsRequired: "Task definition; data inventory; privacy/security rules; labeling rubric; ownership + access."
 outputArtifact: "Data spec (fields, volume, quality); sourcing plan; labeling plan; governance policy."

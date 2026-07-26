@@ -2,7 +2,7 @@
 title: "Retention Playbook (Churn reasons, Win-back)"
 primaryCategory: "GTM & Growth"
 categories: ["GTM & Growth"]
-whenToUse: "When churn is rising or repeat usage is low and you need systematic retention levers."
+whenToUse: "Pull systematic retention levers when churn is rising or repeat usage is low."
 whenToUseFull: "When churn is rising or repeat usage is low and you need systematic retention levers."
 inputsRequired: "Cohort retention; churn reasons; usage patterns; segment differences."
 outputArtifact: "Retention levers; interventions; experiments; win-back sequences."

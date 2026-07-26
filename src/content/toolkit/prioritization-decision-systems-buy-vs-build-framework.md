@@ -2,7 +2,7 @@
 title: "Buy vs. Build Framework"
 primaryCategory: "Prioritization & Decision Systems"
 categories: ["Prioritization & Decision Systems"]
-whenToUse: "When deciding whether to integrate a vendor/model or build your own capability."
+whenToUse: "Decide whether to integrate a vendor or model, or build your own capability."
 whenToUseFull: "When deciding whether to integrate a vendor/model or build your own capability."
 inputsRequired: "Requirements; security/compliance; TCO; integration effort; lock-in risk; timeline."
 outputArtifact: "Recommendation; TCO; integration plan; risks + mitigations; exit plan."

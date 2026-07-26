@@ -2,7 +2,7 @@
 title: "Feature Specification Template"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
-whenToUse: "When engineering needs precise behavior, edge cases, and constraints beyond the PRD."
+whenToUse: "Give engineering precise behavior, edge cases, and constraints beyond the PRD."
 whenToUseFull: "When engineering needs precise behavior, edge cases, and constraints beyond the PRD."
 inputsRequired: "PRD; user flows; edge cases; data schema needs; non-functional constraints (latency, security)."
 outputArtifact: "Engineering-ready spec with behaviors, edge cases, APIs, UI rules."

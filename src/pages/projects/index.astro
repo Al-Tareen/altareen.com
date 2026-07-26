@@ -262,6 +262,7 @@ const projectsSchema = {
 <PageShell
   title="Projects"
   hidePageHead={false}
+  wide={true}
   description="Selected projects, early-stage concepts, and strategic business ideas across AI systems, enterprise platforms and more."
   keywords="Al Tareen projects, business concepts, AI product manager, AI systems, enterprise systems, product platforms, software engineering"
   breadcrumbs={projectsBreadcrumbs}
@@ -352,7 +353,13 @@ const projectsSchema = {
                     </div>
 
                     <div class="cardFooter">
-                      <div class="bottomMeta">
+                      <div class="projectTags">
+                        {item.tags.map((tag) => (
+                          <span class="tag">{tag}</span>
+                        ))}
+                      </div>
+
+                      <div class="cardMetaRight">
                         <div class="logoSlot">
                           {item.logo ? (
                             <img
@@ -367,13 +374,6 @@ const projectsSchema = {
                             </div>
                           )}
                         </div>
-
-                        <div class="projectTags">
-                          {item.tags.map((tag) => (
-                            <span class="tag">{tag}</span>
-                          ))}
-                        </div>
-                      </div>
 
                       {item.comingSoon ? (
                         <div class="cardActions comingActions" aria-hidden="true">
@@ -420,6 +420,7 @@ const projectsSchema = {
                           )}
                         </div>
                       )}
+                      </div>
                     </div>
                   </article>
                 ))}
@@ -981,7 +982,7 @@ if (kind === "image") {
       --card-radius: 18px;
       --card-radius-sm: 12px;
       --rail-gap: 16px;
-      --rail-peek: 60px;
+      --rail-peek: 24px;
       --category-ink: rgb(5, 35, 80);
     }
 
@@ -1523,7 +1524,7 @@ transition:
       display: grid;
       grid-auto-flow: column;
     grid-auto-columns: min(
-      300px,
+      360px,
       calc((100% - (2 * var(--rail-gap)) - var(--rail-peek)) / 4)   );
       gap: var(--rail-gap);
       align-items: stretch;
@@ -1846,7 +1847,7 @@ transition:
   .cardFooter {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      align-items: end;
+      align-items: stretch;
       gap: 12px;
       margin-top: 18px;
       padding-top: 14px;
@@ -1884,18 +1885,20 @@ transition:
      7) CARD FOOTER / LOGO / TAGS
      ========================================================= */
 
-  .bottomMeta {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      align-content: start;
+  .cardMetaRight {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
       gap: 12px;
-      min-width: 0;
+      min-width: 100px;
       min-height: 100%;
     }
 
   .logoSlot {
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       min-height: 38px;
       min-width: 100px;
     }
@@ -1907,7 +1910,7 @@ transition:
       width: auto;
       height: auto;
       object-fit: contain;
-      object-position: left center;
+      object-position: right center;
       filter: saturate(0.96) contrast(1.01);
     }
 
@@ -2648,7 +2651,7 @@ footer,
     min-height: 0;
   }
 
-  .bottomMeta {
+  .cardMetaRight {
     min-width: 0;
     max-width: 100%;
   }

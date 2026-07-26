@@ -2,7 +2,7 @@
 title: "2x2 Tradeoff Matrices"
 primaryCategory: "Prioritization & Decision Systems"
 categories: ["Prioritization & Decision Systems"]
-whenToUse: "When you have more work than capacity and need a consistent way to rank backlog items."
+whenToUse: "Rank backlog items consistently when you have more work than capacity."
 whenToUseFull: "When you have more work than capacity and need a consistent way to rank backlog items."
 inputsRequired: "Meaningful axes; options list; constraints; data to place options."
 outputArtifact: "2x2 map; decision; rationale; follow-up tests."

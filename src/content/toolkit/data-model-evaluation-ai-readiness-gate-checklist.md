@@ -2,7 +2,7 @@
 title: "AI Readiness Gate Checklist"
 primaryCategory: "Data & Model Evaluation"
 categories: ["Data & Model Evaluation"]
-whenToUse: "When you’re about to move from “prototype” to “production” (and again right before launch) to prevent shipping an AI feature that isn’t safe, measurable, or economically viable."
+whenToUse: "Gate the move from prototype to production (and again right before launch) so you don't ship an AI feature that isn't safe, measurable, or economically viable."
 whenToUseFull: "When you’re about to move from “prototype” to “production” (and again right before launch) to prevent shipping an AI feature that isn’t safe, measurable, or economically viable."
 inputsRequired: "Feature scope (PRD/PRD-lite); data strategy + dataset requirements; evaluation plan + golden set status; risk/threat model; guardrails + escalation/incident runbook; monitoring + instrumentation plan; cost-to-serve estimate; rollout plan + owners."
 outputArtifact: "Pass/Block decision with evidence links to artifacts (data, eval, safety, monitoring, cost, rollout) + action items, owners, and due dates for anything missing."

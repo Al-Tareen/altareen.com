@@ -2,7 +2,7 @@
 title: "Strategy One-Pager (Choices, Bets, Metrics)"
 primaryCategory: "Strategy & Positioning"
 categories: ["Strategy & Positioning"]
-whenToUse: "When you’re planning the next quarter/half and must choose 3–5 bets with clear tradeoffs and metrics."
+whenToUse: "Choose 3–5 bets with clear tradeoffs and metrics when planning the next quarter or half."
 whenToUseFull: "When you’re planning the next quarter/half and must choose 3–5 bets with clear tradeoffs and metrics."
 inputsRequired: "Vision; ICP; top constraints; candidate bets; evidence; metric baselines; known risks."
 outputArtifact: "Strategic choices (what we will/won’t do); 3–5 bets; owners; metrics + guardrails; kill criteria."

@@ -2,7 +2,7 @@
 title: "Guardrail Metrics Template (Quality/Safety)"
 primaryCategory: "Metrics & Analytics"
 categories: ["Metrics & Analytics"]
-whenToUse: "When experimenting or shipping AI and you need to prevent harm, trust loss, or cost blowups."
+whenToUse: "Prevent harm, trust loss, and cost blowups while experimenting with or shipping AI."
 whenToUseFull: "When experimenting or shipping AI and you need to prevent harm, trust loss, or cost blowups."
 inputsRequired: "Failure modes; harm model; cost/latency constraints; escalation policy."
 outputArtifact: "Guardrails + thresholds + alerts + escalation triggers."

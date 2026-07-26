@@ -2,7 +2,7 @@
 title: "Experiment Playbook"
 primaryCategory: "Discovery & Delivery"
 categories: ["Discovery & Delivery"]
-whenToUse: "When you want to run experiments without chaos—clear hypotheses, guardrails, and decision rules."
+whenToUse: "Run experiments without chaos using clear hypotheses, guardrails, and decision rules."
 whenToUseFull: "When you want to run experiments without chaos—clear hypotheses, guardrails, and decision rules."
 inputsRequired: "Hypothesis; success/guardrail metrics; traffic/sample plan; instrumentation; decision thresholds."
 outputArtifact: "Experiment plan; pre-registered success criteria; analysis template; ship/iterate/kill outcome."

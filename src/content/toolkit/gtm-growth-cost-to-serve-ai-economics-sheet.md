@@ -2,7 +2,7 @@
 title: "Cost-to-Serve / AI Economics Sheet"
 primaryCategory: "GTM & Growth"
 categories: ["GTM & Growth"]
-whenToUse: "When you’re pricing/packaging an AI feature or approaching launch and need to ensure margins won’t get destroyed by inference/tooling costs."
+whenToUse: "Protect margins from inference and tooling costs when pricing, packaging, or launching an AI feature."
 whenToUseFull: "When you’re pricing/packaging an AI feature or approaching launch and need to ensure margins won’t get destroyed by inference/tooling costs."
 inputsRequired: "Model/vendor pricing; token usage assumptions or average request size; traffic forecasts; latency targets; caching/retry policies; tooling costs (vector DB, reranker, storage); infra costs; human review costs (if HITL); gross margin target."
 outputArtifact: "Cost model showing: cost per request/session, cost per active user, monthly run-rate at traffic scenarios, margin impact by tier, and cost levers (caching, routing, smaller model, rate limits)."

@@ -2,7 +2,7 @@
 title: "LLM Vendor / Model Selection Scorecard"
 primaryCategory: "Data & Model Evaluation"
 categories: ["Data & Model Evaluation"]
-whenToUse: "When you’re choosing between vendors/models and need to balance quality, cost, latency, privacy, and lock-in."
+whenToUse: "Balance quality, cost, latency, privacy, and lock-in when choosing between vendors or models."
 whenToUseFull: "When you’re choosing between vendors/models and need to balance quality, cost, latency, privacy, and lock-in."
 inputsRequired: "Requirements (quality/latency/cost/privacy); eval results; contract terms; data retention policies."
 outputArtifact: "Weighted scorecard; recommended vendor/model tiering; decision record + rationale."

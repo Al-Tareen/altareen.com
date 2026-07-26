@@ -2,7 +2,7 @@
 title: "Product Review Template (Monthly/Quarterly)"
 primaryCategory: "Operating Cadence & Alignment"
 categories: ["Operating Cadence & Alignment"]
-whenToUse: "When you need a recurring forum to review outcomes, reset bets, and make decisions."
+whenToUse: "Run a recurring forum to review outcomes, reset bets, and make decisions."
 whenToUseFull: "When you need a recurring forum to review outcomes, reset bets, and make decisions."
 inputsRequired: "KPI tree performance; roadmap/bets status; learnings; risks; resource constraints."
 outputArtifact: "Review agenda + decisions + updated bets + follow-ups."

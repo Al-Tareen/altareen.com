@@ -2,7 +2,7 @@
 title: "Assumption Mapping (Riskiest Assumptions First)"
 primaryCategory: "Prioritization & Decision Systems"
 categories: ["Prioritization & Decision Systems"]
-whenToUse: "When you’re betting on something uncertain and need to test what could kill the idea early."
+whenToUse: "Test what could kill the idea early when you're betting on something uncertain."
 whenToUseFull: "When you’re betting on something uncertain and need to test what could kill the idea early."
 inputsRequired: "Assumptions list; impact if wrong; evidence level; test options."
 outputArtifact: "Assumption map; prioritized test plan; learning milestones."

@@ -2,7 +2,7 @@
 title: "RICE Scoring"
 primaryCategory: "Prioritization & Decision Systems"
 categories: ["Prioritization & Decision Systems"]
-whenToUse: "When you have more work than capacity and need a consistent way to rank backlog items."
+whenToUse: "Score and rank backlog items consistently when you have more work than capacity."
 whenToUseFull: "When you have more work than capacity and need a consistent way to rank backlog items."
 inputsRequired: "Reach/Impact/Confidence/Effort estimates; standard scoring definitions."
 outputArtifact: "Ranked backlog; scoring rationale; sensitivity notes."
