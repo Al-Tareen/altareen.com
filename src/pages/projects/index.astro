@@ -69,10 +69,7 @@ const concepts = (await getCollection("toolkit"))
     conceptCategories.has(String(item.data.primaryCategory || "").trim())
   );
 
-const rawProjects = all.filter((item) => {
-  const dbTitle = String(item.data.dbTitle || "").trim().toLowerCase();
-  return dbTitle === "projects" || dbTitle === "project";
-});
+const rawProjects = all;
 
 const normalizedProjects = rawProjects.map((item) => {
   const title = String(
@@ -174,14 +171,15 @@ const normalizedConcepts = concepts.map((item, index) => {
 });
 
 const normalized = [...normalizedConcepts, ...normalizedProjects];
-const FEATURED_TITLES = new Set([
-  "executive analytics dashboard",
+const FEATURED_TITLES = [
   "prodforce",
+  "executive analytics dashboard",
   "apacen",
-]);
+];
 
-const featuredItems = normalized
-  .filter((item) => FEATURED_TITLES.has(item.projectTitle.toLowerCase()))
+const featuredItems = FEATURED_TITLES
+  .map((title) => normalized.find((item) => item.projectTitle.toLowerCase() === title))
+  .filter(Boolean)
   .map((item, index) => ({
     ...item,
     slugId: `featured-${item.slugId}`,
@@ -316,7 +314,7 @@ const projectsSchema = {
                 {group.items.map((item) => (
                   <article
                     id={item.slugId}
-                    class={`projectCard${item.comingSoon ? " isComingSoon" : ""}`}
+                    class={`projectCard${item.comingSoon ? " isComingSoon" : ""}${group.category === "Featured" ? " isFeaturedCard" : ""}`}
                     data-project-card
                     data-title={item.projectTitle}
                     data-category={item.primaryCategory}
@@ -1430,19 +1428,15 @@ transition:
       padding-top: 2px;
     }
   .projectGroup.isFeaturedGroup {
-      padding: 22px;
-      border: 1px solid rgba(224, 177, 91, 0.3);
-      border-radius: 22px;
-      background:
-        radial-gradient(90% 120% at 0% 0%, rgba(224, 177, 91, 0.12), transparent 58%),
-        linear-gradient(180deg, rgba(28, 24, 18, 0.72), rgba(13, 16, 22, 0.36));
-      box-shadow:
-        0 1px 0 rgba(255, 244, 214, 0.08) inset,
-        0 24px 60px rgba(4, 8, 14, 0.12);
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
     }
 
   .projectGroup.isFeaturedGroup .groupTitle {
-      color: rgba(255, 225, 163, 0.98);
+      color: var(--category-ink);
     }
 
   .projectGroup + .projectGroup {
@@ -1638,7 +1632,52 @@ transition:
         box-shadow 0.22s var(--ease);
     }
 
-  .projectCard:hover {
+
+  .projectCard.isFeaturedCard {
+      border-color: rgba(84, 84, 92, 0.34);
+      background:
+        radial-gradient(circle at 88% 14%, rgba(255,255,255,0.08), transparent 24%),
+        radial-gradient(circle at 16% 0%, rgba(255,255,255,0.06), transparent 24%),
+        linear-gradient(160deg, rgba(21, 21, 25, 0.988), rgba(11, 11, 14, 0.992) 100%);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.05) inset,
+        0 26px 46px rgba(8, 8, 10, 0.22);
+    }
+
+  .projectCard.isFeaturedCard:hover {
+      border-color: rgba(118, 118, 128, 0.5);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.07) inset,
+        0 30px 52px rgba(8, 8, 10, 0.26);
+    }
+
+  .projectCard.isFeaturedCard .cardTitle {
+      color: rgba(255,255,255,0.98);
+    }
+
+  .projectCard.isFeaturedCard .cardDesc {
+      color: rgba(239, 244, 252, 0.84);
+    }
+
+  .projectCard.isFeaturedCard .cardFooter {
+      border-top-color: rgba(255,255,255,0.08);
+    }
+
+  .projectCard.isFeaturedCard .projectLogo {
+      filter: grayscale(1) invert(1) brightness(1.18);
+    }
+
+  .projectCard.isFeaturedCard .tag {
+      border-color: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+      color: rgba(245, 248, 255, 0.9);
+    }
+
+  .projectCard.isFeaturedCard .actionBtn.primary {
+      border-color: rgba(255,255,255,0.88);
+      background: rgba(255,255,255,0.94);
+      color: rgba(12, 13, 16, 0.98);
+    }  .projectCard:hover {
       transform: translateY(-2px);
       border-color: color-mix(in srgb, var(--border) 88%, transparent);
       box-shadow:

@@ -10,8 +10,6 @@ npm run dev                   # Astro dev server
 npm run build                 # Pulls GA4 analytics then builds (production)
 npm run preview               # Preview production build locally
 
-# Content sync (requires .env)
-npm run sync:toolkit          # Notion → markdown sync (toolkit, projects, finance models)
 npm run toolkit:analytics     # GA4 → src/data/toolkit-analytics.json
 ```
 
@@ -19,21 +17,21 @@ There are no lint or test commands — this is a content/analytics platform, not
 
 ## Architecture
 
-### Content Pipeline (Notion → Pages)
+### Content Pipeline (Git-managed Markdown → Pages)
 
-Content lives in Notion, not in Git. The sync flow is:
+Content is stored directly in Git as Markdown and local public assets:
 
 ```
-Notion Databases
-  ↓  npm run sync:toolkit
-src/content/toolkit/*.md      (100+ PM frameworks)
+src/content/toolkit/*.md      (PM frameworks and business concepts)
 src/content/projects/*.md     (portfolio entries)
-  ↓  Astro Content Collections (src/content/config.ts — Zod schema)
-/toolkit/[...slug]  /projects/[slug]  (prerendered static pages)
+public/toolkit-covers/         (toolkit cover images)
+public/toolkit-files/          (downloadable toolkit assets)
+public/project-logos/          (project identity assets)
+  ↓  Astro Content Collections (src/content.config.ts — Zod schemas)
+/toolkit/[...slug]  /projects  (prerendered content pages)
 ```
 
-When modifying content structure, update both the Notion sync script (`scripts/notion-sync-toolkit.mjs`) and the Zod schema in `src/content/config.ts` together — they must agree on frontmatter shape.
-
+When modifying content structure, update the Markdown frontmatter and the matching Zod schema in `src/content.config.ts`. Git is the source of truth for content and assets.
 ### Analytics Pipeline (GA4 → Build-time JSON)
 
 ```
@@ -117,4 +115,4 @@ For multi-step tasks, state a brief plan and verify each step before moving on.
 - **Styling:** Vanilla CSS only — no Tailwind, no CSS-in-JS. Styles are colocated inside `.astro` component `<style>` blocks.
 - **SEO/metadata:** All pages go through `src/layouts/BaseLayout.astro`, which injects JSON-LD, OG tags, and breadcrumbs. Pass metadata as props to this layout, not directly in `<head>`.
 - **No JavaScript framework:** Interactivity is handled with inline `<script>` tags or vanilla JS — no React, Vue, or Svelte components.
-- **Content frontmatter:** Fields like `dbTitle`, `notionId`, `cover`, and `files` are managed by the sync script. Don't add or remove these manually without updating `notion-sync-toolkit.mjs` and `src/content/config.ts`.
+- **Content frontmatter:** Content is maintained directly in `src/content/`; keep frontmatter aligned with `src/content.config.ts`, and keep referenced assets in `public/`.

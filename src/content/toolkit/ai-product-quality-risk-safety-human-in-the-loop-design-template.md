@@ -7,8 +7,6 @@ whenToUseFull: "When the model is not reliable enough to fully automate and a hu
 inputsRequired: "Decision points; reviewer roles; SLA expectations; UI workflow; audit needs."
 outputArtifact: "HITL workflow spec; responsibility boundaries; QA gates; audit trail plan."
 commonMistakes: "Human as rubber stamp; unclear accountability; bottlenecks; no audit trail."
-dbTitle: "Frameworks"
-notionId: "2db39950-eddd-805c-b34c-f44070a8bbed"
 link: ""
 cover: "/toolkit-covers/ai-product-quality-risk-safety-human-in-the-loop-design-template.png"
 files: []

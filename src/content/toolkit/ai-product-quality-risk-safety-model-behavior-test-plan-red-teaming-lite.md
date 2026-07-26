@@ -7,8 +7,6 @@ whenToUseFull: "When you suspect the model may hallucinate, jailbreak, or produc
 inputsRequired: "Abuse prompts; adversarial scenarios; policy rules; golden set; known failure modes."
 outputArtifact: "Red-team suite; results; fixes; re-test cadence."
 commonMistakes: "Only testing normal users; no jailbreak attempts; no retest after fixes."
-dbTitle: "Frameworks"
-notionId: "2db39950-eddd-8007-ac36-fc38e85fbb37"
 link: ""
 cover: "/toolkit-covers/ai-product-quality-risk-safety-model-behavior-test-plan-red-teaming-lite.png"
 files: []

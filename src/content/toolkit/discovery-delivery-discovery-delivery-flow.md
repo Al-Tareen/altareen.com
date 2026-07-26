@@ -7,8 +7,6 @@ whenToUseFull: "When your team lacks a shared process and work is getting stuck 
 inputsRequired: "Team roles; delivery cadence; handoffs; required artifacts; tooling reality."
 outputArtifact: "Stage map; artifacts per stage; owner per handoff; gates/checklists."
 commonMistakes: "Over-engineered process; not adopted; unclear ownership; gates not enforced."
-dbTitle: "Frameworks"
-notionId: "2da39950-eddd-80d3-a804-e245cfaa3ac8"
 link: ""
 cover: "/toolkit-covers/discovery-delivery-discovery-delivery-flow.png"
 files: []

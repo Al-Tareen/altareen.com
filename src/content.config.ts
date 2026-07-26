@@ -18,8 +18,6 @@ const toolkit = defineCollection({
     outputArtifact: z.string().optional(),
     commonMistakes: z.string().optional(),
 
-    dbTitle: z.string().optional(),
-    notionId: z.string().optional(),
     link: z.string().optional(),
     cover: z.string().optional(),
 
@@ -45,8 +43,6 @@ const projects = defineCollection({
     description: z.string().optional(),
     summary: z.string().optional(),
     excerpt: z.string().optional(),
-    dbTitle: z.string().optional(),
-    notionId: z.string().optional(),
     link: z.string().optional(),
     url: z.string().optional(),
     logo: z.string().optional(),

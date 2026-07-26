@@ -7,8 +7,6 @@ whenToUseFull: "When you’re deciding if growth is profitable—or you suspect 
 inputsRequired: "CAC by channel; conversion rates; retention/churn; ARPA; cost-to-serve; margins."
 outputArtifact: "Unit economics model; contribution margin; break-even; key levers to improve."
 commonMistakes: "Ignores cost-to-serve; assumes perfect retention; no cohort view; fake precision"
-dbTitle: "Frameworks"
-notionId: "2db39950-eddd-809b-9494-ea3abce75874"
 link: ""
 cover: "/toolkit-covers/market-business-sizing-unit-economics-ltv-cac-contribution-margin.png"
 files: []

@@ -7,8 +7,6 @@ whenToUseFull: "Apacen™ is a strategic supply intelligence platform focused on
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
-dbTitle: "Frameworks"
-notionId: "2d739950-eddd-80b9-9b7b-fecaa2658c86"
 link: ""
 cover: "/toolkit-covers/business-plans-apacen.png"
 files:

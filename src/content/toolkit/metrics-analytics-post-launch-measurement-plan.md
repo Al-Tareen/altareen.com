@@ -7,8 +7,6 @@ whenToUseFull: "When you’re about to ship and want measurement/instrumentation
 inputsRequired: "Success + guardrails; cohort plan; dashboards; owners; instrumentation plan."
 outputArtifact: "Measurement checklist; schedule; dashboards; alerting ownership."
 commonMistakes: "Measuring too late; no owner; no cohorts; only vanity metrics."
-dbTitle: "Frameworks"
-notionId: "2da39950-eddd-802a-a2dd-e08330890e18"
 link: ""
 cover: "/toolkit-covers/metrics-analytics-post-launch-measurement-plan.png"
 files: []

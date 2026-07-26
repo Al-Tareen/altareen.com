@@ -7,8 +7,6 @@ whenToUseFull: "Track burn, cash balance, and runway to understand how long capi
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
-dbTitle: "Frameworks"
-notionId: "30439950-eddd-80c9-a48d-c06c21ee5bf5"
 link: "https://www.thevccorner.com/p/startup-cash-runway-model-2026?r=1krivi&utm_campaign=post&utm_medium=web"
 cover: "/toolkit-covers/financial-models-cash-runway-model.png"
 files: []

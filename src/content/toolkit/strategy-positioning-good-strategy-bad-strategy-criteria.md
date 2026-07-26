@@ -7,8 +7,6 @@ whenToUseFull: "Use this framework when you need to evaluate or shape a strategy
 inputsRequired: "Current business context, key challenge or bottleneck, market/customer evidence, major constraints, and the existing plan or strategy draft to evaluate."
 outputArtifact: "A refined strategy assessment (or strategy draft) structured around: Diagnosis (core challenge), Guiding Policy (approach), and Coherent Actions (aligned actions)—with weak/unsupported strategy elements removed."
 commonMistakes: "Confusing goals with strategy, skipping diagnosis, using buzzwords or vision statements as “strategy,” listing unrelated initiatives, and failing to define coherent actions that address the real challenge."
-dbTitle: "Frameworks"
-notionId: "2d739950-eddd-80c7-ba19-cb303d10d82e"
 link: ""
 cover: "/toolkit-covers/strategy-positioning-good-strategy-bad-strategy-criteria.png"
 files:

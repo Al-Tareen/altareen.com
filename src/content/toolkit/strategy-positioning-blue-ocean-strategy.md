@@ -7,8 +7,6 @@ whenToUseFull: "When your industry is highly competitive with shrinking margins,
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
-dbTitle: "Frameworks"
-notionId: "2db39950-eddd-80b4-a76b-c599defeb79a"
 link: ""
 cover: "/toolkit-covers/strategy-positioning-blue-ocean-strategy.png"
 files: []

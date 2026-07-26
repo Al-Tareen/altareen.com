@@ -5,8 +5,6 @@ primaryCategory: "Software Engineering"
 categories: ["Software Engineering"]
 description: "Designed autoclickit.com web platform, including database schema, wireframes, and prototype. Worked with engineering team to develop AutoClickIt application for Windows."
 summary: "Designed autoclickit.com web platform, including database schema, wireframes, and prototype. Worked with engineering team to develop AutoClickIt application for Windows."
-dbTitle: "Projects"
-notionId: "33739950-eddd-8015-8f78-ecceb40985db"
 link: ""
 url: ""
 logo: "/project-logos/software-engineering-autoclickit--logo--websurfing-png.png"

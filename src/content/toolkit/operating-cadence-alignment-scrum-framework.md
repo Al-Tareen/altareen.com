@@ -7,8 +7,6 @@ whenToUseFull: ""
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
-dbTitle: "Frameworks"
-notionId: "30439950-eddd-80a7-a6b7-dc6f2f484f31"
 link: ""
 cover: "/toolkit-covers/operating-cadence-alignment-scrum-framework.png"
 files:

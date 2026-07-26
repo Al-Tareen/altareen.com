@@ -7,8 +7,6 @@ whenToUseFull: "When you’re choosing between vendors/models and need to balanc
 inputsRequired: "Requirements (quality/latency/cost/privacy); eval results; contract terms; data retention policies."
 outputArtifact: "Weighted scorecard; recommended vendor/model tiering; decision record + rationale."
 commonMistakes: "Choosing by hype; skipping eval on real data; ignoring retention/compliance; no exit plan."
-dbTitle: "Frameworks"
-notionId: "2db39950-eddd-8005-a818-f0ce09b1b735"
 link: ""
 cover: "/toolkit-covers/data-model-evaluation-llm-vendor-model-selection-scorecard.png"
 files: []

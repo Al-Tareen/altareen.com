@@ -7,8 +7,6 @@ whenToUseFull: "When you’re setting pricing/tiers and don’t know what custom
 inputsRequired: "ICP interviews; value metrics; alternative costs; budgets/procurement constraints; pilot learnings."
 outputArtifact: "WTP bands by segment; recommended value metric; pricing experiments plan."
 commonMistakes: "Asking “what would you pay?” directly; no segmentation; ignores procurement; no experiment plan."
-dbTitle: "Frameworks"
-notionId: "2db39950-eddd-80aa-85fb-e7bfab4e9e37"
 link: ""
 cover: "/toolkit-covers/market-business-sizing-pricing-sensitivity-willingness-to-pay-template.png"
 files: []

@@ -7,8 +7,6 @@ whenToUseFull: "When alignment is fragile and you need to manage influence, ince
 inputsRequired: "Stakeholder list; influence level; incentives; concerns; history/conflicts."
 outputArtifact: "Stakeholder map + engagement plan (who, when, how)."
 commonMistakes: "Ignoring incentives; not updated; mapping without action."
-dbTitle: "Frameworks"
-notionId: "2da39950-eddd-80a0-baf0-e9ce11d1c2c9"
 link: ""
 cover: "/toolkit-covers/operating-cadence-alignment-stakeholder-mapping.png"
 files: []

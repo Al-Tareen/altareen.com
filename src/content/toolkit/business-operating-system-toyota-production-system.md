@@ -7,8 +7,6 @@ whenToUseFull: "Management philosophy developed by Toyota that focuses on elimin
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
-dbTitle: "Frameworks"
-notionId: "2db39950-eddd-8054-8f14-d23b87b59326"
 link: ""
 cover: "/toolkit-covers/business-operating-system-toyota-production-system.png"
 files: []

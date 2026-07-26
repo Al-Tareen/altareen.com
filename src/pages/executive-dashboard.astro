@@ -5,17 +5,17 @@ import Footer from "../components/Footer.astro";
 
 const tabs = [
   {
-    id: "executive",
-    label: "Executive Overview",
-    embedUrl: "https://lookerstudio.google.com/embed/reporting/c057e4d0-4a93-4acf-9fe6-59b81a5769be/page/p_n1te0qrl2d",
-    title: "Executive Overview",
-    embedHeight: 1100,
-  },
-  {
     id: "framework",
     label: "Framework Intelligence",
     embedUrl: "https://lookerstudio.google.com/embed/reporting/c057e4d0-4a93-4acf-9fe6-59b81a5769be/page/p_jdb4fy771d",
     title: "Framework Intelligence",
+    embedHeight: 1100,
+  },
+  {
+    id: "executive",
+    label: "Executive Overview",
+    embedUrl: "https://lookerstudio.google.com/embed/reporting/c057e4d0-4a93-4acf-9fe6-59b81a5769be/page/p_n1te0qrl2d",
+    title: "Executive Overview",
     embedHeight: 1100,
   },
   {
@@ -123,7 +123,7 @@ const tabs = [
       });
     });
 
-    activateTab("executive");
+    activateTab("framework");
   })();
 </script>
 

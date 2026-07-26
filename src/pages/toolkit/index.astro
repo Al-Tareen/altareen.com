@@ -7,13 +7,7 @@ const HIDDEN_CATEGORIES = new Set(["Business Plans", "TBA", "Financial Models"])
 
 const all = (await getCollection("toolkit")).map((e) => ({ ...e, slug: e.id }));
 
-// DEBUG
-const dbTitles = Array.from(new Set(all.map((i) => i.data.dbTitle || ""))).sort();
-console.log("toolkit total:", all.length);
-console.log("dbTitles:", dbTitles);
-
 const items = all
-  .filter((item) => (item.data.dbTitle || "").trim() === "Frameworks")
   .filter((item) => !HIDDEN_CATEGORIES.has((item.data.primaryCategory || "Uncategorized").trim()));
 
 console.log("frameworks visible:", items.length);
@@ -44,7 +38,7 @@ function catId(name) {
   );
 }
 
-// Featured (Notion checkbox -> frontmatter `featured: true`)
+// Optional featured entries are selected through local frontmatter.
 const featured = items.filter((i) => i.data.featured === true).slice(0, 8);
 
 const getFrameworkName = (item) => item?.data?.title || "—";

@@ -7,8 +7,6 @@ whenToUseFull: "Evaluate startup valuation, dilution, and investor return scenar
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
-dbTitle: "Frameworks"
-notionId: "30439950-eddd-809c-b31e-ff93904cdb76"
 link: "https://www.thevccorner.com/p/venture-capital-method-startup-valuation?r=1krivi&utm_campaign=post&utm_medium=web"
 cover: "/toolkit-covers/financial-models-vc-valuation-framework.png"
 files: []

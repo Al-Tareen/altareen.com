@@ -7,8 +7,6 @@ whenToUseFull: "When you’re considering an AI feature and don’t know if you 
 inputsRequired: "Task definition; data inventory; privacy/security rules; labeling rubric; ownership + access."
 outputArtifact: "Data spec (fields, volume, quality); sourcing plan; labeling plan; governance policy."
 commonMistakes: "Starting without data clarity; unclear ownership; weak labeling rubric; privacy ignored."
-dbTitle: "Frameworks"
-notionId: "2db39950-eddd-8025-97b4-c0c27777839d"
 link: ""
 cover: "/toolkit-covers/data-model-evaluation-dataset-requirements-doc-sources-labeling-governance.png"
 files: []

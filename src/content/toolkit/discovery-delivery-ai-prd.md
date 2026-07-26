@@ -7,8 +7,6 @@ whenToUseFull: "When you’re building an AI feature for real and need full alig
 inputsRequired: "Problem/JTBD; requirements; data needs; eval plan; risks/guardrails; rollout plan; metrics."
 outputArtifact: "PRD with scope + non-goals + acceptance + evaluation + monitoring + success metrics."
 commonMistakes: "No eval/monitoring plan; vague requirements; ignores latency/cost; no rollback."
-dbTitle: "Frameworks"
-notionId: "2da39950-eddd-80a8-8158-df141f1ccbe6"
 link: ""
 cover: "/toolkit-covers/discovery-delivery-ai-prd.png"
 files:

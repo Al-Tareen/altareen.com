@@ -7,8 +7,6 @@ whenToUseFull: "Analyze customer lifetime value against acquisition cost to eval
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
-dbTitle: "Frameworks"
-notionId: "30439950-eddd-8029-a8e2-fa2767d20983"
 link: "https://www.thevccorner.com/p/cltv-vs-cac-ratio-guide?r=1krivi&utm_campaign=post&utm_medium=web"
 cover: "/toolkit-covers/financial-models-cltv-vs-cac.png"
 files: []

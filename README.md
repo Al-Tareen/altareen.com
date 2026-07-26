@@ -68,7 +68,7 @@ See the LICENSE file for details.
 ## Key Features
 
 ### 1. PM Toolkit System
-- 100+ frameworks synced from Notion
+- 90+ Git-managed frameworks and reusable product-management resources
 - Dynamic rendering via Astro collections
 - Analytics-driven ranking:
   - Most Popular

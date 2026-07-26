@@ -7,8 +7,6 @@ whenToUseFull: "When decisions keep getting revisited and you need a single sour
 inputsRequired: "Decision context; options; criteria; evidence; dissent; owner."
 outputArtifact: "Decision record with “what would change our mind” + revisit date."
 commonMistakes: "No criteria; no evidence; never revisited; decisions made “by vibe.”"
-dbTitle: "Frameworks"
-notionId: "2db39950-eddd-803d-9919-d13f3840d8c8"
 link: ""
 cover: "/toolkit-covers/prioritization-decision-systems-decision-log-template-what-we-decided-why-what-would-change-our-mind.png"
 files: []

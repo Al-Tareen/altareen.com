@@ -2,6 +2,7 @@
 const nav = [
   { href: "/projects", label: "Projects" },
   { href: "/toolkit", label: "PM Toolkit" },
+  { href: "https://prodforce.app", label: "Prodforce", external: true },
   { href: "/about", label: "About" },
 ];
 
@@ -18,7 +19,7 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
     <!-- Desktop nav -->
     <nav class="nav desktopNav" aria-label="Primary">
       {nav.map((i) => (
-        <a class:list={["link", isActive(i.href) && "active"]} href={i.href}>
+        <a class:list={["link", isActive(i.href) && "active"]} href={i.href} target={i.external ? "_blank" : undefined} rel={i.external ? "noopener noreferrer" : undefined}>
           {i.label}
         </a>
       ))}
@@ -63,7 +64,7 @@ const isActive = (href) => (href === "/" ? path === "/" : path.startsWith(href))
         <div class="mobilePanelHead">Navigation</div>
 
         {nav.map((i) => (
-          <a class:list={["mobileLink", isActive(i.href) && "active"]} href={i.href}>
+          <a class:list={["mobileLink", isActive(i.href) && "active"]} href={i.href} target={i.external ? "_blank" : undefined} rel={i.external ? "noopener noreferrer" : undefined}>
             <span>{i.label}</span>
             <span class="mobileLinkArrow" aria-hidden="true">→</span>
           </a>

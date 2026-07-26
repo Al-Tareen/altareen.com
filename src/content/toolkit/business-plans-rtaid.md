@@ -7,8 +7,6 @@ whenToUseFull: "RTAID (Real Time Agentic Intelligence Dashboard) is a secure, AI
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
-dbTitle: "Frameworks"
-notionId: "2d739950-eddd-8091-81fb-de6acd1fa436"
 link: ""
 cover: "/toolkit-covers/business-plans-rtaid.png"
 files:

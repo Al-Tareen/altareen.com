@@ -5,8 +5,6 @@ primaryCategory: "Research & Leadership"
 categories: ["Research & Leadership"]
 description: "Served as Deputy Project Manager for a 100+ page project design report per NASA’s criteria investigating the asteroid 4 Vesta while managing the science, engineering, and logistics team."
 summary: "Served as Deputy Project Manager for a 100+ page project design report per NASA’s criteria investigating the asteroid 4 Vesta while managing the science, engineering, and logistics team."
-dbTitle: "Projects"
-notionId: "33739950-eddd-805e-8fe2-f801c9e9553b"
 link: ""
 url: ""
 logo: "/project-logos/research-leadership-nasa-l-space-academy-4-vesta-asteroid-mission--logo--nasa-png.png"

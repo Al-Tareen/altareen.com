@@ -7,8 +7,6 @@ whenToUseFull: "When scope is ballooning and you need the smallest version that 
 inputsRequired: "Value hypothesis; constraints; riskiest assumptions; timeline; must-have UX path."
 outputArtifact: "MVP scope; excluded scope; learning goal; success metric; next iteration plan."
 commonMistakes: "MVP becomes “mini full product”; cuts the wrong things; no learning goal."
-dbTitle: "Frameworks"
-notionId: "2da39950-eddd-8006-9cee-fa7d0c3532ce"
 link: ""
 cover: "/toolkit-covers/discovery-delivery-mvp-definition-framework.png"
 files: []

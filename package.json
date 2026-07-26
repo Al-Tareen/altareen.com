@@ -7,14 +7,12 @@
     "build": "npm run toolkit:analytics && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "sync:toolkit": "node scripts/notion-sync-toolkit.mjs",
     "toolkit:analytics": "node ./scripts/pull-toolkit-analytics.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^10.1.4",
     "@astrojs/sitemap": "^3.7.2",
     "@google-analytics/data": "^5.2.1",
-    "@notionhq/client": "^5.9.0",
     "astro": "^6.4.6",
     "dotenv": "^17.3.1"
   },

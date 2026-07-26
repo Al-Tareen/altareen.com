@@ -12,7 +12,6 @@ const all = (await getCollection("toolkit")).map((e) => ({ ...e, slug: e.id }));
 const hasCover = (item) => Boolean(item?.data?.cover);
 
 const frameworkPool = all
-  .filter((item) => (item.data.dbTitle || "").trim() === "Frameworks")
   .filter((item) => !HIDDEN_FRAMEWORK_CATEGORIES.has((item.data.primaryCategory || "Uncategorized").trim()))
   .filter(hasCover);
 
@@ -239,6 +238,34 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
         <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
 
+
+      <a
+        class="card card-premium card-prodforce"
+        href="https://prodforce.app"
+        target="_blank"
+        rel="noopener noreferrer"
+        onclick="trackEvent('homepage_section_click', { section: 'prodforce', destination: 'https://prodforce.app', position: 3 })"
+      >
+        <div class="card-ambience" aria-hidden="true">
+          <img
+            class="card-ambience-media prodforce-ambience-media"
+            src="/project-logos/ai-systems-prodforce--logo--untitled-design-png.png"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        <div class="card-premium-overlay" aria-hidden="true"></div>
+
+        <div class="card-copy">
+          <div class="card-kicker">Live product</div>
+          <h2>Prodforce</h2>
+          <p>An agentic workspace for effective product management.</p>
+        </div>
+
+        <span class="card-arrow" aria-hidden="true">↗</span>
+      </a>
       <a
         class="card card-premium card-about"
         href="/about"
@@ -471,7 +498,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     grid-template-columns: repeat(12, minmax(0, 1fr));
     grid-template-areas:
       "projects projects projects projects pm pm pm pm pm pm pm pm"
-      "projects projects projects projects about about about about about about about about";
+      "prodforce prodforce prodforce prodforce about about about about about about about about";
     gap: 14px;
     align-items: stretch;
   }
@@ -553,6 +580,12 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
   }
 
 
+  .card-prodforce {
+    --card-accent: rgba(93, 137, 255, 0.16);
+    grid-area: prodforce;
+    min-height: 290px;
+  }
+
   .card-projects {
     --card-accent: rgba(255, 184, 77, 0.1);
     grid-area: projects;
@@ -579,11 +612,30 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     max-width: 34ch;
   }
 
+  .card-prodforce .card-copy,
   .card-projects .card-copy,
   .card-about .card-copy {
     max-width: 22ch;
   }
 
+
+  .card-kicker {
+    color: rgba(173, 197, 255, 0.88);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .prodforce-ambience-media {
+    object-fit: contain;
+    object-position: 82% 62%;
+    padding: 48px 30px 28px 42%;
+    box-sizing: border-box;
+    opacity: 0.2;
+    filter: brightness(0) invert(1);
+    transform: none;
+  }
   .card h2 {
     margin: 0;
     color: rgba(255,255,255,0.985);
@@ -646,6 +698,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     transform: scale(1.05);
   }
 
+  .card-prodforce .card-ambience-media,
   .card-projects .card-ambience-media,
   .card-about .card-ambience-media {
     object-position: 50% 50%;
@@ -909,7 +962,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-template-areas:
         "projects pm"
-        "projects about";
+        "prodforce about";
       gap: 12px;
     }
 
@@ -923,6 +976,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     }
 
     .card-pm,
+    .card-prodforce,
     .card-projects,
     .card-about {
       min-height: 280px;
@@ -996,6 +1050,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
       grid-template-areas:
         "projects"
         "pm"
+        "prodforce"
         "about";
       gap: 10px;
     }
@@ -1012,13 +1067,32 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     }
 
     .card-pm,
+    .card-prodforce,
     .card-projects,
     .card-about {
       min-height: 270px;
       max-height: 270px;
     }
 
-    .card h2 {
+
+  .card-kicker {
+    color: rgba(173, 197, 255, 0.88);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .prodforce-ambience-media {
+    object-fit: contain;
+    object-position: 82% 62%;
+    padding: 48px 30px 28px 42%;
+    box-sizing: border-box;
+    opacity: 0.2;
+    filter: brightness(0) invert(1);
+    transform: none;
+  }
+  .card h2 {
       font-size: 1.02rem;
     }
 

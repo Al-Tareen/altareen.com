@@ -7,8 +7,6 @@ whenToUseFull: "Plan hires, salaries, and fully loaded team costs to support bud
 inputsRequired: ""
 outputArtifact: ""
 commonMistakes: ""
-dbTitle: "Frameworks"
-notionId: "30439950-eddd-80fc-a4c2-fcfcdd75fcda"
 link: "https://www.thevccorner.com/p/headcount-planning-module-excel-template?r=1krivi&utm_campaign=post&utm_medium=web"
 cover: "/toolkit-covers/financial-models-headcount-planning.png"
 files: []
