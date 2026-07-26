@@ -27,15 +27,11 @@ if (!item) {
   throw new Error(`Toolkit item not found for slug: ${routeSlug}`);
 }
 
-const files = Array.isArray(item.data.files) ? item.data.files : [];
+const files = Array.isArray(item.data.files)
+  ? item.data.files.filter((file) => file?.path || file?.url)
+  : [];
 const hasFiles = files.length > 0;
-
-// If no files are attached, allow downloading the cover as a fallback
-const fallbackDownload = item.data.cover
-  ? { name: `${item.data.title || "Download"}`, url: item.data.cover }
-  : null;
-
-const downloads = hasFiles ? files : fallbackDownload ? [fallbackDownload] : [];
+const downloads = files;
 const hasDownloads = downloads.length > 0;
 const hasMultipleDownloads = downloads.length > 1;
 const hasSingleDownload = downloads.length === 1;
@@ -123,7 +119,7 @@ const canPreview = hasPrimaryAsset && isPdf(primaryAsset);
 const quickActions = [
   {
     kind: "prodforce",
-    label: "Try in Prodforce",
+    label: "Apply Skill using Prodforce",
     icon: "↗",
     href: "https://prodforce.app",
   },
@@ -331,6 +327,16 @@ const pmFrameworkBreadcrumbs = [
   </div>
 )}
 
+{(item.data.whenToUseFull || item.data.whenToUse) && (
+  <section class="sideCard whenToUseSideCard" id={sectionIds.when} data-section aria-label="When to use">
+    <div class="sideTop">
+      <div class="sideTitle">When to use</div>
+    </div>
+    <div class="whenToUseSideBody">
+      <p>{item.data.whenToUseFull || item.data.whenToUse}</p>
+    </div>
+  </section>
+)}
 {hasMultipleDownloads && (
   <div
     class="sideCard downloadsSideCard"
@@ -368,17 +374,7 @@ const pmFrameworkBreadcrumbs = [
 
     <!-- Main layout -->
     <div class="layout">
-<div class="grid3">
-{(item.data.whenToUseFull || item.data.whenToUse) && (
-  <section class="cardBlock" id={sectionIds.when} data-section>
-    <h2>When to use this</h2>
-    <p style="white-space: pre-wrap;">{item.data.whenToUseFull || item.data.whenToUse}</p>
-  </section>
-)}
-
-</div>
-
-        {item.data.link && (
+{item.data.link && (
           <section class="cardBlock" id={sectionIds.link} data-section>
             <h2>Related Link</h2>
             <p>
@@ -1832,6 +1828,18 @@ dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
 
 :global(html.isFrameworkEmbed .toolkitDetail) {
   padding-top: 24px;
+}
+
+.whenToUseSideCard {
+  position: static;
+}
+
+.whenToUseSideBody p {
+  margin: 0;
+  color: var(--ink-secondary);
+  font-size: 0.9rem;
+  line-height: 1.58;
+  white-space: pre-wrap;
 }
 </style>
   </div>

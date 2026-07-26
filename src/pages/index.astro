@@ -249,7 +249,7 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
         <div class="card-ambience" aria-hidden="true">
           <img
             class="card-ambience-media prodforce-ambience-media"
-            src="/project-logos/ai-systems-prodforce--logo--untitled-design-png.png"
+            src="/homepage/prodforce-war-room.png"
             alt=""
             loading="lazy"
             decoding="async"
@@ -705,6 +705,14 @@ const homepageBreadcrumbs = [{ name: "Home", path: "/" }];
     transform: scale(1.06);
   }
 
+  .card-prodforce .prodforce-ambience-media {
+    object-fit: cover;
+    object-position: 50% 50%;
+    padding: 0;
+    opacity: 0.62;
+    filter: saturate(0.92) contrast(1.04) brightness(0.52);
+    transform: scale(1.02);
+  }
   .card-premium:hover .card-ambience-media {
     opacity: 0.76;
     filter: saturate(0.98) contrast(1.04) brightness(0.6);
