@@ -7,8 +7,8 @@ description: "Prodforce is a multi-agent decision and execution platform that he
 summary: "Prodforce is a multi-agent decision and execution platform that helps enterprise teams make effective decisions, collaborate with specialized agents, and execute governed actions."
 link: "https://prodforce.app"
 url: "https://prodforce.app"
-logo: "/project-logos/ai-systems-prodforce--logo--untitled-design-png.png"
-cover: "/project-logos/ai-systems-prodforce--logo--untitled-design-png.png"
+logo: "/project-logos/product-platforms-altareen-com--logo--logo-png.png"
+cover: "/project-logos/product-platforms-altareen-com--logo--logo-png.png"
 files: []
 tags: ["Agentic System","AI Product Management","Multi-Agent Architecture"]
 comingSoon: false

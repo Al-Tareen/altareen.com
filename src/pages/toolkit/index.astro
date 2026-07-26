@@ -247,7 +247,6 @@ breadcrumbs={pmtoolkitBreadcrumbs}
                   <div class="cardTitle">{item.data.title}</div>
 
                   <div class="excerpt">
-                    <div class="excerptLabel">Description</div>
                     <div class="whenToUse">
                       {item.data.whenToUse ? item.data.whenToUse : <span class="muted">â€”</span>}
                     </div>
@@ -319,7 +318,6 @@ breadcrumbs={pmtoolkitBreadcrumbs}
                   <div class="cardTitle">{item.data.title}</div>
 
                   <div class="excerpt">
-                    <div class="excerptLabel">Description</div>
                     <div class="whenToUse">
                       {item.data.whenToUse ? item.data.whenToUse : <span class="muted">â€”</span>}
                     </div>
@@ -1764,20 +1762,6 @@ transition:
     gap: 6px;
   }
 
-  .excerptLabel {
-    font-size: 0.69rem;
-    line-height: 1;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--ink-muted) 76%, var(--ink) 24%);
-    display: none;
-  }
-
-  .card:hover .excerptLabel,
-  .card:focus-within .excerptLabel {
-    display: block;
-  }
 
   .whenToUse {
     color: color-mix(in srgb, var(--ink-muted) 84%, var(--ink) 16%);

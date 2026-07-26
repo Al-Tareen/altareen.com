@@ -7,8 +7,8 @@ description: "Developed AI agents for 50+ teams across KBR, including Legal, Sup
 summary: "Developed AI agents for 50+ teams across KBR, including Legal, Supply Chain, Marketing, IT, Engineering, and SAP. Turned business-specific needs into practical AI use cases that accelerated adoption across the enterprise"
 link: "https://www.kbr.com/en/what-we-do/kbr-digital-accelerators"
 url: "https://www.kbr.com/en/what-we-do/kbr-digital-accelerators"
-logo: "/project-logos/ai-systems-enterprise-ai-agents--logo--kbrain-png.png"
-cover: "/project-logos/ai-systems-enterprise-ai-agents--logo--kbrain-png.png"
+logo: "/project-logos/ai-systems-kbrain-kbr-ai-network--logo--kbrain-png.png"
+cover: "/project-logos/ai-systems-kbrain-kbr-ai-network--logo--kbrain-png.png"
 files: []
 tags: ["Enterprise AI","AI Regulatory Compliance","AI Adoption"]
 comingSoon: false

@@ -142,8 +142,6 @@ const showHeroRail = showQuickActions || hasMultipleDownloads;
 
 const category = item.data.primaryCategory || "PM Toolkit";
 const rawFrameworkSummary = String(
-  item.data.description ||
-  item.data.whenToUseFull ||
   item.data.whenToUse ||
   `A practical framework for structured product decisions and execution.`
 ).replace(/\s+/g, " ").trim();
