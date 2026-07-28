@@ -206,6 +206,7 @@ const pmFrameworkBreadcrumbs = [
     <header class="hero" aria-label="Framework header">
       <div class="heroGrid">
         {item.data.cover && (
+          <div class="coverColumn">
           <div class="coverFrame">
             <div class="coverWrap">
               <img class="cover coverZoom" src={item.data.cover} alt={`Cover for ${title}`} loading="lazy" />
@@ -265,6 +266,17 @@ const pmFrameworkBreadcrumbs = [
                 </div>
               </div>
             </div>
+          </div>
+          {frameworkSummary && (
+            <section class="sideCard whenToUseSideCard desktopFrameworkSummary" aria-label="Framework summary">
+              <div class="sideTop">
+                <div class="sideTitle">Description</div>
+              </div>
+              <div class="whenToUseSideBody">
+                <p>{frameworkSummary}</p>
+              </div>
+            </section>
+          )}
           </div>
         )}
 
@@ -336,7 +348,7 @@ const pmFrameworkBreadcrumbs = [
 )}
 
 {frameworkSummary && (
-  <section class="sideCard whenToUseSideCard" id={sectionIds.when} data-section aria-label="Framework summary">
+  <section class="sideCard whenToUseSideCard mobileFrameworkSummary" id={sectionIds.when} data-section aria-label="Framework summary">
     <div class="sideTop">
       <div class="sideTitle">Description</div>
     </div>
@@ -1850,6 +1862,10 @@ dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
   position: static;
 }
 
+.desktopFrameworkSummary {
+  display: none;
+}
+
 .whenToUseSideBody p {
   margin: 0;
   color: var(--ink-secondary);
@@ -1884,6 +1900,21 @@ dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
   gap: 14px;
   height: auto;
   align-items: start;
+}
+
+:global(html.isFrameworkEmbed .coverColumn) {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+:global(html.isFrameworkEmbed .desktopFrameworkSummary) {
+  display: block;
+}
+
+:global(html.isFrameworkEmbed .mobileFrameworkSummary) {
+  display: none;
 }
 
 :global(html.isFrameworkEmbed .coverFrame) {
@@ -1984,6 +2015,21 @@ dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
     gap: 8px;
+  }
+
+  :global(html.isFrameworkEmbed .coverColumn) {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  :global(html.isFrameworkEmbed .desktopFrameworkSummary) {
+    display: none;
+  }
+
+  :global(html.isFrameworkEmbed .mobileFrameworkSummary) {
+    display: block;
   }
 
   :global(html.isFrameworkEmbed .coverFrame) {
