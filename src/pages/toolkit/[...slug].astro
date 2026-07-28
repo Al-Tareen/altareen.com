@@ -142,13 +142,13 @@ const showHeroRail = showQuickActions || hasMultipleDownloads;
 
 const category = item.data.primaryCategory || "PM Toolkit";
 const rawFrameworkSummary = String(
+  item.data.description ||
+  item.data.whenToUseFull ||
   item.data.whenToUse ||
   `A practical framework for structured product decisions and execution.`
 ).replace(/\s+/g, " ").trim();
 
-const frameworkSummary = rawFrameworkSummary.length <= 210
-  ? rawFrameworkSummary
-  : `${rawFrameworkSummary.slice(0, 207).replace(/\s+\S*$/, "")}...`;
+const frameworkSummary = rawFrameworkSummary;
 const baseTitle = item.data.title || "Framework";
 
 // SEO-optimized page title
@@ -1853,27 +1853,28 @@ dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
 :global(html.isFrameworkEmbed),
 :global(html.isFrameworkEmbed body) {
   width: 100%;
-  height: 100%;
-  overflow: hidden !important;
+  height: auto;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
 }
 
 :global(html.isFrameworkEmbed .toolkitDetail) {
   box-sizing: border-box;
   width: 100%;
-  height: 100dvh;
+  height: auto;
   padding: 14px 16px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 :global(html.isFrameworkEmbed .hero) {
-  height: 100%;
+  height: auto;
   margin: 0;
 }
 
 :global(html.isFrameworkEmbed .heroGrid) {
   grid-template-columns: minmax(0, 1.45fr) minmax(310px, 0.95fr);
   gap: 14px;
-  height: 100%;
+  height: auto;
   align-items: start;
 }
 
@@ -1925,10 +1926,10 @@ dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
 
 :global(html.isFrameworkEmbed .heroRail) {
   order: initial;
-  height: 100%;
+  height: auto;
   min-height: 0;
   gap: 10px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 :global(html.isFrameworkEmbed .heroRail .sideCard) {
@@ -1958,10 +1959,8 @@ dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
 :global(html.isFrameworkEmbed .whenToUseSideBody p) {
   font-size: 0.82rem;
   line-height: 1.45;
-  display: -webkit-box;
-  -webkit-line-clamp: 7;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  display: block;
+  overflow: visible;
 }
 
 :global(html.isFrameworkEmbed .layout) {
@@ -2005,9 +2004,6 @@ dislikeBtn?.addEventListener("click", () => handleFeedbackClick("dislike"));
     padding: 11px 12px;
   }
 
-  :global(html.isFrameworkEmbed .whenToUseSideBody p) {
-    -webkit-line-clamp: 3;
-  }
 
   :global(html.isFrameworkEmbed .fbLabel),
   :global(html.isFrameworkEmbed .feedbackCountsRow),

@@ -351,7 +351,7 @@ breadcrumbs={pmtoolkitBreadcrumbs}
           <div id="framework-modal-title" class="frameworkModalTitle">PM Toolkit</div>
           <button class="frameworkModalClose" type="button" data-framework-modal-close aria-label="Close framework"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
         </div>
-        <iframe class="frameworkModalFrame" data-framework-modal-frame title="PM Toolkit framework" scrolling="no"></iframe>
+        <iframe class="frameworkModalFrame" data-framework-modal-frame title="PM Toolkit framework" scrolling="auto"></iframe>
       </div>
     </div>
 
@@ -367,12 +367,42 @@ breadcrumbs={pmtoolkitBreadcrumbs}
     document.querySelector("[data-framework-modal-close]")?.focus();
   };
 
+  const resizeFrameworkModal = () => {
+    const frame = document.querySelector("[data-framework-modal-frame]");
+    const panel = document.querySelector(".frameworkModalPanel");
+    if (!(frame instanceof HTMLIFrameElement) || !(panel instanceof HTMLElement)) return;
+
+    try {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+      const contentHeight = Math.max(
+        doc.documentElement?.scrollHeight || 0,
+        doc.body?.scrollHeight || 0
+      );
+      const viewportInset = window.innerWidth <= 720 ? 16 : 48;
+      const maxHeight = Math.max(420, window.innerHeight - viewportInset);
+      const desiredHeight = Math.max(420, contentHeight + 48);
+      panel.style.height = `${Math.min(maxHeight, desiredHeight)}px`;
+    } catch {
+      panel.style.removeProperty("height");
+    }
+  };
+
+  const frameworkFrame = document.querySelector("[data-framework-modal-frame]");
+  frameworkFrame?.addEventListener("load", () => {
+    requestAnimationFrame(() => {
+      resizeFrameworkModal();
+      setTimeout(resizeFrameworkModal, 120);
+    });
+  });
+  window.addEventListener("resize", resizeFrameworkModal, { passive: true });
   const closeFrameworkModal = () => {
     const modal = document.querySelector("[data-framework-modal]");
     const frame = document.querySelector("[data-framework-modal-frame]");
     modal?.removeAttribute("data-open");
     modal?.setAttribute("aria-hidden", "true");
     if (frame instanceof HTMLIFrameElement) frame.src = "about:blank";
+    document.querySelector(".frameworkModalPanel")?.style.removeProperty("height");
     document.documentElement.classList.remove("frameworkModalOpen");
   };
 
